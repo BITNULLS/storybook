@@ -1,6 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
-import Login from "./pages/login-register/Login";
+import HomePage from "./pages/HomePage";
+import { BrowserRouter, Router, Route, Link, NavLink, Switch, Redirect } from "react-router-dom";
 
 function App() {
   return (
@@ -20,9 +21,15 @@ function App() {
         </a>
       </header>
     </div>*/
-    <div>
-      <Login/>
-    </div>
+    <BrowserRouter>
+      <div>
+        
+        <Route exact path="/"> 
+          <Redirect to="/HomePage" component={HomePage} />
+        </Route>
+
+      </div>
+    </BrowserRouter>
   );
 }
 
