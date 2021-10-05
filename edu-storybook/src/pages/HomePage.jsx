@@ -1,69 +1,27 @@
 import React, {useState} from "react";
-import Login from "./login-register/Login";
-import Register from "./login-register/Register";
-import { BrowserRouter, Route, Link, NavLink, Switch } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function HomePage() {
+const HomePage = (props) => {
 
   return(
-      <BrowserRouter>
-        <div className="HomePage">
-          <p> Home Page </p>
+    <div className="HomePage">
 
-          <Link to="/Login">
-            <button>Login</button>
-          </Link>
+      <p> Home Page </p>
 
-          <Link to="/Register">
-            <button>Register</button> 
-          </Link>
+      <button onClick={() => 
+        props.history.push('/Login')
+      }>Login </button>
 
-          <Switch>
-            <Route path="/Login" component={Login} />
-            <Route path="/Register" component={Register} />
-          </Switch> 
+      <button onClick={() => 
+        props.history.push('/Register')
+      }>Register </button>
 
-        </div> 
-    </BrowserRouter>
-
-          
+    </div> 
   )
 
 }
 
 export default HomePage;
-
-
-
-/**
-
-<Link to="/Login">
-            <button>Login</button>
-          </Link>
-
-          <Link to="/Register">
-            <button>Register</button> 
-          </Link>
-
-          <Switch> 
-            <Route path="/Login" component={Login} />
-            <Route path="/Register" component={Register} />
-          </Switch> */
-/**
-
-          <Link to="/Login">
-            <button>Login</button>
-          </Link>
-
-          <Link to="/Register">
-            <button>Register</button> 
-          </Link>
-
-          <Switch> 
-            <Route path="/Login" component={Login} />
-            <Route path="/Register" component={Register} />
-          </Switch> */

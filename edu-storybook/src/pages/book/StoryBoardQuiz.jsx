@@ -1,34 +1,22 @@
 import React, {useState} from "react";
-import StoryBoardViewer from "./StoryBoardViewer";
-import HomePage from "../HomePage";
-import { BrowserRouter as Router, Route, Link, NavLink, Switch } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function StoryBoardQuiz(){
-
+const StoryBoardQuiz = (props) => {
   return(
-    <Router>
-      <div>
+    <div>
 
-        <p> Storyboard Quiz Viewer </p>
+      <p> Storyboard Quiz Viewer </p>
 
-        <Link to="/StoryBoardViewer">
-          <button>Back to StoryBoard Viewer</button>
-        </Link>
-        <Link to="/HomePage">
-          <button>Logoutr</button>
-        </Link>
+      <button>Save </button><br />
 
-        <Switch> 
-          <Route exact path="/StoryBoardViewer" component={StoryBoardViewer} />
-          <Route exact path="/HomePage" component={HomePage} />
-        </Switch>
+      <button onClick={() => 
+        props.history.push('/StoryBoardViewer')
+      }>Back to Storyboard Viewer </button> 
         
-      </div>
-    </Router>
+    </div>
   )
 
 }

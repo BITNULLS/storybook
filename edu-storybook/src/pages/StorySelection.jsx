@@ -1,29 +1,20 @@
 import React, {useState} from "react";
-import StoryBoardViewer from "./book/StoryBoardViewer";
-import { BrowserRouter as Router, Route, Link, NavLink, Switch } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function StorySelection(){
-
+const StorySelection = (props) => {
   return(
-    <Router>
-      <div>
+    <div>
       
-        <p> Story Selection </p>
+      <p> Story Selection </p>
 
-        <Link to="/StoryBoardViewer">
-          <button>Read Now!</button>
-        </Link>
+      <button onClick={() => 
+        props.history.push('/StoryBoardViewer')
+      }>Read Now! </button>  
 
-        <Switch> 
-          <Route exact path="/StoryBoardViewer" component={StoryBoardViewer} />
-        </Switch>
-
-      </div>
-    </Router>
+    </div>
   )
 
 }

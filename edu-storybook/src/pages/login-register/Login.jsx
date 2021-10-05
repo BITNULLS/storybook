@@ -1,45 +1,32 @@
 import React, {Component} from "react";
-import Register from "./Register";
-import ForgotPassword from "./ForgotPassword";
-import StorySelection from "../../pages/StorySelection"
-import AdminViewPage from "../../pages/admin/AdminViewPage"
-import { BrowserRouter as Router, Route, Link, NavLink, Switch } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 /** This is the Login Page
  *  This is an example of a class for React
  */
-class Login extends React.Component {
-  render() {
-    return(
-      <Router>
-        <div>
+const Login = (props) => {
+  return(
+    <div>
 
-          <p> Login </p>
+      <p> Login </p>
 
-          <input placeholder="Username" type="text" /><br />
-          <input placeholder="Password" type="password" /><br /><br />
+      <input placeholder="Username" type="text" /><br />
+      <input placeholder="Password" type="password" /><br /><br />
             
-          <Link to="/Register">Register</Link> <br />
-          <Link to="/ForgotPassword">Forgot Password</Link> <br /><br />
-          <Link to="/SignIn">
-            <button>Sign In</button>
-            </Link> 
-          <Link to="/AdminSignIn">
-            <button>Admin Sign In</button>
-          </Link> 
+      <NavLink exact activeClassName="active" to="/Register">Register </NavLink><br />
+      <NavLink exact activeClassName="active" to="/ForgotPassword">Forgot Password </NavLink><br /><br />
 
-          <Switch> 
-            <Route path="/Register" component={Register} />
-            <Route path="/ForgotPassword" component={ForgotPassword} />
-            <Route path="/SignIn" component={StorySelection} />
-            <Route path="/AdminSignIn" component={AdminViewPage} />
-          </Switch>
+      <button onClick={() => 
+        props.history.push('/StorySelection')
+      }>Sign In </button>   
 
-        </div>
-      </Router>
-    )
-  }
-
+      <button onClick={() => 
+        props.history.push('/AdminSignIn')
+      }>Admin Sign In </button>      
+          
+    </div>
+  )
+  
 }
 
 export default Login;

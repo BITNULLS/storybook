@@ -1,30 +1,22 @@
 import React, {useState} from "react";
-import HomePage from "../HomePage"
-import { BrowserRouter as Router, Route, Link, NavLink, Switch } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function ResetPassword(){
-
+const ResetPassword = (props) => {
   return(
-    <Router>
-      <div>
+    <div>
 
-          <input placeholder="New Password" type="password" /><br />
-          <input placeholder="Confirm Password" type="password" /><br /><br />
+      <p> Reset Password </p>
+
+      <input placeholder="New Password" type="password" /><br />
+      <input placeholder="Confirm Password" type="password" /><br /><br />
           
-          <Link to="/HomePage">
-            <button>Confirm</button>
-          </Link> 
+      <NavLink exact activeClassName="active" to="/Login">Confirm </NavLink><br />
 
-          <Switch> 
-            <Route path="/HomePage" component={HomePage} />
-          </Switch>
-
-      </div>
-    </Router>
+    </div>
   )
 
 }

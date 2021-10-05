@@ -1,30 +1,23 @@
 import React, {useState} from "react";
-import AdminViewPage from "./AdminViewPage";
-import { BrowserRouter as Router, Route, Link, NavLink, Switch } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function EditBook(){
-
+const EditBook = (props) => {
   return(
-    <Router>
-      <div>
+    <div>
 
-        <p> Edit Quizzes </p>
+      <p> Edit Quizzes </p>
 
-        <Link to="/AdminviewPage">
-          <button>Admin View</button>
-        </Link><br />
-        <button>Save</button><br />
+      <button onClick={() => 
+        props.history.push('/AdminViewPage')
+      }>Back </button>
 
-        <Switch> 
-          <Route exact path="/AdminViewPage" component={AdminViewPage} />
-        </Switch>
-        
+      <button>Save </button>
+      <button>Publish </button>
+
       </div>
-    </Router>
   )
 
 }
