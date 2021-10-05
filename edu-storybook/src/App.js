@@ -1,6 +1,8 @@
 import logo from './logo.svg';
 import './App.css';
 import HomePage from "./pages/HomePage";
+import Login from "./pages/login-register/Login";
+import Register from "./pages/login-register/Register";
 import { BrowserRouter, Router, Route, Link, NavLink, Switch, Redirect } from "react-router-dom";
 
 function App() {
@@ -20,16 +22,24 @@ function App() {
           Learn React
         </a>
       </header>
-    </div>*/
+    </div>
+    <BrowserRouter>
+        <div>
+
+        <HomePage/>
+            
+            <Switch>
+              <Route exact path="/HomePage"> <HomePage/> </Route>
+           </Switch>
+        </div> 
+    </BrowserRouter>
+*/
     <BrowserRouter>
       <div>
-        
-        <Route exact path="/"> 
-          <Redirect to="/HomePage" component={HomePage} />
-        </Route>
-
+        <HomePage/>
       </div>
     </BrowserRouter>
+
   );
 }
 
