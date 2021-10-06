@@ -10,55 +10,47 @@ import StoryBoardViewer from "./pages/book/StoryBoardViewer"
 import StoryBoardQuiz from "./pages/book/StoryBoardQuiz"
 import AdminViewPage from "./pages/admin/AdminViewPage"
 import EditBook from "./pages/admin/EditBook"
-import { BrowserRouter, Route, NavLink, Switch } from "react-router-dom";
+import { BrowserRouter, Route, NavLink, Switch, Link } from "react-router-dom";
 
 function App() {
   return (
-    /**<div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-    <BrowserRouter>
-        <div>
-
-        <HomePage/>
-            
-            <Switch>
-              <Route exact path="/HomePage"> <HomePage/> </Route>
-           </Switch>
-        </div> 
-    </BrowserRouter>
-*/
     <BrowserRouter>
       <div className="App">
-        <NavLink exact activeClassName="active" to="/HomePage">Home </NavLink>
-        <NavLink exact activeClassName="active" to="/Login">Login </NavLink>
-        <NavLink exact activeClassName="active" to="/StorySelection">Story Selection </NavLink>
+        <Link to="/">Home </Link>
+        <Link to="/Login">Login</Link>
+        <Link to="/StorySelection">Story Selection</Link>
 
         <Switch>
-            <Route exact path="/HomePage" component={HomePage} />
-            <Route exact path="/Login" component={Login} />
-            <Route path="/Register" component={Register} />
-            <Route path="/ForgotPassword" component={ForgotPassword} />
-            <Route path="/ResetPassword" component={ResetPassword} />
-            <Route path="/StorySelection" component={StorySelection} />
-            <Route path="/StoryBoardViewer" component={StoryBoardViewer} />
-            <Route path="/StoryBoardQuiz" component={StoryBoardQuiz} />
-            <Route path="/AdminViewPage" component={AdminViewPage} />
-            <Route path="/EditBook" component={EditBook} />
-
+          <Route exact path="/">
+            <HomePage />
+          </Route>
+          <Route path="/Login">
+            <Login />
+          </Route>
+          <Route path="/Register">
+            <Register />
+          </Route>
+          <Route path="/ForgotPassword">
+            <ForgotPassword />
+          </Route>
+          <Route path="/ResetPassword">
+            <ResetPassword />
+          </Route>
+          <Route path="/StorySelection">
+            <StorySelection />
+          </Route>
+          <Route path="/StoryBoardViewer">
+            <StoryBoardViewer />
+          </Route>
+          <Route path="/StoryBoardQuiz">
+            <StoryBoardQuiz />
+          </Route>
+          <Route path="/AdminViewPage">
+            <AdminViewPage />
+          </Route>
+          <Route path="/EditBook">
+            <EditBook />
+          </Route>
         </Switch>
       </div>
     </BrowserRouter>

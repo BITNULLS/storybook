@@ -1,27 +1,21 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-const HomePage = (props) => {
+export default class HomePage extends React.Component {
 
-  return(
-    <div className="HomePage">
+  render() {
+    return <div className="HomePage">
 
       <p> Home Page </p>
 
-      <button onClick={() => 
-        props.history.push('/Login')
-      }>Login </button>
+      <Link to="/Login">Login</Link>
+      <Link to="/Register">Register</Link>
 
-      <button onClick={() => 
-        props.history.push('/Register')
-      }>Register </button>
-
-    </div> 
-  )
+    </div>;
+  };
 
 }
-
-export default HomePage;

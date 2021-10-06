@@ -1,22 +1,19 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-const StorySelection = (props) => {
-  return(
-    <div>
-      
+export default class StorySelection extends React.Component {
+  render() {
+    return <div>
+
       <p> Story Selection </p>
 
-      <button onClick={() => 
-        props.history.push('/StoryBoardViewer')
-      }>Read Now! </button>  
+      <Link to="/StoryBoardViewer">Login</Link>
 
-    </div>
-  )
+    </div>;
+  }
 
 }
-
-export default StorySelection;

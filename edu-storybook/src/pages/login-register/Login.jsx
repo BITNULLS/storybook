@@ -1,32 +1,27 @@
 import React, {Component} from "react";
 import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 /** This is the Login Page
  *  This is an example of a class for React
  */
-const Login = (props) => {
-  return(
-    <div>
+export default class Login extends React.Component {
+  render() {
+    return <div>
 
       <p> Login </p>
 
       <input placeholder="Username" type="text" /><br />
       <input placeholder="Password" type="password" /><br /><br />
             
-      <NavLink exact activeClassName="active" to="/Register">Register </NavLink><br />
-      <NavLink exact activeClassName="active" to="/ForgotPassword">Forgot Password </NavLink><br /><br />
+      <Link to="/Register">Register</Link><br />
+      <Link to="/ForgotPassword">Forgot Password</Link><br /><br />
 
-      <button onClick={() => 
-        props.history.push('/StorySelection')
-      }>Sign In </button>   
+      <Link to="/StorySelection">Sign in</Link>  
 
-      <button onClick={() => 
-        props.history.push('/AdminSignIn')
-      }>Admin Sign In </button>      
+      <Link to="/AdminSignIn">Admin Sign In</Link>
           
     </div>
-  )
+  };
   
 }
-
-export default Login;

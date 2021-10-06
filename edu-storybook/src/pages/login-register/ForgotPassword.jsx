@@ -1,12 +1,13 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-const ForgotPassword = (props) => {
-  return(
-    <div>
+export default class ForgotPassword extends React.Component {
+  render() {
+    return <div>
 
       <p> Forgot Password </p>
 
@@ -14,9 +15,7 @@ const ForgotPassword = (props) => {
       <input placeholder="Email" type="text" /><br /><br />
       <button>Send Email</button>
           
-    </div>
-  )
+    </div>;
+  }
 
 }
-
-export default ForgotPassword;

@@ -1,24 +1,21 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-const StoryBoardQuiz = (props) => {
-  return(
-    <div>
+export default class StoryBoardQuiz extends React.Component {
+  render() {
+    return <div>
 
       <p> Storyboard Quiz Viewer </p>
 
       <button>Save </button><br />
 
-      <button onClick={() => 
-        props.history.push('/StoryBoardViewer')
-      }>Back to Storyboard Viewer </button> 
+      <Link to="/StoryBoardViewer">Back to Storyboard Viewer</Link>
         
     </div>
-  )
+  }
 
 }
-
-export default StoryBoardQuiz;

@@ -1,13 +1,14 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-const Register = (props) => {
+export default class Register extends React.Component {
 
-  return(
-    <div>
+  render() {
+    return <div>
 
       <p> Register </p>
 
@@ -21,11 +22,7 @@ const Register = (props) => {
           
       <button>Submit</button>
           
-    </div>
-  )
+    </div>;
+  }
 
 }
-
-export default Register;
-
-

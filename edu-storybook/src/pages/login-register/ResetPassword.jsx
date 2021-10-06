@@ -1,24 +1,22 @@
-import React, {useState} from "react";
-import { NavLink } from "react-router-dom";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-const ResetPassword = (props) => {
-  return(
-    <div>
+export default class ResetPassword extends React.Component {
+  render() {
+    return <div>
 
       <p> Reset Password </p>
 
       <input placeholder="New Password" type="password" /><br />
       <input placeholder="Confirm Password" type="password" /><br /><br />
-          
-      <NavLink exact activeClassName="active" to="/Login">Confirm </NavLink><br />
 
-    </div>
-  )
+      <Link to="/Login">Confirm </Link>
+
+    </div>;
+  }
 
 }
-
-export default ResetPassword;
