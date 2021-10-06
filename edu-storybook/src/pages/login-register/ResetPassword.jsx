@@ -1,15 +1,22 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function ResetPassword(){
+export default class ResetPassword extends React.Component {
+  render() {
+    return <div>
 
-  return(
-      <div>
-          <button> </button>
-      </div>
-  )
+      <p> Reset Password </p>
+
+      <input placeholder="New Password" type="password" /><br />
+      <input placeholder="Confirm Password" type="password" /><br /><br />
+
+      <Link to="/Login">Confirm </Link>
+
+    </div>;
+  }
 
 }

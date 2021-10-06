@@ -1,15 +1,20 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function StoryBoardViewer(){
+export default class StoryBoardViewer extends React.Component {
+  render() {
+    return <div>
 
-  return(
-      <div>
-          <button> </button>
-      </div>
-  )
+      <p> Storyboard Viewer </p>
+
+      <Link to="/StoryBoardQuiz">Go to Quiz</Link>
+      <Link to="/StorySelection">Back to Story Selection</Link>
+    
+    </div>;
+  }
 
 }
