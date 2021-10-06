@@ -1,15 +1,22 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function AdminViewPage(){
+ export default class AdminViewPage extends React.Component {
+  render() { 
+    return <div>
 
-  return(
-      <div>
-          <button> </button>
-      </div>
-  )
+      <p> Admin View Page </p>
+
+      <button>Upload New Book</button><br />
+      <Link to="/EditBook">Edit Book</Link>
+      <button>Add Users</button><br />
+      <button>Download Data</button><br />
+
+    </div>;
+  }
 
 }

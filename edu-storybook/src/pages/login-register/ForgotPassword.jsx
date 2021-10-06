@@ -1,15 +1,21 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function ForgotPassword(){
+export default class ForgotPassword extends React.Component {
+  render() {
+    return <div>
 
-  return(
-      <div>
-          <button> </button>
-      </div>
-  )
+      <p> Forgot Password </p>
+
+      <input placeholder="Username" type="text" /><br />
+      <input placeholder="Email" type="text" /><br /><br />
+      <button>Send Email</button>
+          
+    </div>;
+  }
 
 }

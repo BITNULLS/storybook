@@ -3,8 +3,9 @@ A motivational storybook that helps students learn.
 
 ## Directory Structure
 
- - `backend`: ...
- - `edu-storybook`: Front-end website
+ - `backend/`: Python Flask app to connect the database with the front end.
+ - `docs/`: Documentation.
+ - `edu-storybook/`: Front-end website (use `npm install` and `npm start` to run it)
 
 ## Requirements
 

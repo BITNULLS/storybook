@@ -1,15 +1,19 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-export default function StorySelection(){
+export default class StorySelection extends React.Component {
+  render() {
+    return <div>
 
-  return(
-      <div>
-          <button> </button>
-      </div>
-  )
+      <p> Story Selection </p>
+
+      <Link to="/StoryBoardViewer">Login</Link>
+
+    </div>;
+  }
 
 }
