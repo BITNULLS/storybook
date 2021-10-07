@@ -38,8 +38,8 @@ export default class Login extends React.Component {
         </div>
 
         <div class="text-center mt-5">
-          <a routerLink="/Register" class="btn btn-link">Register</a>
-          <a routerLink="/ForgotPassword" class="btn btn-link">Forgot Password</a>
+          <Link to="/Register" class="btn btn-link">Register</Link>
+          <Link to="/ForgotPassword" class="btn btn-link">Forgot Password</Link>
         </div>
       </div >
       <div class="col-12 col-md-4 col-sm-3"></div>
