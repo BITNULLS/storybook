@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
@@ -7,7 +8,7 @@ import React, {Component} from "react";
  * Add: if invalid username/email, error message display
  *
  */
-class ForgotPassword extends React.Component {
+export default class ForgotPassword extends React.Component {
 
   render() {
     return (
@@ -40,5 +41,3 @@ class ForgotPassword extends React.Component {
     );
   }
 }
-
-export default ForgotPassword;

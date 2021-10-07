@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
@@ -6,9 +7,7 @@ import React, {Component} from "react";
  * Add backend: updates the old password stored in database
  * 
  */
-
- class  ResetPassword extends React.Component{
-
+export default class ResetPassword extends React.Component{
  render() {
     return (
       <div class="row mt-5">
@@ -38,4 +37,3 @@ import React, {Component} from "react";
     );
   }
 }
-export default ResetPassword;

@@ -1,15 +1,21 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-function HomePage(){
+export default class HomePage extends React.Component {
 
-  return(
-      <div>
-          <button> </button>
-      </div>
-  )
+  render() {
+    return <div className="HomePage">
+
+      <p> Home Page </p>
+
+      <Link to="/Login">Login</Link>
+      <Link to="/Register">Register</Link>
+
+    </div>;
+  };
 
 }
