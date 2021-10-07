@@ -1,6 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import Login from "./pages/login-register/Login";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (
