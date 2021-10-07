@@ -1,7 +1,8 @@
-import React, {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
 
-class Register extends React.Component {
+export default class Register extends React.Component {
   render() {
     return (
       <div class="row mt-5">
@@ -81,6 +82,3 @@ class Register extends React.Component {
     );
   }
 }
-
-
-export default Register;

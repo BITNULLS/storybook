@@ -1,10 +1,11 @@
-import React, { Component } from "react";
-
+import React, {Component} from "react";
+import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 /** This is the Login Page
  *  This is an example of a class for React
  */
- class Login extends React.Component {
+export default class Login extends React.Component {
   render() {
     return(
       <div class="row mt-5">
@@ -47,5 +48,3 @@ import React, { Component } from "react";
     
   }
 }
-
-export default Login;
