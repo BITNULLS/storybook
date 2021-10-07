@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 
 
 /** This is the Login Page
@@ -38,8 +37,8 @@ import { Link } from "react-router-dom";
         </div>
 
         <div class="text-center mt-5">
-          <Link to="/Register" class="btn btn-link">Register</Link>
-          <Link to="/ForgotPassword" class="btn btn-link">Forgot Password</Link>
+          <a routerLink="/Register" class="btn btn-link">Register</a>
+          <a routerLink="/ForgotPassword" class="btn btn-link">Forgot Password</a>
         </div>
       </div >
       <div class="col-12 col-md-4 col-sm-3"></div>
