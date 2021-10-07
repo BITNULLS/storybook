@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import HomePage from "./pages/HomePage";
 import Login from "./pages/login-register/Login";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import Register from "./pages/login-register/Register";
 import ForgotPassword from "./pages/login-register/ForgotPassword";
 import ResetPassword from "./pages/login-register/ResetPassword";
