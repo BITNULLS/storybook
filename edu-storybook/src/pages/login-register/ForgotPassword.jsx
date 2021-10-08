@@ -33,7 +33,7 @@ export default class ForgotPassword extends React.Component {
               </form>
 
           <div class="text-center mt-5">
-            <a routerLink="/login" class="btn btn-link">Back to Sign In</a>
+            <Link to="/Login" class="btn btn-link">Back to Sign In</Link>
           </div>
         </div >
         <div class="col"></div>
