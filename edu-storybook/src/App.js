@@ -11,14 +11,21 @@ import StoryBoardQuiz from "./pages/book/StoryBoardQuiz"
 import AdminViewPage from "./pages/admin/AdminViewPage"
 import EditBook from "./pages/admin/EditBook"
 import { BrowserRouter, Route, NavLink, Switch, Link } from "react-router-dom";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import {Navbar, Nav} from "react-bootstrap";
+
 
 function App() {
   return (
     <BrowserRouter>
       <div className="App">
-        <Link to="/">Home </Link>
-        <Link to="/Login">Login</Link>
-        <Link to="/StorySelection">Story Selection</Link>
+        <Navbar bg="light" expand="lg">
+          <Nav.Link href="/">Home</Nav.Link>
+          <Nav.Link href="/Login">Login</Nav.Link>
+          <Nav.Link href="/StorySelection">Story Selection</Nav.Link>
+
+       
+        </Navbar>
 
         <Switch>
           <Route exact path="/">
@@ -59,3 +66,10 @@ function App() {
 }
 
 export default App;
+
+/**
+ *  <Link to="/">Home </Link>
+
+        <Link to="/Login">Login</Link>
+        <Link to="/StorySelection">Story Selection</Link>
+ */
