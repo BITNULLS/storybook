@@ -18,14 +18,22 @@ import {Navbar, Nav} from "react-bootstrap";
 function App() {
   return (
     <BrowserRouter>
-      <div className="App">
-        <Navbar bg="light" expand="lg">
-          <Nav.Link href="/">Home</Nav.Link>
-          <Nav.Link href="/Login">Login</Nav.Link>
-          <Nav.Link href="/StorySelection">Story Selection</Nav.Link>
-
+    
+    <div className="App">
+      <nav  class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <Link class="nav-link" to="/">Home </Link>
+        </li>
+        <li class="nav-item">
+          <Link class="nav-link" to="/Login">Login</Link>
+        </li>
+        <li class="nav-item">
+          <Link class="nav-link" to="/StorySelection">Story Selection</Link>
+        </li>
+        </ul>
        
-        </Navbar>
+      </nav>
 
         <Switch>
           <Route exact path="/">
@@ -67,9 +75,3 @@ function App() {
 
 export default App;
 
-/**
- *  <Link to="/">Home </Link>
-
-        <Link to="/Login">Login</Link>
-        <Link to="/StorySelection">Story Selection</Link>
- */
