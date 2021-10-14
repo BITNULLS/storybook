@@ -1,0 +1,17 @@
+name: Pull Repo to VM
+on: [push]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: SSH Into VM
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VM_IP_ADDR }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          git clone https://${{ VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git
