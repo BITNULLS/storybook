@@ -14,4 +14,4 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          git clone https://${{ VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git
+          git clone https://${{ secrets.VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git
