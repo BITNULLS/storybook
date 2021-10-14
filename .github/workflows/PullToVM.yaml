@@ -1,9 +1,13 @@
 name: Pull Repo to VM
-on: [push]
-jobs:
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
   build:
-    name: Build
+    name: Update Repo on VM
     runs-on: ubuntu-latest
     steps:
     - name: SSH Into VM
