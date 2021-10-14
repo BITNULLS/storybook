@@ -14,4 +14,8 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
+          pwd
+          ls -al
+          whoami
+          date
           git clone https://${{ secrets.VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git
