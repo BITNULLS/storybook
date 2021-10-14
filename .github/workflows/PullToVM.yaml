@@ -14,4 +14,8 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          git clone https://${{ secrets.VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git
+          if [ ! -d "/home/ubuntu/storybook" ]; then git clone https://${{ secrets.VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git; fi
+          cd storybook
+          git pull
+          cd ..
+          exit
