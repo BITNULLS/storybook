@@ -1,5 +1,7 @@
 import React, {Component} from "react";
-import { Link } from "react-router-dom";
+import ReactTooltip from 'react-tooltip';
+import IconButton from "@material-ui/core/IconButton";
+import Info from "@material-ui/icons/Info";
 
 /**
  * 
@@ -17,6 +19,19 @@ export default class ResetPassword extends React.Component{
               <form>
                 <div class="form-group mb-4">
                   <label for="username">New Password:</label>
+                  <a data-tip data-for='info-confirm'> 
+                    <IconButton>
+                      <Info />
+                    </IconButton> 
+                  </a>
+                  <ReactTooltip id='info-confirm' aria-haspopup='true' >
+                    <div align = 'left'>
+                      <p>Password must contain at least:</p>
+                      <li>8 characters,</li>
+                      <li>one capital letter</li>
+                      <li>one special character ( @$*_ )</li>
+                    </div>
+                  </ReactTooltip>
                   <input type="text" formControlName="username" class="form-control"></input>
                 </div>
                 <div class="form-group mb-4">
