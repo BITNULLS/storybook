@@ -1,12 +1,3 @@
-.carousel-wrapper {
-    overflow: hidden;
-    }
-    
-.carousel-inner {
-    display: flex;
-    flex-direction: row;
-}
-
 .carousel-control-next,
 .carousel-control-prev /*, .carousel-indicators */ {
     filter: invert(0%);

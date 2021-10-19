@@ -21,9 +21,12 @@ function App() {
     
     <div className="App">
       <nav  class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href= "/">EduStorybook</a>
+        <li class="nav-item">
+          <Link class="navbar-brand" to="/">EduStorybook </Link>
+        </li>      
 
         <ul class="navbar-nav mr-auto">
+        
         <li class="nav-item active">
           <Link class="nav-link" to="/">Home </Link>
         </li>

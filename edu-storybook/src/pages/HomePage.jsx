@@ -1,13 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import titlePage  from "../images/TitlePage.png";
 import "./home-carousel.css";
-import bookCover from "../images/Book.jpg";
-import chalkboard from "../images/Chalkboard.jpg";
 
-
-/**
- * Displays the 'login' & 'register' fields in order to send user to them. 
+/* Displays the 'login' & 'register' fields in order to send user to them. 
  * Add backend:
  * Add: if user is not logged in / they cannot read
  * 
@@ -32,19 +27,19 @@ export default class HomePage extends React.Component {
         </ol>
         <div class="carousel-inner" role="listbox">
           <div class="carousel-item active" data-interval="10000">
-            <img class="d-block w-100 mx-auto" src={titlePage}
-            alt="First slide"/>
+            <img class="d-block w-100 mx-auto" src= {process.env.PUBLIC_URL +'/images/titlePage.png'}
+            alt="First Slide"/>
           </div>   
           <div class="carousel-item">
-            <img class="d-block w-100 mx-center" src= {bookCover}
-              alt="Second slide"/>
+            <img class="d-block w-100 mx-center" src= {process.env.PUBLIC_URL +'/images/Book.jpg'}
+              alt="Second Slide"/>
             <div  id = "Purpose" class="carousel-caption d-none d-md-block mx-auto bg-transparent ">
               <h1> The purpose of this website is to create an environment for learning 
                and teaching current and future teachers to expand their knowledge</h1>
             </div>
           </div>
           <div class="carousel-item">
-            <img class="d-block w-100 mx-center" src = {chalkboard}
+            <img class="d-block w-100 mx-center" src ={process.env.PUBLIC_URL +'/images/Chalkboard.jpg'}
             alt="Third Slide"/>
           <div  id = "LogReg" class="carousel-caption d-none d-md-block mx-auto bg-transparent mx-center ">
             <h1> Have an account? Still need to Register?  </h1>
