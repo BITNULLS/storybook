@@ -4,7 +4,6 @@ import { Button } from "react-bootstrap";
 import { Col } from "react-bootstrap";
 import { Container } from "react-bootstrap";
 import ButtonGroup from 'react-bootstrap/ButtonGroup'
-import './StoryBoardCSS/StoryBoardQuiz.css'
 
 /**
  * 
