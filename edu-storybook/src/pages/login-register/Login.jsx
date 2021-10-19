@@ -1,6 +1,8 @@
 import React, {Component} from "react";
-import { NavLink } from "react-router-dom";
 import { Link } from "react-router-dom";
+import ReactTooltip from 'react-tooltip';
+import IconButton from "@material-ui/core/IconButton";
+import Info from "@material-ui/icons/Info";
 
 /** This is the Login Page
  *  This is an example of a class for React
@@ -24,6 +26,19 @@ export default class Login extends React.Component {
 
               <div class="form-group mb-4">
                 <label for="password">Password:</label>
+                <a data-tip data-for='info'> 
+                  <IconButton>
+                    <Info />
+                  </IconButton> 
+                </a>
+                <ReactTooltip id='info' aria-haspopup='true' >
+                  <div align = 'left'>
+                    <p>Password must contain at least:</p>
+                    <li>8 characters,</li>
+                    <li>one capital letter</li>
+                    <li>one special character ( @$*_ )</li>
+                  </div>
+                </ReactTooltip>
                 <input type="password" formControlName="password" class="form-control"></input>
               </div>
 
