@@ -331,9 +331,277 @@ def admin_page_add():
         "...": "..."
     }
 
-@app.route("/admin/data", methods=['POST'])
-def admin_download_data():
-    return {
-        "...": "..."
-    }
+def create_csv(query_results, table_type):
+    """
+    method to export data to csv
+    - parses query tuble to create array of rows from table
+    - creates csv from array
+    - exports csv to /backend/test_exports
+    
+    """
+
+    # create array from tuple data 
+    data = []
+    for row in query_results:
+
+        new_row = []
+
+        for column in row:
+
+            if isinstance(column, datetime.date):
+                # check if column item is a datetime object. if it is, conver to 'mm/dd/yy'
+                new_row.append(column.strftime('%m/%d/%Y'))
+            
+            else:
+                #  otherwise, just add column to row
+                new_row.append(column)
+
+        # append new row to aray
+        data.append(new_row)
+
+    # create csv file and save to backend/test_exports
+    with open('../backend/test_exports/EDUStoryboard_' + table_type + '_data.csv', mode='w') as csv_file:
+        csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
+
+        for row in data:
+            csv_file_writer.writerow(row)
+
+@app.route("/admin/user_data", methods=['POST'])
+def admin_download_user_data():
+    """
+    Exports user profile data to a csv file
+
+    - Connects to database
+    - Computes a select query to get user profile data
+    - Parses data
+    - Exports to csv
+    - Currently saves to /backend/test_exports. Returns csv file
+
+    """
+
+    # connect to database
+    cursor = connection.cursor()
+
+    # select query
+    try:
+        cursor.execute("\
+        select user_profile.username, \
+        user_profile.email, \
+        user_profile.first_name, \
+        user_profile.last_name, \
+        user_profile.created_on, \
+        user_profile.last_login, \
+        school.school_name, \
+        study.study_name from user_profile \
+        inner join school on user_profile.school_id = school.school_id \
+        inner join study on user_profile.study_id = study.study_id")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
+    # close connection
+    connection.close()
+
+    create_csv(query_results = cursor, table_type = "user_profile")
+
+    # # create array from tuple data 
+    # user_data = []
+    # for row in cursor:
+
+    #     new_row = []
+
+    #     for column in row:
+
+    #         if isinstance(column, datetime.date):
+    #             # check if column item is a datetime object. if it is, conver to 'mm/dd/yy'
+    #             new_row.append(column.strftime('%m/%d/%Y'))
+            
+    #         else:
+    #             #  otherwise, just add column to row
+    #             new_row.append(column)
+
+    #     # append new row to aray
+    #     user_data.append(new_row)
+
+    # # create csv file and save to backend/test_exports
+    # with open('../backend/test_exports/EDUStoryboard_user_data.csv', mode='w') as user_file:
+    #     user_file_writer = csv.writer(user_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
+
+    #     for row in user_data:
+    #         user_file_writer.writerow(row)
+
+    # return file
+    try:
+        return send_file('../backend/test_exports/EDUStoryboard_user_profile_data.csv', attachment_filename='EDUStoryboard_user_profile_data.csv')
+    except Exception as e:
+        return {
+            "status": "fail",
+            "fail_no": 9,
+            "message": "Error when sending back csv file.",
+            "database_message": str(e)
+        }
+
+@app.route("/admin/action_data", methods=['POST'])
+def admin_download_action_data():
+    """
+    Exports user action data to a csv file
+
+    - Connects to database
+    - Computes a select query to get user profile data
+    - Parses data
+    - Exports to csv
+    - Currently saves to /backend/test_exports. Returns csv file
+
+    """
+
+    # connect to database
+    cursor = connection.cursor()
+
+    # select query
+    try:
+        cursor.execute(" \
+        select user_profile.username, \
+        action.current_page, \
+        action.prev_page, \
+        action.link, \
+        action.occurred_on \
+        from user_profile \
+        inner join action on user_profile.user_id = action.user_id");
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
+    # close connection
+    connection.close()
+
+    create_csv(query_results = cursor, table_type = "action")
+
+    # # create array from tuple data 
+    # action_data = []
+    # for row in cursor:
+
+    #     new_row = []
+
+    #     for column in row:
+
+    #         if isinstance(column, datetime.date):
+    #             # check if column item is a datetime object. if it is, conver to 'mm/dd/yy'
+    #             new_row.append(column.strftime('%m/%d/%Y'))
+            
+    #         else:
+    #             #  otherwise, just add column to row
+    #             new_row.append(column)
+
+    #     # append new row to aray
+    #     action_data.append(new_row)
+
+    # # create csv file and save to backend/test_exports
+    # with open('../backend/test_exports/EDUStoryboard_action_data.csv', mode='w') as action_file:
+    #     action_file_writer = csv.writer(action_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
+
+    #     for row in action_data:
+    #         action_file_writer.writerow(row)
+
+    # return file
+    try:
+        return send_file('../backend/test_exports/EDUStoryboard_action_data.csv', attachment_filename='EDUStoryboard_action_data.csv')
+    except Exception as e:
+        return {
+            "status": "fail",
+            "fail_no": 9,
+            "message": "Error when sending back csv file.",
+            "database_message": str(e)
+        }
+
+@app.route("/admin/response_data", methods=['POST'])
+def admin_download_response_data():
+    
+    """
+    Exports user profile data to a csv file
+
+    - Connects to database
+    - Computes a select query to get user profile data
+    - Parses data
+    - Exports to csv
+    - Currently saves to /backend/test_exports. Returns csv file
+
+    """
+
+    # connect to database
+    cursor = connection.cursor()
+    
+    # select query
+    try:
+        cursor.execute(" \
+        select user_profile.username, \
+        study.study_name, \
+        book.book_name, \
+        question.question, \
+        answer.answer, \
+        user_response.answered_on from user_profile \
+        inner join study on user_profile.study_id = study.study_id \
+        inner join book on study.study_id = book.book_id \
+        inner join user_response on user_profile.user_id = user_response.user_id \
+        inner join answer on user_response.answer_id = answer.answer_id \
+        inner join question on answer.question_id = question.question_id");
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
+    # close connection
+    connection.close()
+
+    create_csv(query_results = cursor, table_type = "response")
+
+    # # create array from tuple data 
+    # response_data = []
+    # for row in cursor:
+
+    #     new_row = []
+
+    #     for column in row:
+
+    #         if isinstance(column, datetime.date):
+    #             # check if column item is a datetime object. if it is, conver to 'mm/dd/yy'
+    #             new_row.append(column.strftime('%m/%d/%Y'))
+            
+    #         else:
+    #             #  otherwise, just add column to row
+    #             new_row.append(column)
+
+    #     # append new row to aray
+    #     response_data.append(new_row)
+
+    # # create csv file and save to backend/test_exports
+    # with open('../backend/test_exports/EDUStoryboard_response_data.csv', mode='w') as response_file:
+    #     response_file_writer = csv.writer(response_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
+
+    #     for row in user_data:
+    #         response_file_writer.writerow(row)
+
+    # return file
+    try:
+        return send_file('../backend/test_exports/EDUStoryboard_response_data.csv', attachment_filename='EDUStoryboard_response_data.csv')
+    except Exception as e:
+        return {
+            "status": "fail",
+            "fail_no": 9,
+            "message": "Error when sending back csv file.",
+            "database_message": str(e)
+        }
 
