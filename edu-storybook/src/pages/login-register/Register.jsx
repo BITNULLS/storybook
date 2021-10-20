@@ -1,9 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import ReactTooltip from 'react-tooltip';
-import IconButton from "@material-ui/core/IconButton";
-import Info from "@material-ui/icons/Info";
-
+import Tooltip from "react-bootstrap/Tooltip";
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 export default class Register extends React.Component {
   render() {
@@ -52,40 +50,48 @@ export default class Register extends React.Component {
                 <div class="row">
                   <div class="col-12 col-sm-6">
                     <div class="form-group mb-4">
+                      <OverlayTrigger
+                        delay={{ hide: 450, show: 300 }}
+                        overlay={(props) => (
+                        <Tooltip class="pl-3 bg-info" {...props}>
+                          <div align = 'left'>
+                            <p>Must contain at least:</p>
+                            <li>8 characters,</li>
+                            <li>1 capital letter</li>
+                            <li>1 special character (@$_*)</li>
+                          </div>
+                        </Tooltip>
+                        )}
+                        placement="top">
+                        <a class="p-1 border-info">
+                          <i class="bi bi-info-circle"></i>
+                        </a>
+                      </OverlayTrigger>
                       <label for="password">Password:</label>
-                      <a data-tip data-for='info'> 
-                        <IconButton>
-                          <Info />
-                        </IconButton> 
-                      </a>
-                      <ReactTooltip id='info' aria-haspopup='true' >
-                      <div align = 'left'>
-                        <p>Password must contain at least:</p>
-                        <li>8 characters,</li>
-                        <li>one capital letter</li>
-                        <li>one special character ( @$*_ )</li>
-                      </div>
-                      </ReactTooltip>
                       <input type="text" formControlName="password" class="form-control"></input>
                     </div>
                   </div>
 
                   <div class="col-12 col-sm-6">
                     <div class="form-group mb-4">
+                      <OverlayTrigger
+                        delay={{ hide: 450, show: 300 }}
+                        overlay={(props) => (
+                        <Tooltip class="pl-3 bg-info" {...props}>
+                          <div align = 'left'>
+                            <p>Must contain at least:</p>
+                            <li>8 characters,</li>
+                            <li>1 capital letter</li>
+                            <li>1 special character (@$_*)</li>
+                          </div>
+                        </Tooltip>
+                        )}
+                        placement="top">
+                        <a class="p-1 border-info">
+                          <i class="bi bi-info-circle"></i>
+                        </a>
+                      </OverlayTrigger>
                       <label for="conf_pass">Confirm Password:</label>
-                      <a data-tip data-for='info-confirm'> 
-                        <IconButton>
-                          <Info />
-                        </IconButton> 
-                      </a>
-                      <ReactTooltip id='info-confirm' aria-haspopup='true' >
-                      <div align = 'left'>
-                        <p>Password must contain at least:</p>
-                        <li>8 characters,</li>
-                        <li>one capital letter</li>
-                        <li>one special character ( @$*_ )</li>
-                      </div>
-                      </ReactTooltip>
                       <input type="conf_pass" formControlName="conf_pass" class="form-control"></input>
                     </div>
                   </div>
