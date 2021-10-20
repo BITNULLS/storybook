@@ -1,3 +1,12 @@
+# Oracle Connection details
+oracle_key.json
+oracle_dir.txt
+Wallet_EDUStorybook/
+Wallet_EDUStorybook.zip
+
+# Mac OS
+.DS_Store
+
 # === Node JS ===
 
 # Logs

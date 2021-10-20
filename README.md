@@ -11,3 +11,6 @@ A motivational storybook that helps students learn.
 
  - Node >= 10.x
  - Python >= 3.x
+
+## Documentation
+Please refer to this link to access our project documentation: https://docs.google.com/document/d/1CelmwQA7AdvfGEHCVrNK-iNF4JQG2vA7apNBMwooBfk/edit

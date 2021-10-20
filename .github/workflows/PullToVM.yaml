@@ -1,0 +1,22 @@
+name: Pull Repo to VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Update Repo on VM
+    runs-on: ubuntu-latest
+    steps:
+    - name: SSH Into VM
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VM_IP_ADDR }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          if [ ! -d "/home/ubuntu/storybook" ]; then git clone https://${{ secrets.VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git; else cd storybook; git pull; cd ..; fi
+          exit
