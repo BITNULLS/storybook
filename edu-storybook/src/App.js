@@ -13,7 +13,6 @@ import AdminViewPage from "./pages/admin/AdminViewPage"
 import EditBook from "./pages/admin/EditBook"
 import { BrowserRouter, Route, NavLink, Switch, Link } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {Navbar, Nav} from "react-bootstrap";
 
 
 function App() {
@@ -22,7 +21,12 @@ function App() {
     
     <div className="App">
       <nav  class="navbar navbar-expand-lg navbar-light bg-light">
+        <li class="nav-item">
+          <Link class="navbar-brand" to="/">EduStorybook </Link>
+        </li>      
+
         <ul class="navbar-nav mr-auto">
+        
         <li class="nav-item active">
           <Link class="nav-link" to="/">Home </Link>
         </li>
@@ -30,7 +34,7 @@ function App() {
           <Link class="nav-link" to="/Login">Login</Link>
         </li>
         <li class="nav-item">
-          <Link class="nav-link" to="/StorySelection">Story Selection</Link>
+          <Link class="nav-link disabled" to="/StorySelection">Story Selection</Link>
         </li>
         </ul>
        
