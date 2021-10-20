@@ -1,11 +1,14 @@
 from flask import Flask
 from flask import request
 from flask import make_response
+from flask import send_file
 import re
 import cx_Oracle
 import json
 import bcrypt
 import uuid 
+import datetime
+import csv
 
 app = Flask(__name__)
 
@@ -331,7 +334,7 @@ def admin_page_add():
         "...": "..."
     }
 
-def create_csv(query_results, table_type):
+def create_csv(query_results, table_type, headers):
     """
     method to export data to csv
     - parses query tuble to create array of rows from table
@@ -342,6 +345,7 @@ def create_csv(query_results, table_type):
 
     # create array from tuple data 
     data = []
+
     for row in query_results:
 
         new_row = []
@@ -359,11 +363,12 @@ def create_csv(query_results, table_type):
         # append new row to aray
         data.append(new_row)
 
+    headers_data = headers + data
     # create csv file and save to backend/test_exports
     with open('../backend/test_exports/EDUStoryboard_' + table_type + '_data.csv', mode='w') as csv_file:
         csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
 
-        for row in data:
+        for row in headers_data:
             csv_file_writer.writerow(row)
 
 @app.route("/admin/user_data", methods=['POST'])
@@ -373,9 +378,8 @@ def admin_download_user_data():
 
     - Connects to database
     - Computes a select query to get user profile data
-    - Parses data
-    - Exports to csv
-    - Currently saves to /backend/test_exports. Returns csv file
+    - calls create_csv(query_results, table_type) to export csv to /backend/test_exports
+    - returns user data file created 
 
     """
 
@@ -404,38 +408,13 @@ def admin_download_user_data():
             "database_message": str(e)
         }
 
+    # call create_csv to render csv and export to test_exports
+    create_csv(query_results = cursor, table_type = "user_profile", headers = [["Username", "Email", "First Name", "Last Name", "Created On", "Last Login", "School", ]])
+
     # close connection
     connection.close()
-
-    create_csv(query_results = cursor, table_type = "user_profile")
-
-    # # create array from tuple data 
-    # user_data = []
-    # for row in cursor:
-
-    #     new_row = []
-
-    #     for column in row:
-
-    #         if isinstance(column, datetime.date):
-    #             # check if column item is a datetime object. if it is, conver to 'mm/dd/yy'
-    #             new_row.append(column.strftime('%m/%d/%Y'))
-            
-    #         else:
-    #             #  otherwise, just add column to row
-    #             new_row.append(column)
-
-    #     # append new row to aray
-    #     user_data.append(new_row)
-
-    # # create csv file and save to backend/test_exports
-    # with open('../backend/test_exports/EDUStoryboard_user_data.csv', mode='w') as user_file:
-    #     user_file_writer = csv.writer(user_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
-
-    #     for row in user_data:
-    #         user_file_writer.writerow(row)
-
-    # return file
+ 
+    # get file from /backend/test_exports and return
     try:
         return send_file('../backend/test_exports/EDUStoryboard_user_profile_data.csv', attachment_filename='EDUStoryboard_user_profile_data.csv')
     except Exception as e:
@@ -453,10 +432,8 @@ def admin_download_action_data():
 
     - Connects to database
     - Computes a select query to get user profile data
-    - Parses data
-    - Exports to csv
-    - Currently saves to /backend/test_exports. Returns csv file
-
+    - calls create_csv(query_results, table_type) to export csv to /backend/test_exports
+    - returns action data file created 
     """
 
     # connect to database
@@ -481,38 +458,13 @@ def admin_download_action_data():
             "database_message": str(e)
         }
 
+    # call create_csv to render csv and export to test_exports
+    create_csv(query_results = cursor, table_type = "action", headers = [["Username", "Current Page", "Previous Page", "External Link", "Date Action Occurred"]])
+
     # close connection
     connection.close()
 
-    create_csv(query_results = cursor, table_type = "action")
-
-    # # create array from tuple data 
-    # action_data = []
-    # for row in cursor:
-
-    #     new_row = []
-
-    #     for column in row:
-
-    #         if isinstance(column, datetime.date):
-    #             # check if column item is a datetime object. if it is, conver to 'mm/dd/yy'
-    #             new_row.append(column.strftime('%m/%d/%Y'))
-            
-    #         else:
-    #             #  otherwise, just add column to row
-    #             new_row.append(column)
-
-    #     # append new row to aray
-    #     action_data.append(new_row)
-
-    # # create csv file and save to backend/test_exports
-    # with open('../backend/test_exports/EDUStoryboard_action_data.csv', mode='w') as action_file:
-    #     action_file_writer = csv.writer(action_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
-
-    #     for row in action_data:
-    #         action_file_writer.writerow(row)
-
-    # return file
+    # get file from /backend/test_exports and return
     try:
         return send_file('../backend/test_exports/EDUStoryboard_action_data.csv', attachment_filename='EDUStoryboard_action_data.csv')
     except Exception as e:
@@ -531,10 +483,8 @@ def admin_download_response_data():
 
     - Connects to database
     - Computes a select query to get user profile data
-    - Parses data
-    - Exports to csv
-    - Currently saves to /backend/test_exports. Returns csv file
-
+    - calls create_csv(query_results, table_type) to export csv to /backend/test_exports
+    - returns user response file created 
     """
 
     # connect to database
@@ -563,38 +513,13 @@ def admin_download_response_data():
             "database_message": str(e)
         }
 
+    # call create_csv to render csv and export to test_exports
+    create_csv(query_results = cursor, table_type = "response", headers = [["Username", "Study", "Book", "Question", "User Answer", "Date Answered On"]])
+
     # close connection
     connection.close()
 
-    create_csv(query_results = cursor, table_type = "response")
-
-    # # create array from tuple data 
-    # response_data = []
-    # for row in cursor:
-
-    #     new_row = []
-
-    #     for column in row:
-
-    #         if isinstance(column, datetime.date):
-    #             # check if column item is a datetime object. if it is, conver to 'mm/dd/yy'
-    #             new_row.append(column.strftime('%m/%d/%Y'))
-            
-    #         else:
-    #             #  otherwise, just add column to row
-    #             new_row.append(column)
-
-    #     # append new row to aray
-    #     response_data.append(new_row)
-
-    # # create csv file and save to backend/test_exports
-    # with open('../backend/test_exports/EDUStoryboard_response_data.csv', mode='w') as response_file:
-    #     response_file_writer = csv.writer(response_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
-
-    #     for row in user_data:
-    #         response_file_writer.writerow(row)
-
-    # return file
+    # get file from /backend/test_exports and return
     try:
         return send_file('../backend/test_exports/EDUStoryboard_response_data.csv', attachment_filename='EDUStoryboard_response_data.csv')
     except Exception as e:
