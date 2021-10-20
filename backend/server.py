@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request
-from flask import make_response
+from flask import Response
 from flask import send_file
 import re
 import cx_Oracle
@@ -9,6 +9,7 @@ import bcrypt
 import uuid 
 import datetime
 import csv
+import io
 
 app = Flask(__name__)
 
@@ -334,42 +335,36 @@ def admin_page_add():
         "...": "..."
     }
 
-def create_csv(query_results, table_type, headers):
+def create_csv(query_results, headers):
     """
     method to export data to csv
-    - parses query tuble to create array of rows from table
-    - creates csv from array
-    - exports csv to /backend/test_exports
-    
+    - parses headers and query table to create array of rows from table
+    - returns csv-formatted string
     """
 
-    # create array from tuple data 
-    data = []
+    # new string data equal to headers string
+    data = headers + "\n"
 
+    # add tuple data to data string
     for row in query_results:
 
-        new_row = []
+        new_row = ""
 
         for column in row:
 
             if isinstance(column, datetime.date):
-                # check if column item is a datetime object. if it is, conver to 'mm/dd/yy'
-                new_row.append(column.strftime('%m/%d/%Y'))
+                # if object is datetime.date object, convert to string in format mm/dd/yy
+                new_row += column.strftime('%m/%d/%Y')
             
             else:
-                #  otherwise, just add column to row
-                new_row.append(column)
+                # make sure it is a string
+                new_row += str(column)
+        
+            new_row += ","
 
-        # append new row to aray
-        data.append(new_row)
+        data = data + new_row + "\n"
 
-    headers_data = headers + data
-    # create csv file and save to backend/test_exports
-    with open('../backend/test_exports/EDUStoryboard_' + table_type + '_data.csv', mode='w') as csv_file:
-        csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"',quoting=csv.QUOTE_MINIMAL)
-
-        for row in headers_data:
-            csv_file_writer.writerow(row)
+    return data
 
 @app.route("/admin/user_data", methods=['POST'])
 def admin_download_user_data():
@@ -378,9 +373,8 @@ def admin_download_user_data():
 
     - Connects to database
     - Computes a select query to get user profile data
-    - calls create_csv(query_results, table_type) to export csv to /backend/test_exports
-    - returns user data file created 
-
+    - calls create_csv(query_results, headers) to create csv-formatted string
+    - creates and returns csv file using csv-formatted string
     """
 
     # connect to database
@@ -408,20 +402,19 @@ def admin_download_user_data():
             "database_message": str(e)
         }
 
-    # call create_csv to render csv and export to test_exports
-    create_csv(query_results = cursor, table_type = "user_profile", headers = [["Username", "Email", "First Name", "Last Name", "Created On", "Last Login", "School", ]])
-
+    # call create_csv to render csv-formatted string
+    user_csv_string = create_csv(query_results = cursor, headers = "Username,Email,First Name,Last Name,Created On,Last Login,School")
+    
     # close connection
     connection.close()
- 
-    # get file from /backend/test_exports and return
+
     try:
-        return send_file('../backend/test_exports/EDUStoryboard_user_profile_data.csv', attachment_filename='EDUStoryboard_user_profile_data.csv')
+        return Response(user_csv_string, mimetype="text,csv",headers={"Content-disposition":"attachment;filename=user_data.csv"})
     except Exception as e:
         return {
             "status": "fail",
             "fail_no": 9,
-            "message": "Error when sending back csv file.",
+            "message": "Error when sending csv file.",
             "database_message": str(e)
         }
 
@@ -432,8 +425,8 @@ def admin_download_action_data():
 
     - Connects to database
     - Computes a select query to get user profile data
-    - calls create_csv(query_results, table_type) to export csv to /backend/test_exports
-    - returns action data file created 
+    - calls create_csv(query_results, headers) to create csv-formatted string
+    - creates and returns csv file using csv-formatted string
     """
 
     # connect to database
@@ -448,7 +441,7 @@ def admin_download_action_data():
         action.link, \
         action.occurred_on \
         from user_profile \
-        inner join action on user_profile.user_id = action.user_id");
+        inner join action on user_profile.user_id = action.user_id")
 
     except cx_Oracle.Error as e:
         return {
@@ -458,20 +451,20 @@ def admin_download_action_data():
             "database_message": str(e)
         }
 
-    # call create_csv to render csv and export to test_exports
-    create_csv(query_results = cursor, table_type = "action", headers = [["Username", "Current Page", "Previous Page", "External Link", "Date Action Occurred"]])
+    # call create_csv to render csv-formatted string
+    user_action_csv_string = create_csv(query_results = cursor, headers = "Username,Current Page,Previous Page,External Link,Date Action Occurred")
 
     # close connection
     connection.close()
 
-    # get file from /backend/test_exports and return
+    # create csv file from string and return
     try:
-        return send_file('../backend/test_exports/EDUStoryboard_action_data.csv', attachment_filename='EDUStoryboard_action_data.csv')
+        return Response(user_action_csv_string, mimetype="text,csv",headers={"Content-disposition":"attachment;filename=action_data.csv"})
     except Exception as e:
         return {
             "status": "fail",
             "fail_no": 9,
-            "message": "Error when sending back csv file.",
+            "message": "Error when sending csv file.",
             "database_message": str(e)
         }
 
@@ -483,8 +476,8 @@ def admin_download_response_data():
 
     - Connects to database
     - Computes a select query to get user profile data
-    - calls create_csv(query_results, table_type) to export csv to /backend/test_exports
-    - returns user response file created 
+    - calls create_csv(query_results, headers) to create csv-formatted string
+    - creates and returns csv file using csv-formatted string
     """
 
     # connect to database
@@ -503,7 +496,7 @@ def admin_download_response_data():
         inner join book on study.study_id = book.book_id \
         inner join user_response on user_profile.user_id = user_response.user_id \
         inner join answer on user_response.answer_id = answer.answer_id \
-        inner join question on answer.question_id = question.question_id");
+        inner join question on answer.question_id = question.question_id")
 
     except cx_Oracle.Error as e:
         return {
@@ -513,20 +506,20 @@ def admin_download_response_data():
             "database_message": str(e)
         }
 
-    # call create_csv to render csv and export to test_exports
-    create_csv(query_results = cursor, table_type = "response", headers = [["Username", "Study", "Book", "Question", "User Answer", "Date Answered On"]])
+    # call create_csv to render csv-formatted string
+    user_response_csv_string = create_csv(query_results = cursor, headers = "Username,Study,Book,Question,User Answer,Date Answered On")
 
     # close connection
     connection.close()
 
-    # get file from /backend/test_exports and return
+    # create csv file from string and return
     try:
-        return send_file('../backend/test_exports/EDUStoryboard_response_data.csv', attachment_filename='EDUStoryboard_response_data.csv')
+        return Response(user_response_csv_string, mimetype="text,csv",headers={"Content-disposition":"attachment;filename=response_data.csv"})
     except Exception as e:
         return {
             "status": "fail",
             "fail_no": 9,
-            "message": "Error when sending back csv file.",
+            "message": "Error when sending csv file.",
             "database_message": str(e)
         }
 
