@@ -1,0 +1,5 @@
+{ 
+    "username": "KPELSTER",
+    "password": "KaraPelster1234",
+    "connect_string": "tcps://adb.us-ashburn-1.oraclecloud.com:1522/g13815ba543a548_edustorybook_high.adb.oraclecloud.com?wallet_location=/Users/karapelster/Desktop/CISC475/storybook/backend/data/Wallet_EDUStorybook&retry_count=20&retry_delay=3"
+}

@@ -1,4 +1,4 @@
-/* select query to get user */
+-- select query to get user --
 
 select user_profile.username, user_profile.email, user_profile.first_name, user_profile.last_name, user_profile.created_on, user_profile.last_login, school.school_name, study.study_name from user_profile
 

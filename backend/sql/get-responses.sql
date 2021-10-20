@@ -1,4 +1,4 @@
-/* select query to get user response */
+-- select query to get user response --
 
 select user_profile.username, study.study_name, book.book_name, question.question, answer.answer, user_response.answered_on from user_profile
 
