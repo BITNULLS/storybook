@@ -1,4 +1,6 @@
 .mcBtn {
-    min-width: 80px;
-    max-width: 80px;
+    min-width: 500px;
+    max-width: 500px;
+    min-height: 75px;
+    max-height: 75px;
 }

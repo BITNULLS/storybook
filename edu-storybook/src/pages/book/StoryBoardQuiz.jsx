@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "react-bootstrap";
+import "./StoryBoardCSS/StoryBoardQuiz.css";
 import { Col } from "react-bootstrap";
 import { Container } from "react-bootstrap";
 import ButtonGroup from 'react-bootstrap/ButtonGroup'
@@ -24,23 +25,23 @@ export default class StoryBoardQuiz extends React.Component {
           <div class="row">
         
             <div class="col p-4">
-              <Button variant="primary" type="submit" class="mcBtn">How well she did on her math test yesterday. </Button>
+              <Button variant="primary" type="submit" className="mcBtn">How well she did on her math test yesterday. </Button>
             </div>
     
             <div class="col p-4"> 
-              <Button variant="primary" type="submit" class="mcBtn">Her enjoyment of the field trip to the seashore
+              <Button variant="primary" type="submit" className="mcBtn">Her enjoyment of the field trip to the seashore
               <br/> to study the ecosystem there. </Button>
             </div>
 
             <div class="w-100"></div>
           
             <div class="col mb-auto p-4">
-              <Button variant="primary" type="submit" class="mcBtn">Her teacher’s compliment of her answer to a question <br/> 
+              <Button variant="primary" type="submit" className="mcBtn">Her teacher’s compliment of her answer to a question <br/> 
               on the seashore field trip. </Button>
             </div>
         
             <div class="col flex-md-first mb-auto p-4">
-              <Button variant="primary" type="submit" class="mcBtn">Her dream of one day being a Chemist. </Button>
+              <Button variant="primary" type="submit" className="mcBtn">Her dream of one day being a Chemist. </Button>
             </div>
       
         </div>
