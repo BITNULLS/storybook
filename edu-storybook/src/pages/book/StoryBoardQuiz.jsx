@@ -24,30 +24,29 @@ export default class StoryBoardQuiz extends React.Component {
           <div class="row">
         
             <div class="col p-4">
-              <Button variant="primary" type="submit" class="mcBtn">How well she did on her math test yesterday. </Button>{' '}
-         </div>
+              <Button variant="primary" type="submit" class="mcBtn">How well she did on her math test yesterday. </Button>
+            </div>
     
             <div class="col p-4"> 
               <Button variant="primary" type="submit" class="mcBtn">Her enjoyment of the field trip to the seashore
-              <br/> to study the ecosystem there. </Button>{' '} 
-          </div>
+              <br/> to study the ecosystem there. </Button>
+            </div>
 
-          <div class="w-100"></div>
+            <div class="w-100"></div>
           
-          <div class="col mb-auto p-4">
-            <Button variant="primary" type="submit" class="mcBtn">Her teacher’s compliment of her answer to a question <br/> 
-            on the seashore field trip. </Button>{' '} 
-          </div>
+            <div class="col mb-auto p-4">
+              <Button variant="primary" type="submit" class="mcBtn">Her teacher’s compliment of her answer to a question <br/> 
+              on the seashore field trip. </Button>
+            </div>
         
-        <div class="col flex-md-first mb-auto p-4">
-        <Button variant="primary" type="submit" class="mcBtn">Her dream of one day being a Chemist. </Button>{' '}
-        </div>
+            <div class="col flex-md-first mb-auto p-4">
+              <Button variant="primary" type="submit" class="mcBtn">Her dream of one day being a Chemist. </Button>
+            </div>
       
-      </div>
-  </div>
-        
-        <Link to="/StoryBoardViewer">Back to Storyboard Viewer</Link>         
+        </div>
     </div>
+        <Link to="/StoryBoardViewer">Back to Storyboard Viewer</Link>         
+  </div>
   }
 }
 
