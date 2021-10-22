@@ -2,6 +2,7 @@ from flask import Flask
 from flask import request
 from flask import Response
 from flask import send_file
+from flask import make_response
 import re
 import cx_Oracle
 import json
@@ -341,33 +342,34 @@ def create_csv(query_results, headers):
     - parses headers and query table to create array of rows from table
     - returns csv-formatted string
     """
+    # lmap = map(lambda x:n.extend(map(x))
+    # print(lmap)
+    print(query_results)
+    str1 = ''.join(list(map(lambda x: ",".join(tuple(map(lambda i: str(i), x))) + "\n", query_results)))
+    # str1 = map(lambda x: tuple(map(lambda i: str(i), x)), query_results)
+
+    print("**********")
+    print(str1)
 
     # new string data equal to headers string
     data = headers + "\n"
 
     # add tuple data to data string
-    for row in query_results:
-
-        new_row = ""
-
-        for column in row:
-
-            if isinstance(column, datetime.date):
-                # if object is datetime.date object, convert to string in format mm/dd/yy
-                new_row += column.strftime('%m/%d/%Y')
-            
-            else:
-                # make sure it is a string
-                new_row += str(column)
-        
-            new_row += ","
-
-        data = data + new_row + "\n"
+    # for row in query_results:
+    #     print(row)
+    #     new_row = ""
+    #     for column in row:
+    #             new_row += str(column) + ","
+    #     data = data + new_row + "\n"
 
     return data
 
-@app.route("/admin/user_data", methods=['POST'])
+@app.route("/admin/user", methods=['POST'])
 def admin_download_user_data():
+
+    hashed = bcrypt.hashpw('KARAPELSTER1234'.encode('utf8'), bcrypt.gensalt())
+    print(hashed)
+
     """
     Exports user profile data to a csv file
 
@@ -376,6 +378,16 @@ def admin_download_user_data():
     - calls create_csv(query_results, headers) to create csv-formatted string
     - creates and returns csv file using csv-formatted string
     """
+
+    # validate that user can access data
+    # vl = validate_login( 
+    #     request.cookies.get('Authorization'), 
+    #     request.form['sub'],
+    #     #request.headers['Origin'],
+    #     permission=0
+    # )
+    # if vl != True:
+    #     return vl
 
     # connect to database
     cursor = connection.cursor()
@@ -402,23 +414,30 @@ def admin_download_user_data():
             "database_message": str(e)
         }
 
-    # call create_csv to render csv-formatted string
-    user_csv_string = create_csv(query_results = cursor, headers = "Username,Email,First Name,Last Name,Created On,Last Login,School")
+    # assign variable data to cursor.fetchall(). if i do not assign it to a variable, Response() sees it as an empty string
+    data = cursor.fetchall()
+
+    # column headers for csv
+    headers = 'Username,Email,First Name,Last Name,Created On,Last Login,School\n'
+   
+    # create csv response object
+    response = Response(headers + ''.join(list(map(lambda x: ",".join(tuple(map(lambda i: str(i), x))) + "\n", data))), mimetype="text,csv",headers={"Content-disposition":"attachment;filename=user_data.csv"})
     
     # close connection
     connection.close()
 
     try:
-        return Response(user_csv_string, mimetype="text,csv",headers={"Content-disposition":"attachment;filename=user_data.csv"})
+        return response
+
     except Exception as e:
         return {
             "status": "fail",
             "fail_no": 9,
             "message": "Error when sending csv file.",
-            "database_message": str(e)
+            "flask_message": str(e)
         }
 
-@app.route("/admin/action_data", methods=['POST'])
+@app.route("/admin/action", methods=['POST'])
 def admin_download_action_data():
     """
     Exports user action data to a csv file
@@ -429,74 +448,32 @@ def admin_download_action_data():
     - creates and returns csv file using csv-formatted string
     """
 
+    # validate that user can access data
+    # vl = validate_login( 
+    #     request.cookies.get('Authorization'), 
+    #     request.form['sub'],
+    #     #request.headers['Origin'],
+    #     permission=0
+    # )
+    # if vl != True:
+    #     return vl
+
     # connect to database
     cursor = connection.cursor()
 
     # select query
     try:
-        cursor.execute(" \
-        select user_profile.username, \
-        action.current_page, \
-        action.prev_page, \
-        action.link, \
-        action.occurred_on \
-        from user_profile \
-        inner join action on user_profile.user_id = action.user_id")
-
-    except cx_Oracle.Error as e:
-        return {
-            "status": "fail",
-            "fail_no": 4,
-            "message": "Error when querying database.",
-            "database_message": str(e)
-        }
-
-    # call create_csv to render csv-formatted string
-    user_action_csv_string = create_csv(query_results = cursor, headers = "Username,Current Page,Previous Page,External Link,Date Action Occurred")
-
-    # close connection
-    connection.close()
-
-    # create csv file from string and return
-    try:
-        return Response(user_action_csv_string, mimetype="text,csv",headers={"Content-disposition":"attachment;filename=action_data.csv"})
-    except Exception as e:
-        return {
-            "status": "fail",
-            "fail_no": 9,
-            "message": "Error when sending csv file.",
-            "database_message": str(e)
-        }
-
-@app.route("/admin/response_data", methods=['POST'])
-def admin_download_response_data():
-    
-    """
-    Exports user profile data to a csv file
-
-    - Connects to database
-    - Computes a select query to get user profile data
-    - calls create_csv(query_results, headers) to create csv-formatted string
-    - creates and returns csv file using csv-formatted string
-    """
-
-    # connect to database
-    cursor = connection.cursor()
-    
-    # select query
-    try:
-        cursor.execute(" \
-        select user_profile.username, \
-        study.study_name, \
+        cursor.execute("select user_profile.email, \
+        action.action_start, \
+        action.action_stop, \
         book.book_name, \
-        question.question, \
-        answer.answer, \
-        user_response.answered_on from user_profile \
-        inner join study on user_profile.study_id = study.study_id \
-        inner join book on study.study_id = book.book_id \
-        inner join user_response on user_profile.user_id = user_response.user_id \
-        inner join answer on user_response.answer_id = answer.answer_id \
-        inner join question on answer.question_id = question.question_id")
+        action_code.code_description, \
+        action_details.details \
+        from user_profile \
+        inner join action on user_profile.user_id = action.user_id \
+        inner join book on action.book_id = book.book_id \
+        inner join action_code on action.action_code = action_code.action_code \
+        inner join action_details on action.detail_id = action_details.detail_id")
 
     except cx_Oracle.Error as e:
         return {
@@ -506,20 +483,26 @@ def admin_download_response_data():
             "database_message": str(e)
         }
 
-    # call create_csv to render csv-formatted string
-    user_response_csv_string = create_csv(query_results = cursor, headers = "Username,Study,Book,Question,User Answer,Date Answered On")
+    # assign variable data to cursor.fetchall(). if i do not assign it to a variable, Response() sees it as an empty string
+    data = cursor.fetchall()
 
+    # column headers for csv
+    headers = 'Email,Start,Stop,Book Name,Action,Details\n'
+   
+    # create csv response object
+    response = Response(headers + ''.join(list(map(lambda x: ",".join(tuple(map(lambda i: str(i), x))) + "\n", data))), mimetype="text,csv",headers={"Content-disposition":"attachment;filename=user_data.csv"})
+    
     # close connection
     connection.close()
 
-    # create csv file from string and return
     try:
-        return Response(user_response_csv_string, mimetype="text,csv",headers={"Content-disposition":"attachment;filename=response_data.csv"})
+        return response
+
     except Exception as e:
         return {
             "status": "fail",
             "fail_no": 9,
             "message": "Error when sending csv file.",
-            "database_message": str(e)
+            "flask_message": str(e)
         }
 
