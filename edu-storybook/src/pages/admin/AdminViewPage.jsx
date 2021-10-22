@@ -1,21 +1,12 @@
-import React, {useRef} from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 
 /**
  * 
  * @returns 
  */
-
-function InputRef() {
-
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  return inputRef;
-}
  export default class AdminViewPage extends React.Component {
-  
-  
   render() { 
-
     return (
 
       <div class="row mt-5">
