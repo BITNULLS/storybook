@@ -12,6 +12,7 @@ app = Flask(__name__)
 # regexes
 # they're faster compiled, and they can be used throughout
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
+re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -283,8 +284,8 @@ def register():
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
     if re_email.match( request.form['email'] ) is None or \
         re_alphanumeric8.match( request.form['password'] ) is None or \
-        re_alphanumeric8.match( request.form['first_name'] ) is None or \
-        re_alphanumeric8.match( request.form['last_name'] ) is None:
+        re_alphanumeric2.match( request.form['first_name'] ) is None or \
+        re_alphanumeric2.match( request.form['last_name'] ) is None:
         return {
             "status": "fail",
             "fail_no": 2,
@@ -318,10 +319,12 @@ def register():
             "message": "Email is already registered."
         }
     
+    user_id = str(uuid.uuid4()) # generate a unique token for a user
+
     try:
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, password) VALUES ('" +
-            email + ", " + first_name + ", " + last_name + ", " + password + ");'"
+            "INSERT into USER_PROFILE (email, first_name, last_name, password, user_id) VALUES ('" +
+            email + ", " + first_name + ", " + last_name + ", " + password + +", " + str(user_id) + ");'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -332,7 +335,7 @@ def register():
         }
 
     return {
-        "status" "ok"
+        "status": "ok"
     }
 
 @app.route("/password/forgot", methods=['POST'])
