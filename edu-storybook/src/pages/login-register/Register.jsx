@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import Tooltip from "react-bootstrap/Tooltip";
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 
 export default class Register extends React.Component {
   render() {
@@ -49,6 +50,23 @@ export default class Register extends React.Component {
                 <div class="row">
                   <div class="col-12 col-sm-6">
                     <div class="form-group mb-4">
+                      <OverlayTrigger
+                        delay={{ hide: 450, show: 300 }}
+                        overlay={(props) => (
+                        <Tooltip class="pl-3 bg-info" {...props}>
+                          <div align = 'left'>
+                            <p>Must contain at least:</p>
+                            <li>8 characters,</li>
+                            <li>1 capital letter</li>
+                            <li>1 special character (@$_*)</li>
+                          </div>
+                        </Tooltip>
+                        )}
+                        placement="top">
+                        <a class="p-1 border-info">
+                          <i class="bi bi-info-circle"></i>
+                        </a>
+                      </OverlayTrigger>
                       <label for="password">Password:</label>
                       <input type="text" formControlName="password" class="form-control"></input>
                     </div>
@@ -56,6 +74,23 @@ export default class Register extends React.Component {
 
                   <div class="col-12 col-sm-6">
                     <div class="form-group mb-4">
+                      <OverlayTrigger
+                        delay={{ hide: 450, show: 300 }}
+                        overlay={(props) => (
+                        <Tooltip class="pl-3 bg-info" {...props}>
+                          <div align = 'left'>
+                            <p>Must contain at least:</p>
+                            <li>8 characters,</li>
+                            <li>1 capital letter</li>
+                            <li>1 special character (@$_*)</li>
+                          </div>
+                        </Tooltip>
+                        )}
+                        placement="top">
+                        <a class="p-1 border-info">
+                          <i class="bi bi-info-circle"></i>
+                        </a>
+                      </OverlayTrigger>
                       <label for="conf_pass">Confirm Password:</label>
                       <input type="conf_pass" formControlName="conf_pass" class="form-control"></input>
                     </div>
@@ -67,9 +102,7 @@ export default class Register extends React.Component {
                 </div>
 
               </form>
-
             </div >
-
           </div>
 
           <div class="text-center mt-5">
