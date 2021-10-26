@@ -1,0 +1,8 @@
+﻿0,user_click_on_page
+1,user_click_off_page
+2,user_click_link
+3,user_answer_question
+4,user_change_question_answer
+5,user_turn_page_forward
+6,user_turn_page_backward
+7,user_enter_text_response
