@@ -5,7 +5,8 @@ Wallet_EDUStorybook/
 Wallet_EDUStorybook.zip
 
 # Oracle Cloud Details
-*.pem
+Chum-Bucket.pem
+oracle_bucket.json
 
 # Mac OS
 .DS_Store
