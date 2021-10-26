@@ -4,6 +4,10 @@ oracle_dir.txt
 Wallet_EDUStorybook/
 Wallet_EDUStorybook.zip
 
+# Oracle Cloud Details
+Chum-Bucket.pem
+oracle_bucket.json
+
 # Mac OS
 .DS_Store
 
