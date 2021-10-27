@@ -34,6 +34,19 @@ Table of Contents:
 }
 ```
 
+## Authorization
+
+When users are authenticated by the `POST /login` endpoint, they are given a JSON Web Token (JWT) that holds the following information:
+
+```
+{
+    "iat": Issue At Time, when this token was issued
+    "session": SESSION_ID in the USER_SESSION table
+    "sub": USER_ID of the user
+    "permission": ADMIN of the user
+}
+```
+
 ## Login
 
 `POST /login`

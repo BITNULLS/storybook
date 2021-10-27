@@ -1,3 +1,8 @@
+# Mac OS
+.DS_Store
+
+# === Backend ===
+
 # Oracle Connection details
 oracle_key.json
 oracle_dir.txt
@@ -8,8 +13,9 @@ Wallet_EDUStorybook.zip
 Chum-Bucket.pem
 oracle_bucket.json
 
-# Mac OS
-.DS_Store
+# Other Sensitives
+backend/data/domain.txt
+backend/data/jwt.key
 
 # === Node JS ===
 
