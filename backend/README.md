@@ -16,10 +16,12 @@ To get this server running, you need to follow these steps:
  5. Paste the directory filepath of Oracle Instant Client in the `.txt`.
  6. [Download our `oracle_key.json`](https://drive.google.com/file/d/1o50RcKhDWeBZyKIsH-BwOy_yQVb79pcb/view?usp=sharing), and place the file in `backend/data/`.  So you should have `backend/data/oracle_key.json`.  Keep this safe.  This contains the username, password, and URL to connect to the database.  
  7. [Download our `Wallet_EDUStorybook` wallet](https://drive.google.com/file/d/15tEPQTOutgKm5h2kJP3hRE4VO8czimP4/view?usp=sharing), and place the zip in `backend/data/` and unzip it. So you should have `backend/data/Wallet_EDUStorybook/`.  Keep this safe.  This contains the certificates necessary to authenticate a database connection.
- 8. Run `make setup` in this `backend/` directory to the install the necessary Python dependencies.  Or just run `pip3 install -r requirements.txt` for Windows.
- 9. [Install `cloudflared` according to these instructions.](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation)
- 10. You're all done!  Now execute `make run` to start the server.
- 11. Flask may have trouble running, so you will have to execute all of the `make run` commands one by one, copying from the makefile.
+ 8. [Download our `Chum-Bucket.pem`](https://drive.google.com/file/d/13v0AyIzHgV9XOMgK7hvzoygNoGmVzvdU/view?usp=sharing), and place the file in the `backend/data/`. So you should have `backend/data/Chum-Bucket.pem`. Also keep this safe.
+ 9. [Download our `jwt.key`](https://drive.google.com/file/d/1fmK-E8HQQed24HzE2YslwGOTGNA4WDU5/view?usp=sharing), and place the file in the `backend/data/`. So you should have `backend/data/jwt.key`
+ 10. Run `make setup` in this `backend/` directory to the install the necessary Python dependencies.  Or just run `pip3 install -r requirements.txt` for Windows.
+ 11. [Install `cloudflared` according to these instructions.](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation)
+ 12. You're all done!  Now execute `make run` to start the server.
+ 13. Flask may have trouble running, so you will have to execute all of the `make run` commands one by one, copying from the makefile.
 
 ## How to Test the API
 
