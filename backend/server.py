@@ -80,7 +80,7 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         #Email Command
         email_command = "ssmtp " + user_email + " < " + "tmp/" + file_name
         os.system(email_command)
-        os.remove(file_name)
+        os.remove("tmp/" + file_name)
         return True
     except:
         print("Exeption occurred during email process.")
