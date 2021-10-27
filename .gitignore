@@ -1,3 +1,6 @@
+# Email Folder
+backend/tmp/
+
 # Oracle Connection details
 oracle_key.json
 oracle_dir.txt
