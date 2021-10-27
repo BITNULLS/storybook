@@ -6,6 +6,8 @@ import cx_Oracle
 import json
 import bcrypt
 import uuid 
+import datetime
+import os
 
 app = Flask(__name__)
 
@@ -45,6 +47,53 @@ config = None
 with open('data/config.json') as jsonfile:
     config = json.load(jsonfile)
 assert config is not None 
+
+def send_email(user_name: str, user_email: str, admin_name: str, admin_email: str, subject: str, body: str) -> bool:
+    """
+    Creates and sends an email to a user
+    :param user_name: The name of the user
+    :param to_email: The email of the user
+    :param admin_name: Admin of user's study
+    :param admin_email: Admin's email
+    :param subject: Subject of the email
+    :param body: Body of the email; where actual text is placed
+    :return: 
+    """
+    if config['production'] == False:
+        return True
+
+    # Write Email
+    if not os.path.isdir('tmp'):
+        os.mkdir('tmp')
+    try:
+        to_line = "To: " + user_name + " <" + user_email + ">\n"
+        from_line = "From: EDU Storybooks <edustorybooks@gmail.com>\n"
+        reply_to_line = "Reply-To: " + admin_name + " <" + admin_email + ">\n"
+        subject_line = "Subject: " + subject + "\n"
+        body_lines = body
+        email_text = to_line + from_line + reply_to_line + subject_line + body_lines
+        file_name = user_name + datetime.datetime.now().strftime("%m%d%Y%H%M%S") + ".txt"
+        email = open("tmp/" + file_name, "w+")
+        email.write(email_text)
+        email.close
+
+        #Email Command
+        email_command = "ssmtp " + user_email + " < " + "tmp/" + file_name
+        os.system(email_command)
+        os.remove("tmp/" + file_name)
+        del to_line
+        del from_line
+        del reply_to_line
+        del subject_line
+        del body_lines
+        del email_text
+        del file_name
+        return True
+    except:
+        print("Exeption occurred during email process.")
+        return False
+
+
 
 def validate_login(auth, id, origin=None, permission=0):
     """

@@ -1,5 +1,5 @@
 {
-    "production": "false",
+    "production": false,
     "login_duration": 86400,
     "_login_duration": "How many seconds can a user login for before needing to sign in again",
     "origin": "localhost",
