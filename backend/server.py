@@ -18,6 +18,7 @@ app = Flask(__name__)
 # regexes
 # they're faster compiled, and they can be used throughout
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
+re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
@@ -386,9 +387,76 @@ def register():
 
 @app.route("/password/forgot", methods=['POST'])
 def password_forgot(): 
+    # check that all expected inputs are received
+    try:
+        assert 'email' in request.form
+        assert 'password' in request.form
+        assert 'first_name' in request.form
+        assert 'last_name' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "A field was not provided"
+        }
+
+    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    if re_email.match( request.form['email'] ) is None or \
+        re_alphanumeric8.match( request.form['password'] ) is None or \
+        re_alphanumeric2.match( request.form['first_name'] ) is None or \
+        re_alphanumeric2.match( request.form['last_name'] ) is None:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "Some field failed a sanitize check. The POSTed fields should be alphanumeric, longer than 8 characters."
+        }
+
+    # all good, now query database
+    email = (request.form['email']).lower().strip()
+    first_name = (request.form['first_name']).lower().strip()
+    last_name = (request.form['last_name']).lower().strip()
+    password = (request.form['password']).lower().strip()
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "select * from USER_PROFILE where email='" + email + "'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+    
+    result = cursor.fetchone() 
+    if result is not None:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Email is already registered."
+        }
+    
+    user_id = str(uuid.uuid4()) # generate a unique token for a user
+
+    try:
+        cursor.execute(
+            "INSERT into USER_PROFILE (email, first_name, last_name, password) VALUES ('" +
+            email + ", " + first_name + ", " + last_name + ", " + password + +", " + ");'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
     return {
-        "...": "..."
+        "status": "ok"
     }
+
 
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
