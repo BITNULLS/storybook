@@ -1,7 +1,11 @@
+
 # Mac OS
 .DS_Store
 
 # === Backend ===
+
+# Email Folder
+backend/tmp/
 
 # Oracle Connection details
 oracle_key.json
