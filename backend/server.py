@@ -17,7 +17,7 @@ app = Flask(__name__)
 # regexes
 # they're faster compiled, and they can be used throughout
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
-re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
+re_hex32 = re.compile(r"[a-fA-F0-9]{32,33}")
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 # database connection
@@ -93,7 +93,7 @@ def validate_login(auth, id, origin=None, permission=0):
         }
     """
     
-    if re_hex36dash.match( id ) is None:
+    if re_hex32.match( id ) is None:
         return {
             "status": "fail",
             "fail_no": 3,
@@ -104,13 +104,13 @@ def validate_login(auth, id, origin=None, permission=0):
 
     try:
         cursor.execute(
-            "select p.admin, s.session_id, s.user_id, s.last_login, s.active from USER_SESSION s inner join USER_PROFILE p ON s.user_id = p.user_id where user_id='" + id + "'"
+            "select USER_PROFILE.admin, USER_SESSION.session_id, USER_SESSION.user_id, USER_SESSION.last_login, USER_SESSION.active from USER_SESSION inner join USER_PROFILE  ON USER_SESSION.user_id = USER_PROFILE.user_id where USER_PROFILE.user_id='" + id + "'"
         )
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
             "fail_no": 4,
-            "message": "Error when querying database.",
+            "message": "Error when querying database. line 113",
             "database_message": str(e)
         }
     
@@ -204,15 +204,17 @@ def login():
         }
     
     #print(result)
-    #print(result[8])
-    if not bcrypt.checkpw( request.form['password'].encode('utf8'), result[8].encode('utf8') ):
+    # print(result[8])
+    print(type(result[8]))
+
+    if not bcrypt.checkpw( request.form['password'].encode('utf8'), result[7].encode('utf8') ):
         return {
             "status": "fail",
             "fail_no": 5,
             "message": "Password is incorrect."
         }
     
-    user_id = result[10]
+    user_id = result[9]
     session_id = str(uuid.uuid4()) # generate a unique token for a user
     
     try:
@@ -232,6 +234,7 @@ def login():
         "message": "Successfully authenticated",
         "sub": user_id
     })
+
     res.set_cookie(
         "Authorization", 
         session_id, 
@@ -336,39 +339,8 @@ def admin_page_add():
         "...": "..."
     }
 
-def create_csv(query_results, headers):
-    """
-    method to export data to csv
-    - parses headers and query table to create array of rows from table
-    - returns csv-formatted string
-    """
-    # lmap = map(lambda x:n.extend(map(x))
-    # print(lmap)
-    print(query_results)
-    str1 = ''.join(list(map(lambda x: ",".join(tuple(map(lambda i: str(i), x))) + "\n", query_results)))
-    # str1 = map(lambda x: tuple(map(lambda i: str(i), x)), query_results)
-
-    print("**********")
-    print(str1)
-
-    # new string data equal to headers string
-    data = headers + "\n"
-
-    # add tuple data to data string
-    # for row in query_results:
-    #     print(row)
-    #     new_row = ""
-    #     for column in row:
-    #             new_row += str(column) + ","
-    #     data = data + new_row + "\n"
-
-    return data
-
 @app.route("/admin/user", methods=['POST'])
 def admin_download_user_data():
-
-    hashed = bcrypt.hashpw('KARAPELSTER1234'.encode('utf8'), bcrypt.gensalt())
-    print(hashed)
 
     """
     Exports user profile data to a csv file
@@ -389,13 +361,13 @@ def admin_download_user_data():
     # if vl != True:
     #     return vl
 
+    print("passed auth")
     # connect to database
     cursor = connection.cursor()
 
     # select query
     try:
-        cursor.execute("\
-        select user_profile.username, \
+        cursor.execute("select\
         user_profile.email, \
         user_profile.first_name, \
         user_profile.last_name, \
@@ -467,13 +439,13 @@ def admin_download_action_data():
         action.action_start, \
         action.action_stop, \
         book.book_name, \
-        action_code.code_description, \
-        action_details.details \
+        action_key.action_name, \
+        action_detail.detail_description \
         from user_profile \
         inner join action on user_profile.user_id = action.user_id \
         inner join book on action.book_id = book.book_id \
-        inner join action_code on action.action_code = action_code.action_code \
-        inner join action_details on action.detail_id = action_details.detail_id")
+        inner join action_detail on action_detail.detail_id = action.detail_id \
+        inner join action_key on action_detail.action_id = action_key.action_id")
 
     except cx_Oracle.Error as e:
         return {
