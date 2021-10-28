@@ -1,3 +1,9 @@
+
+# Mac OS
+.DS_Store
+
+# === Backend ===
+
 # Email Folder
 backend/tmp/
 
@@ -11,8 +17,9 @@ Wallet_EDUStorybook.zip
 Chum-Bucket.pem
 oracle_bucket.json
 
-# Mac OS
-.DS_Store
+# Other Sensitives
+backend/data/domain.txt
+backend/data/jwt.key
 
 # === Node JS ===
 

@@ -3,3 +3,4 @@ cx-Oracle
 bcrypt
 cryptography
 oci
+pyjwt

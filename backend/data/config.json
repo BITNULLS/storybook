@@ -2,6 +2,16 @@
     "production": false,
     "login_duration": 86400,
     "_login_duration": "How many seconds can a user login for before needing to sign in again",
-    "origin": "localhost",
-    "_origin": "This is the domain name of the host that we will need to update later"
+    "sensitives": {
+        "folders": {
+            "wallet": "data/Wallet_EDUStorybook"
+        },
+        "files": {
+            "domain": "data/domain.txt",
+            "jwt_key": "data/jwt.key",
+            "oracle_dir": "data/oracle_dir.txt",
+            "oracle_key": "data/oracle_key.json"
+        }
+    },
+    "jwt_alg": "HS256"
 }

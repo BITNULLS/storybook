@@ -34,6 +34,19 @@ Table of Contents:
 }
 ```
 
+## Authorization
+
+When users are authenticated by the `POST /login` endpoint, they are given a JSON Web Token (JWT) that holds the following information:
+
+```
+{
+    "iat": Issue At Time, when this token was issued
+    "session": SESSION_ID in the USER_SESSION table
+    "sub": USER_ID of the user
+    "permission": ADMIN of the user
+}
+```
+
 ## Login
 
 `POST /login`
@@ -58,8 +71,7 @@ On success,
 ```
 
 Two things happen:
- - An **`Authorization`** cookie of 32 characters is set, which validates your login session.
- - You are given the **`sub`** (subject; user ID) of your account, which must be sent with every subsequent request.
+ - An **`Authorization: Bearer <token>`** cookie is set, which validates your login session.
 
 But this can fail because of,
 
