@@ -2,3 +2,5 @@ flask
 cx-Oracle
 bcrypt
 cryptography
+oci
+pyjwt
