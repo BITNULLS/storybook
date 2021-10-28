@@ -381,12 +381,6 @@ def logout():
     
 @app.route("/register", methods=['POST'])
 def register():
-    return {
-        "...": "..."
-    }
-
-@app.route("/password/forgot", methods=['POST'])
-def password_forgot(): 
     # check that all expected inputs are received
     try:
         assert 'email' in request.form
@@ -456,7 +450,13 @@ def password_forgot():
     return {
         "status": "ok"
     }
+    
 
+@app.route("/password/forgot", methods=['POST'])
+def password_forgot(): 
+    return {
+        "...": "..."
+    }
 
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
