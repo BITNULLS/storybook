@@ -436,8 +436,16 @@ def register():
 
     try:
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, password) VALUES ('" +
-            email + ", " + first_name + ", " + last_name + ", " + password + +", " + ");'"
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, created_on, password, study_id) VALUES ('" 
+            + email + ", " 
+            + first_name + ", " 
+            + last_name + ", " 
+            + admin + ", " 
+            + school_id + ", " 
+            + created_on + ", " 
+            + password + ", " 
+            + study_id + ", " 
+            + ", " + ");'"
         )
     except cx_Oracle.Error as e:
         return {
