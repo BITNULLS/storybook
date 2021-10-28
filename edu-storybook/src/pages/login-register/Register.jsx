@@ -34,14 +34,14 @@ export default class Register extends React.Component {
                 <div class="row">
                   <div class="col-12 col-sm-6">
                     <div class="form-group mb-4">
-                      <label for="username">Username:</label>
+                      <label for="username">Email Address:</label>
                       <input type="text" formControlName="username" class="form-control"></input>
                     </div>
                   </div>
 
                   <div class="col-12 col-sm-6">
                     <div class="form-group mb-4">
-                      <label for="email">Email Address:</label>
+                      <label for="email">Take Part Study:</label>
                       <input type="email" formControlName="email" class="form-control"></input>
                     </div>
                   </div>
