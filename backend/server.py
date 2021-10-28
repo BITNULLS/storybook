@@ -150,7 +150,7 @@ def validate_login(auth: str, permission=0):
         return {
             "status": "fail",
             "fail_no": 1,
-            "message": "Either the Authorization or Origin header, user ID, or permission level was not provided."
+            "message": "The Authorization header was not provided."
         }
 
     if 'Bearer' in auth:

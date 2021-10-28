@@ -71,8 +71,7 @@ On success,
 ```
 
 Two things happen:
- - An **`Authorization`** cookie of 32 characters is set, which validates your login session.
- - You are given the **`sub`** (subject; user ID) of your account, which must be sent with every subsequent request.
+ - An **`Authorization: Bearer <token>`** cookie is set, which validates your login session.
 
 But this can fail because of,
 
