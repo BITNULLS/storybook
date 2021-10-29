@@ -18,12 +18,17 @@ import { Link } from "react-router-dom";
             <div class="card-body">
               <form>
                 
-                <div class="form-group">
-                  <button class="btn btn-primary" 
-                    style = {{minWidth: 180, margin: 10}}>Upload New Book
-                  </button >
+                <div>
+                  <input id="file-upload" type="file" accept="pdf/*" hidden="true"/>
+                    <label for="file-upload">
+                      <span
+                        id="file-upload-btn" 
+                        class="btn btn-primary"
+                        style = {{minWidth: 180, margin: 10}}>Upload New Book
+                      </span>
+                    </label>
                 </div>
-                
+                    
                 <div class="form-group">             
                   <Link to="/EditBook">
                     <button class="btn btn-primary"
