@@ -461,16 +461,14 @@ def admin_download_user_data():
     """
 
     # validate that user can access data
-    # vl = validate_login( 
-    #     request.cookies.get('Authorization'), 
-    #     request.form['sub'],
-    #     #request.headers['Origin'],
-    #     permission=0
-    # )
-    # if vl != True:
-    #     return vl
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl
 
-    print("passed auth")
     # connect to database
     cursor = connection.cursor()
 
@@ -501,7 +499,7 @@ def admin_download_user_data():
     # column headers for csv
     headers = 'Username,Email,First Name,Last Name,Created On,Last Login,School\n'
    
-    # create csv response object
+    # parse response tuple create csv response object
     response = Response(headers + ''.join(list(map(lambda x: ",".join(tuple(map(lambda i: str(i), x))) + "\n", data))), mimetype="text,csv",headers={"Content-disposition":"attachment;filename=user_data.csv"})
     
     # close connection
@@ -530,14 +528,13 @@ def admin_download_action_data():
     """
 
     # validate that user can access data
-    # vl = validate_login( 
-    #     request.cookies.get('Authorization'), 
-    #     request.form['sub'],
-    #     #request.headers['Origin'],
-    #     permission=0
-    # )
-    # if vl != True:
-    #     return vl
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl
 
     # connect to database
     cursor = connection.cursor()
@@ -570,7 +567,7 @@ def admin_download_action_data():
     # column headers for csv
     headers = 'Email,Start,Stop,Book Name,Action,Details\n'
    
-    # create csv response object
+    # parse response tuple and create csv response object
     response = Response(headers + ''.join(list(map(lambda x: ",".join(tuple(map(lambda i: str(i), x))) + "\n", data))), mimetype="text,csv",headers={"Content-disposition":"attachment;filename=user_data.csv"})
     
     # close connection
