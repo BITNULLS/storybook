@@ -410,6 +410,7 @@ def register():
     first_name = (request.form['first_name']).lower().strip()
     last_name = (request.form['last_name']).lower().strip()
     password = (request.form['password']).lower().strip()
+    admin = (request.form['admin']).lower().strip()
 
     cursor = connection.cursor()
     try:
