@@ -497,16 +497,30 @@ def admin_download_user_data():
     data = cursor.fetchall()
 
     # column headers for csv
-    headers = 'Username,Email,First Name,Last Name,Created On,Last Login,School\n'
-   
-    # parse response tuple create csv response object
-    response = Response(headers + ''.join(list(map(lambda x: ",".join(tuple(map(lambda i: str(i), x))) + "\n", data))), mimetype="text,csv",headers={"Content-disposition":"attachment;filename=user_data.csv"})
-    
+    headers = ["Username","Email","First Name","Last Name","Created On","Last Login","School"]
+
+    # create filename with unique guid to prevent duplicates
+    filename = "data/csv_exports/user-" + str(uuid.uuid4()) + ".csv"
+
+    # write data to new csv file in data/csv_exports
+    with open(filename, "w", newline = "") as csvfile:
+        
+        # init csv writer
+        writer = csv.writer(csvfile)
+
+        # add headers
+        writer.writerow(headers)
+
+        # iterate through data -> data is a list of tuples
+        for row in list(map(lambda x: tuple(map(lambda i: str(i), x)), data)):
+            writer.writerow(row)
+
     # close connection
     connection.close()
 
     try:
-        return response
+        # return response
+        return send_file(filename, mimetype="text/csv", attachment_filename = "user.csv", as_attachment = True)
 
     except Exception as e:
         return {
@@ -565,16 +579,31 @@ def admin_download_action_data():
     data = cursor.fetchall()
 
     # column headers for csv
-    headers = 'Email,Start,Stop,Book Name,Action,Details\n'
-   
-    # parse response tuple and create csv response object
-    response = Response(headers + ''.join(list(map(lambda x: ",".join(tuple(map(lambda i: str(i), x))) + "\n", data))), mimetype="text,csv",headers={"Content-disposition":"attachment;filename=user_data.csv"})
-    
+    headers = ["Email","Start","Stop","Book Name","Action","Details"]
+
+    # create filename with unique guid to prevent duplicates
+    filename = "data/csv_exports/action-" + str(uuid.uuid4()) + ".csv"
+
+    # write data to new csv file in data/csv_exports
+    with open(filename, "w", newline = "") as csvfile:
+        
+        # init csv writer
+        writer = csv.writer(csvfile)
+
+        # add headers
+        writer.writerow(headers)
+
+        # iterate through data -> data is a list of tuples
+        for row in list(map(lambda x: tuple(map(lambda i: str(i), x)), data)):
+            writer.writerow(row)
+
     # close connection
     connection.close()
 
     try:
-        return response
+        # return response
+        return send_file(filename, mimetype="text/csv", attachment_filename = "action.csv", as_attachment = True)
+
 
     except Exception as e:
         return {
