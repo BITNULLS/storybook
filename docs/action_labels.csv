@@ -1,0 +1,14 @@
+0,user_book_open
+1,user_book_close
+2,user_click_page
+3,user_click_link
+4,user_mouse_page_exit
+5,user_mouse_page_enter
+6,user_tab_exit
+7,user_tab_enter
+8,user_question_answer
+9,user_question_answer_change
+10,user_turn_page_forward
+11,user_turn_page_backward
+12,user_text_response_enter
+13,user_text_response_exit

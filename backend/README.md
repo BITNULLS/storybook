@@ -16,9 +16,13 @@ To get this server running, you need to follow these steps:
  5. Paste the directory filepath of Oracle Instant Client in the `.txt`.
  6. [Download our `oracle_key.json`](https://drive.google.com/file/d/1o50RcKhDWeBZyKIsH-BwOy_yQVb79pcb/view?usp=sharing), and place the file in `backend/data/`.  So you should have `backend/data/oracle_key.json`.  Keep this safe.  This contains the username, password, and URL to connect to the database.  
  7. [Download our `Wallet_EDUStorybook` wallet](https://drive.google.com/file/d/15tEPQTOutgKm5h2kJP3hRE4VO8czimP4/view?usp=sharing), and place the zip in `backend/data/` and unzip it. So you should have `backend/data/Wallet_EDUStorybook/`.  Keep this safe.  This contains the certificates necessary to authenticate a database connection.
- 8. Run `make setup` in this `backend/` directory to the install the necessary Python dependencies.  Or just run `pip3 install -r requirements.txt` for Windows.
- 9. You're all done!  Now execute `make run` to start the server.
- 10. Flask may have trouble running, so you will have to execute all of the `make run` commands one by one, copying from the makefile.
+ 8. [Download our `Chum-Bucket.pem`](https://drive.google.com/file/d/13v0AyIzHgV9XOMgK7hvzoygNoGmVzvdU/view?usp=sharing), and place the file in the `backend/data/`. So you should have `backend/data/Chum-Bucket.pem`. Also keep this safe.
+ 9. [Download our `jwt.key`](https://drive.google.com/file/d/1fmK-E8HQQed24HzE2YslwGOTGNA4WDU5/view?usp=sharing), and place the file in the `backend/data/`. So you should have `backend/data/jwt.key`
+ 10. Create a `domain.txt` in the `backend/data/` folder, such that `backend/data/domain.txt` file exists.
+ 11. Run `make setup` in this `backend/` directory to the install the necessary Python dependencies.  Or just run `pip3 install -r requirements.txt` for Windows.
+ 12. [Install `cloudflared` according to these instructions.](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation)
+ 13. You're all done!  Now execute `make run` to start the server.
+ 14. Flask may have trouble running, so you will have to execute all of the `make run` commands one by one, copying from the makefile.
 
 ## How to Test the API
 
@@ -31,10 +35,13 @@ For now, we will use Postman to send test requests to the backend server.
  5. Install the `Postman Interceptor` client into your web browser.
  6. Go back to Postman, and click on the circular satellite icon, then click the `Use interceptor` button.
  7. The satellite icon should turn orange.
- 8. Make sure the backend server is actually running with `make run`
- 9. Use `http://localhost:5000/` as the `Enter request URL`
- 10. **Critical**: To test POST form data, use `Body` tab, and select the `x-www-form-urlencoded` option.
- 11. **Critical**: In the `Headers` tab, add a new key value pair: Key=`Origin` and value=`localhost`.
+ 8.  In a terminal, run the command `cloudflared tunnel --url http://localhost:5000`
+ 9.  Copy the url that Cloudflare gives you in the box, it looks like `https://word1-word2...trycloudflare.com/`
+ 10. Paste in the `Enter request URL` field of Postman.
+ 11. Paste it in the `backend/data/domain.txt` file you created.
+ 12. Make sure the backend server is actually running with `make run`
+ 13. **Critical**: To test POST form data, use `Body` tab, and select the `x-www-form-urlencoded` option.
+ 14. **Critical**: In the `Headers` tab, add a new key value pair: Key=`Origin` and value=`localhost`.
 
 ## Notes
 

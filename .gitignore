@@ -1,11 +1,25 @@
+
+# Mac OS
+.DS_Store
+
+# === Backend ===
+
+# Email Folder
+backend/tmp/
+
 # Oracle Connection details
 oracle_key.json
 oracle_dir.txt
 Wallet_EDUStorybook/
 Wallet_EDUStorybook.zip
 
-# Mac OS
-.DS_Store
+# Oracle Cloud Details
+Chum-Bucket.pem
+oracle_bucket.json
+
+# Other Sensitives
+backend/data/domain.txt
+backend/data/jwt.key
 
 # === Node JS ===
 
