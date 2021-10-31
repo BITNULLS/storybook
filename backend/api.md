@@ -6,6 +6,8 @@ conditions and returns.
 Table of Contents:
  - [Meta Notes](#meta_notes)
  - [`login/`](#login)
+ - [`/password/forgot/`](#/password/forgot)
+ - [`/password/reset/`](#/password/reset)
 
 ## Meta Notes
 
@@ -81,4 +83,17 @@ But this can fail because of,
  4. No email matches found
  5. Password incorrect
  6. Error when updating the database
+
+
+ ## Password Forgot
+
+`POST /password/forgot/`
+
+## Password Reset
+
+`POST /password/reset/`
+
+
+
+
 

@@ -378,18 +378,103 @@ def logout():
     res.set_cookie('Authorization', '', expires=0)
     return res
     
+
 @app.route("/register", methods=['POST'])
 def register():
     return {
         "...": "..."
     }
 
+#inputs: email address
 @app.route("/password/forgot", methods=['POST'])
 def password_forgot(): 
-    return {
-        "...": "..."
-    }
 
+    # check that all expected inputs are received
+    try:
+        assert 'email' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Email was not provided"
+        }, 400, {"Content-Type": "application/json"}
+        
+        # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    if re_email.match( request.form['email'] ) is None:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "Email failed sanitize check. The POSTed fields should be alphanumeric"
+        }, 400, {"Content-Type": "application/json"}
+    
+  # all good, now query database
+    email = (request.form['email']).lower().strip()
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "select * from USER_PROFILE where email='" + email + "'"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    
+    result = cursor.fetchone() 
+    if result is None:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "No email matches what was passed."
+        }, 400, {"Content-Type": "application/json" }
+    
+    
+    # is this right?
+    user_id = result['USER_ID']
+    session_id = str(uuid.uuid4()) # generate a unique token for a user
+    
+    try:
+        cursor.execute(
+            "update USER_SESSION set session_id='" + session_id + "', active=1 where user_id='" + str(user_id) + "'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 6,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    
+    iat = int(time.time())
+
+    res = make_response({
+        "status": "ok",
+        "message": "Successfully authenticated",
+        "iat": iat
+    })
+    token = jwt.encode({
+        "iat": iat,
+        "session": session_id,
+        "sub": user_id,
+        "permission": result['ADMIN']
+    }, jwt_key, algorithm=config['jwt_alg'])
+    res.set_cookie(
+        "Authorization", 
+        "Bearer " + token, 
+        max_age=config["login_duration"],
+        #domain=domain_name#, # TODO: uncomment in production
+        #secure=True,
+        #httponly=True
+    )
+
+    return res
+
+
+#new password updates old password in db; must check if both fields (of new password) match
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
     return {
