@@ -6,7 +6,6 @@ import cx_Oracle
 import json
 import bcrypt
 import uuid 
-import datetime
 import jwt
 import os
 import time
