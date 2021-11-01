@@ -11,11 +11,11 @@ import bcrypt
 import uuid 
 import datetime
 import csv
-import io
 import jwt
 import os
 import time
 import hashlib 
+import sys
 
 # ==================================== setup ===================================
 
@@ -81,6 +81,9 @@ connection = cx_Oracle.connect(
     oracle_config['connect_string']
 )
 print('connected')
+
+# file watchdog
+
 
 # ============================== helper functions ==============================
 
@@ -249,6 +252,8 @@ def remove_watchdog(remove_queue):
 
     Where "expiration" is epoch time of file to be deleted.
     """
+    print('Remove Watchdog is now running')
+    sys.stdout.flush()
     while True:
         destruct = remove_queue.get(True) # wait until remove queue is gotten
         for file in destruct:
@@ -264,7 +269,34 @@ def remove_watchdog(remove_queue):
 
 remove_queue = Queue()
 rmwd = Process(target=remove_watchdog, args=(remove_queue,))
-rmwd.start()
+
+def future_del_temp(filepath: str='', files: list=[]) -> None:
+    """
+    Marks the temporary files that should be removed later by the Remove 
+    Watchdog in the future.
+
+    NOTE: Only filepath or files args should be valued, not both (XOR).
+
+    :param filepath: The path to a file that should be removed.
+    :param files: A list of files that should be removed.
+    :type filepath: str
+    :type files: str
+    :returns: None.
+    """
+    assert not (filepath == '' and len(files) == 0), 'filepath and files args cannot both be empty'
+    assert not (filepath != '' and len(files) != 0), 'filepath and files args cannot both be valued'
+    if rmwd.is_alive() == False:
+        rmwd.start()
+    if len(files) == 0:
+        remove_queue.put([
+            {
+                "filepath": filepath,
+                "expiration": int(time.time()) + config['temp_file_expire']
+            }
+        ])
+    elif len(filepath) == 0:
+        exp = int(time.time()) + config['temp_file_expire']
+        remove_queue.put(map(lambda f: {"filepath": f, "expiration": exp}, files))
 
 # =================================== routes ===================================
 
@@ -534,7 +566,15 @@ def admin_download_user_data():
     data = cursor.fetchall()
 
     # column headers for csv
-    headers = ["Username","Email","First Name","Last Name","Created On","Last Login","School"]
+    headers = [
+        "Username",
+        "Email",
+        "First Name",
+        "Last Name",
+        "Created On",
+        "Last Login",
+        "School"
+    ]
 
     # create filename with unique guid to prevent duplicates
     filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
@@ -549,6 +589,7 @@ def admin_download_user_data():
         for row in list(map(lambda x: tuple(map(lambda i: str(i), x)), data)):
             writer.writerow(row)
 
+    # calculate etag for cloudflare
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
@@ -558,12 +599,7 @@ def admin_download_user_data():
             sha1.update(data)
     
     # queue the file to be removed
-    remove_queue.put([
-        {
-            "filepath": filename,
-            "expiration": int(time.time()) + config['temp_file_expire']
-        }
-    ])
+    future_del_temp(filename)
 
     try:
         # return response
@@ -624,7 +660,14 @@ def admin_download_action_data():
     data = cursor.fetchall()
 
     # column headers for csv
-    headers = ["Email", "Start", "Stop", "Book Name", "Action", "Details"]
+    headers = [
+        "Email", 
+        "Start", 
+        "Stop", 
+        "Book Name", 
+        "Action", 
+        "Details"
+    ]
 
     # create filename with unique guid to prevent duplicates
     filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
@@ -649,12 +692,7 @@ def admin_download_action_data():
             sha1.update(data)
     
     # queue the file to be removed
-    remove_queue.put([
-        {
-            "filepath": filename,
-            "expiration": int(time.time()) + config['temp_file_expire']
-        }
-    ])
+    future_del_temp(filename)
 
     try:
         # return response
@@ -669,4 +707,5 @@ def admin_download_action_data():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port="5000", debug=True)
+
 
