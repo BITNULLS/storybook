@@ -10,6 +10,8 @@ import datetime
 import jwt
 import os
 import time
+import smtplib
+import ssl
 
 # ==================================== setup ===================================
 
@@ -75,6 +77,12 @@ connection = cx_Oracle.connect(
 )
 print('connected')
 
+# email login
+with open('email.password') as email_config:
+    email_login = json.load(email_config)
+    email_password = email_login['password']
+
+
 # ============================== helper functions ==============================
 
 def label_results_from(cursor: cx_Oracle.Cursor):
@@ -132,7 +140,7 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
     :param admin_email: Admin's email
     :param subject: Subject of the email
     :param body: Body of the email; where actual text is placed
-    :return: 
+    :return: Boolean on whether or not the email was sent.
     """
     if config['production'] == False:
         return True
@@ -144,25 +152,30 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         to_line = "To: " + user_name + " <" + user_email + ">\n"
         from_line = "From: EDU Storybooks <edustorybooks@gmail.com>\n"
         reply_to_line = "Reply-To: " + admin_name + " <" + admin_email + ">\n"
-        subject_line = "Subject: " + subject + "\n"
+        subject_line = "Subject: " + subject + "\n\n"
         body_lines = body
         email_text = to_line + from_line + reply_to_line + subject_line + body_lines
-        file_name = user_name + datetime.datetime.now().strftime("%m%d%Y%H%M%S") + ".txt"
-        email = open("tmp/" + file_name, "w+")
-        email.write(email_text)
-        email.close
 
         #Email Command
-        email_command = "ssmtp " + user_email + " < " + "tmp/" + file_name
-        os.system(email_command)
-        os.remove("tmp/" + file_name)
+        try:
+            smtp = 'smtp.gmail.com'
+            port = 587
+            context = ssl.create_default_context()
+            server = smtplib.SMTP(smtp, port)
+            server.starttls(context=context)
+            server.login('edustorybooks@gmail.com', email_password)
+            server.sendmail("edustorybooks@gmail.com", user_email, email_text)
+        except Exception as e:
+            print("Email Server Error")
+            print(e)
+        finally:
+            server.quit()
         del to_line
         del from_line
         del reply_to_line
         del subject_line
         del body_lines
         del email_text
-        del file_name
         return True
     except:
         print("Exeption occurred during email process.")
