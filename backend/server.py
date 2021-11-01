@@ -82,9 +82,6 @@ connection = cx_Oracle.connect(
 )
 print('connected')
 
-# file watchdog
-
-
 # ============================== helper functions ==============================
 
 def label_results_from(cursor: cx_Oracle.Cursor):
