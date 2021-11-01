@@ -3,6 +3,7 @@ from flask import request
 from flask import Response
 from flask import send_file
 from flask import make_response
+from multiprocessing import Process, Pipe, Queue
 import re
 import cx_Oracle
 import json
@@ -14,6 +15,7 @@ import io
 import jwt
 import os
 import time
+import hashlib 
 
 # ==================================== setup ===================================
 
@@ -22,7 +24,8 @@ app = Flask(__name__)
 # regexes
 # they're faster compiled, and they can be used throughout
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
-re_hex32 = re.compile(r"[a-fA-F0-9]{32,33}")
+re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
+re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 # server settings to load in
@@ -227,6 +230,41 @@ def validate_login(auth: str, permission=0):
         }, 403, {"Content-Type": "application/json"}
     
     return True 
+
+# ================================ remove queue ================================
+
+def remove_watchdog(remove_queue):
+    """
+    Removes files that are passed into the queue, after a timeout. The format of
+    the remove queue is a list of dicts, with each dict containing "expiration"
+    and "filepath". It looks like
+
+    [
+        {
+            "expiration": 129941234,
+            "filepath": "temp/somefile.csv"
+        },
+        ...
+    ]
+
+    Where "expiration" is epoch time of file to be deleted.
+    """
+    while True:
+        destruct = remove_queue.get(True) # wait until remove queue is gotten
+        for file in destruct:
+            if os.path.isfile(file["filepath"]):
+                # wait for a file's expiration time to come about
+                while True:
+                    if int(time.time()) < file["expiration"]:
+                        time.sleep(10)
+                        continue
+                    else:
+                        break 
+                os.remove(file['filepath'])
+
+remove_queue = Queue()
+rmwd = Process(target=remove_watchdog, args=(remove_queue,))
+rmwd.start()
 
 # =================================== routes ===================================
 
@@ -448,7 +486,7 @@ def admin_page_add():
         "...": "..."
     }
 
-@app.route("/admin/user", methods=['POST'])
+@app.route("/admin/download/user", methods=['POST'])
 def admin_download_user_data():
 
     """
@@ -459,7 +497,6 @@ def admin_download_user_data():
     - calls create_csv(query_results, headers) to create csv-formatted string
     - creates and returns csv file using csv-formatted string
     """
-
     # validate that user can access data
     auth = request.cookies.get('Authorization')
     vl = validate_login( 
@@ -500,28 +537,37 @@ def admin_download_user_data():
     headers = ["Username","Email","First Name","Last Name","Created On","Last Login","School"]
 
     # create filename with unique guid to prevent duplicates
-    filename = "data/csv_exports/user-" + str(uuid.uuid4()) + ".csv"
+    filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
     with open(filename, "w", newline = "") as csvfile:
-        
         # init csv writer
         writer = csv.writer(csvfile)
-
         # add headers
         writer.writerow(headers)
-
         # iterate through data -> data is a list of tuples
         for row in list(map(lambda x: tuple(map(lambda i: str(i), x)), data)):
             writer.writerow(row)
 
-    # close connection
-    connection.close()
+    sha1 = hashlib.sha1()
+    with open(filename, 'rb') as f:
+        while True:
+            data = f.read(config['buffer_size'])
+            if not data:
+                break
+            sha1.update(data)
+    
+    # queue the file to be removed
+    remove_queue.put([
+        {
+            "filepath": filename,
+            "expiration": int(time.time()) + config['temp_file_expire']
+        }
+    ])
 
     try:
         # return response
-        return send_file(filename, mimetype="text/csv", attachment_filename = "user.csv", as_attachment = True)
-
+        return send_file(filename, mimetype="text/csv", attachment_filename="user.csv", as_attachment=True, etag=sha1.hexdigest())
     except Exception as e:
         return {
             "status": "fail",
@@ -530,7 +576,7 @@ def admin_download_user_data():
             "flask_message": str(e)
         }
 
-@app.route("/admin/action", methods=['POST'])
+@app.route("/admin/download/action", methods=['POST'])
 def admin_download_action_data():
     """
     Exports user action data to a csv file
@@ -540,7 +586,6 @@ def admin_download_action_data():
     - calls create_csv(query_results, headers) to create csv-formatted string
     - creates and returns csv file using csv-formatted string
     """
-
     # validate that user can access data
     auth = request.cookies.get('Authorization')
     vl = validate_login( 
@@ -579,32 +624,41 @@ def admin_download_action_data():
     data = cursor.fetchall()
 
     # column headers for csv
-    headers = ["Email","Start","Stop","Book Name","Action","Details"]
+    headers = ["Email", "Start", "Stop", "Book Name", "Action", "Details"]
 
     # create filename with unique guid to prevent duplicates
-    filename = "data/csv_exports/action-" + str(uuid.uuid4()) + ".csv"
+    filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
-    with open(filename, "w", newline = "") as csvfile:
-        
+    with open(filename, 'w', newline = '') as csvfile:
         # init csv writer
         writer = csv.writer(csvfile)
-
         # add headers
         writer.writerow(headers)
-
         # iterate through data -> data is a list of tuples
         for row in list(map(lambda x: tuple(map(lambda i: str(i), x)), data)):
             writer.writerow(row)
 
-    # close connection
-    connection.close()
+    # calculate etag
+    sha1 = hashlib.sha1()
+    with open(filename, 'rb') as f:
+        while True:
+            data = f.read(config['buffer_size'])
+            if not data:
+                break
+            sha1.update(data)
+    
+    # queue the file to be removed
+    remove_queue.put([
+        {
+            "filepath": filename,
+            "expiration": int(time.time()) + config['temp_file_expire']
+        }
+    ])
 
     try:
         # return response
-        return send_file(filename, mimetype="text/csv", attachment_filename = "action.csv", as_attachment = True)
-
-
+        return send_file(filename, mimetype="text/csv", attachment_filename="action.csv", as_attachment=True, etag=sha1.hexdigest())
     except Exception as e:
         return {
             "status": "fail",
