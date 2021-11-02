@@ -422,7 +422,7 @@ def login():
     
     try:
         cursor.execute(
-            "update USER_PROFILE set LAST_LOGIN='to_date('" + d + "', 'DD-MON-YY')' where user_id='" + str(user_id) + "'"
+            "update USER_PROFILE set LAST_LOGIN=to_date('" + d + "', 'DD-MON-YY') where user_id='" + str(user_id) + "'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -476,6 +476,7 @@ def register():
         assert 'password' in request.form
         assert 'first_name' in request.form
         assert 'last_name' in request.form
+        assert 'admin' in request.form
     except AssertionError:
         return {
             "status": "fail",
