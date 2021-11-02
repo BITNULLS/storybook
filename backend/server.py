@@ -11,6 +11,7 @@ import os
 import time
 import smtplib
 import ssl
+import oci
 
 # ==================================== setup ===================================
 
@@ -77,9 +78,31 @@ connection = cx_Oracle.connect(
 print('connected')
 
 # email login
-with open('email.password') as email_config:
+with open('data/email.password') as email_config:
     email_login = json.load(email_config)
     email_password = email_login['password']
+
+try:
+    smtp = 'smtp.gmail.com'
+    port = 587
+    context = ssl.create_default_context()
+    server = smtplib.SMTP(smtp, port)
+    server.starttls(context=context)
+    server.login('edustorybooks@gmail.com', email_password)
+except Exception as e: 
+    print("Email Server Error")
+    print(e)
+
+# Bucket Uploader/Downloader setup
+with open('data/oracle_bucket.json') as bucket_details:
+    bucket = json.load(bucket_details)
+
+assert bucket is not None, 'oracle_bucket.json file was empty'
+
+bucket_config = bucket['config']
+
+oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
+bucket_uploader = oci.object_storage.UploadManager(object_storage_client=oracle_cloud_client, allow_multipart_uploads=True, allow_parallel_uploads=True)
 
 
 # ============================== helper functions ==============================
@@ -145,40 +168,62 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         return True
 
     # Write Email
-    if not os.path.isdir('tmp'):
-        os.mkdir('tmp')
-    try:
-        to_line = "To: " + user_name + " <" + user_email + ">\n"
-        from_line = "From: EDU Storybooks <edustorybooks@gmail.com>\n"
-        reply_to_line = "Reply-To: " + admin_name + " <" + admin_email + ">\n"
-        subject_line = "Subject: " + subject + "\n\n"
-        body_lines = body
-        email_text = to_line + from_line + reply_to_line + subject_line + body_lines
+    to_line = "To: " + user_name + " <" + user_email + ">\n"
+    from_line = "From: EDU Storybooks <edustorybooks@gmail.com>\n"
+    reply_to_line = "Reply-To: " + admin_name + " <" + admin_email + ">\n"
+    subject_line = "Subject: " + subject + "\n\n"
+    body_lines = body
+    email_text = to_line + from_line + reply_to_line + subject_line + body_lines
 
-        #Email Command
-        try:
-            smtp = 'smtp.gmail.com'
-            port = 587
-            context = ssl.create_default_context()
-            server = smtplib.SMTP(smtp, port)
-            server.starttls(context=context)
-            server.login('edustorybooks@gmail.com', email_password)
-            server.sendmail("edustorybooks@gmail.com", user_email, email_text)
-        except Exception as e:
-            print("Email Server Error")
-            print(e)
-        finally:
-            server.quit()
+    #Email Command
+    try:
+        error = False
+        server = smtplib.SMTP(smtp, port)
+        server.starttls(context=context)
+        server.login('edustorybooks@gmail.com', email_password)
+        server.sendmail("edustorybooks@gmail.com", user_email, email_text)
+    except:
+        print("Exception in Email Process")
+        error = True
+    finally:
         del to_line
         del from_line
         del reply_to_line
         del subject_line
         del body_lines
         del email_text
-        return True
-    except:
-        print("Exeption occurred during email process.")
-        return False
+        if error:
+            del error
+            return False
+        else:
+            del error
+            return True
+
+
+def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
+    """
+    Uploads local file to cloud bucket
+    :param local_file_path: path to local file to upload
+    :param cloud_file_name: Name for file in cloud
+    :return: the http status code of the upload response
+    """
+    return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
+
+
+def download_bucket_file(filename):
+    """
+    Downloads files from cloud bucket
+    :param filename: The name of the file to download
+    """
+    if not os.path.isdir('bucket_files'):
+        os.mkdir('bucket_files')
+
+    obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
+    with open('bucket_files/' + filename, 'wb') as f:
+        for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
+            f.write(chunk)
+        f.close()
+
 
 def validate_login(auth: str, permission=0):
     """
