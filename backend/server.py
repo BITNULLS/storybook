@@ -416,6 +416,7 @@ def login():
         #httponly=True
     )
 
+    # Updating the Last_Login when user successfully logged in
     today = date.today()
     d = today.strftime("%d-%b-%y")
     
