@@ -537,7 +537,7 @@ def register():
             + admin + "', '"
             + school_id + "', '" 
             + study_id + "', '" 
-            + hashed
+            + hashed.decode('utf8')
             + "')"
         )
     except cx_Oracle.Error as e:
