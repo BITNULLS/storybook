@@ -24,13 +24,10 @@ app = Flask(__name__)
 # regexes
 # they're faster compiled, and they can be used throughout
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
-<<<<<<< HEAD
 re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
-=======
 re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
 re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
->>>>>>> origin
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 # server settings to load in
