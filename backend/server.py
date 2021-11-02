@@ -501,7 +501,6 @@ def register():
     email = (request.form['email']).lower().strip()
     first_name = (request.form['first_name']).lower().strip()
     last_name = (request.form['last_name']).lower().strip()
-    password = (request.form['password']).lower().strip()
     admin = (request.form['admin']).lower().strip()
     school_id = (request.form['school_id']).lower().strip()
     study_id = (request.form['study_id']).lower().strip()
@@ -526,9 +525,6 @@ def register():
             "fail_no": 4,
             "message": "Email is Already Registered."
         }
-    
-    user_id = str(uuid.uuid4()) # generate a unique token for a user
-    hashed = bcrypt.hashpw(password, bcrypt.gensalt())
 
     try:
         cursor.execute(
@@ -539,7 +535,7 @@ def register():
             + admin + "', '"
             + school_id + "', '" 
             + study_id + "', '" 
-            + hashed
+            + request.form['password'].encode('utf8')
             + "')"
         )
     except cx_Oracle.Error as e:
