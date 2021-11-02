@@ -524,7 +524,7 @@ def register():
         return {
             "status": "fail",
             "fail_no": 4,
-            "message": "Email is already registered."
+            "message": "Email is Already Registered."
         }
     
     user_id = str(uuid.uuid4()) # generate a unique token for a user
