@@ -526,6 +526,8 @@ def register():
             "message": "Email is Already Registered."
         }
 
+    hashed = bcrypt.hashpw(request.form['password'].encode('utf8'), bcrypt.gensalt())
+
     try:
         cursor.execute(
             "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
@@ -535,7 +537,7 @@ def register():
             + admin + "', '"
             + school_id + "', '" 
             + study_id + "', '" 
-            + request.form['password'].encode('utf8')
+            + hashed
             + "')"
         )
     except cx_Oracle.Error as e:
