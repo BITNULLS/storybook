@@ -528,6 +528,7 @@ def register():
         }
     
     user_id = str(uuid.uuid4()) # generate a unique token for a user
+    hashed = bcrypt.hashpw(password, bcrypt.gensalt())
 
     try:
         cursor.execute(
@@ -538,7 +539,7 @@ def register():
             + admin + "', '"
             + school_id + "', '" 
             + study_id + "', '" 
-            + password
+            + hashed
             + "')"
         )
     except cx_Oracle.Error as e:
