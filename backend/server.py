@@ -477,6 +477,8 @@ def register():
         assert 'first_name' in request.form
         assert 'last_name' in request.form
         assert 'admin' in request.form
+        assert 'school_id' in request.form
+        assert 'study_id' in request.form
     except AssertionError:
         return {
             "status": "fail",
@@ -501,6 +503,8 @@ def register():
     last_name = (request.form['last_name']).lower().strip()
     password = (request.form['password']).lower().strip()
     admin = (request.form['admin']).lower().strip()
+    school_id = (request.form['school_id']).lower().strip()
+    study_id = (request.form['study_id']).lower().strip()
 
     cursor = connection.cursor()
     try:
@@ -525,22 +529,17 @@ def register():
     
     user_id = str(uuid.uuid4()) # generate a unique token for a user
 
-    print("INSERT into USER_PROFILE (email, first_name, last_name, admin, password) VALUES ('" 
-            + email + "', '" 
-            + first_name + "', '" 
-            + last_name + "', '" 
-            + admin + "', '" 
-            + password + "', '" 
-            + "')'")
     try:
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, admin, password) VALUES ('" 
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
             + email + "', '" 
             + first_name + "', '" 
             + last_name + "', '" 
-            + admin + "', '" 
+            + admin + "', '"
+            + school_id + "', '" 
+            + study_id + "', '" 
             + password
-            + "')'"
+            + "')"
         )
     except cx_Oracle.Error as e:
         return {
