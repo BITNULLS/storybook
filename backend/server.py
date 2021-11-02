@@ -525,6 +525,13 @@ def register():
     
     user_id = str(uuid.uuid4()) # generate a unique token for a user
 
+    print("INSERT into USER_PROFILE (email, first_name, last_name, admin, password) VALUES ('" 
+            + email + "', '" 
+            + first_name + "', '" 
+            + last_name + "', '" 
+            + admin + "', '" 
+            + password + "', '" 
+            + "')'")
     try:
         cursor.execute(
             "INSERT into USER_PROFILE (email, first_name, last_name, admin, password) VALUES ('" 
@@ -532,8 +539,8 @@ def register():
             + first_name + "', '" 
             + last_name + "', '" 
             + admin + "', '" 
-            + password + "', '" 
-            + "');'"
+            + password
+            + "')'"
         )
     except cx_Oracle.Error as e:
         return {
