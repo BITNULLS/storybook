@@ -177,14 +177,13 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
 
     #Email Command
     try:
-        error = False
         server = smtplib.SMTP(smtp, port)
         server.starttls(context=context)
         server.login('edustorybooks@gmail.com', email_password)
         server.sendmail("edustorybooks@gmail.com", user_email, email_text)
     except:
         print("Exception in Email Process")
-        error = True
+        return False
     finally:
         del to_line
         del from_line
@@ -192,12 +191,6 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         del subject_line
         del body_lines
         del email_text
-        if error:
-            del error
-            return False
-        else:
-            del error
-            return True
 
 
 def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
