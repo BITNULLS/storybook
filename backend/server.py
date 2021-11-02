@@ -16,6 +16,7 @@ import os
 import time
 import hashlib 
 import sys
+from datetime import date
 
 # ==================================== setup ===================================
 
@@ -414,6 +415,21 @@ def login():
         #secure=True,
         #httponly=True
     )
+
+    today = date.today()
+    d = today.strftime("%d-%b-%y")
+    
+    try:
+        cursor.execute(
+            "update USER_PROFILE set LAST_LOGIN='to_date('" + d + "', 'DD-MON-YY')' where user_id='" + str(user_id) + "'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 7,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
 
     return res
 
