@@ -203,7 +203,7 @@ def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
     return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
 
 
-def download_bucket_file(filename):
+def download_bucket_file(filename: str) -> str:
     """
     Downloads files from cloud bucket
     :param filename: The name of the file to download
@@ -212,10 +212,12 @@ def download_bucket_file(filename):
         os.mkdir('bucket_files')
 
     obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
-    with open('bucket_files/' + filename, 'wb') as f:
+    new_file = 'bucket_files' + filename
+    with open(new_file, 'wb') as f:
         for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
             f.write(chunk)
         f.close()
+    return new_file
 
 
 def validate_login(auth: str, permission=0):
