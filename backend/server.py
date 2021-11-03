@@ -215,17 +215,35 @@ def download_bucket_file(filename: str) -> str:
     """
     Downloads files from cloud bucket
     :param filename: The name of the file to download
+    :return: the local path of the downloaded file
     """
     if not os.path.isdir('bucket_files'):
         os.mkdir('bucket_files')
 
-    obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
-    new_file = 'bucket_files' + filename
-    with open(new_file, 'wb') as f:
-        for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
-            f.write(chunk)
-        f.close()
-    return new_file
+    try:
+        obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
+        new_file = 'bucket_files' + filename
+        with open(new_file, 'wb') as f:
+            for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
+                f.write(chunk)
+            f.close()
+        return new_file
+    except oci.exceptions.ServiceError as e:
+        print(e.message)
+        print('Returning None')
+        return None
+
+
+def list_bucket_files():
+    """
+    Prints each object in the bucket on a separate line. Used for testing/checking.
+    :return: None
+    """
+    files = oracle_cloud_client.list_objects(bucket['namespace'], bucket['name'])
+    for file in files.data.objects:
+        print(file.name)
+    return None
+
 
 
 def validate_login(auth: str, permission=0):

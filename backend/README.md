@@ -43,6 +43,40 @@ For now, we will use Postman to send test requests to the backend server.
  13. **Critical**: To test POST form data, use `Body` tab, and select the `x-www-form-urlencoded` option.
  14. **Critical**: In the `Headers` tab, add a new key value pair: Key=`Origin` and value=`localhost`.
 
+ ## How to Upload/Download from the Bucket
+
+ ### Bucket Configurations Files
+
+ Requirements/Steps to Upload to the Chum-Bucket:
+
+ - Download our oracke_bucket.json and Chum-Bucket.pem, and place the files in backend/data/. These files contain the information to connect to our Cloud Bucket. This will allow you to use the functions `upload_bucket_file` and `download_bucket_file`
+ 
+ ### Upload
+ 
+ To upload, the function `upload_bucket_file` is used.
+
+ - The function takes 2 parameter:
+   - `local_file_path`: string of the local path of file to upload 
+   - `cloud_file_name`: string of the new name of file in Chum-Bucket
+ - The function will return a boolean, depending on if the file was uploaded or not.
+
+ ### Download
+
+ To download, the function `download_bucket_file` is used.
+
+ - The function takes a single parameter:
+   - `filename`: string of the name of the file in Chum-Bucket
+ - This will download the given file into the folder `bucket_files/`
+   - If the folder is not present, it will be created automatically.
+   - If the object does not exist in the bucket, `None` will be returned.
+
+### Check Bucket Contents
+
+To check the contents of the bucket, the function `list_bucket_files` is used.
+
+ - The function takes no parameters and returns `None`
+ - It will print out each file in Chum-Bucket on a new line.
+
 ## Notes
 
  - **Critical**: In `backend/data/` there needs to be a `oracle_key.json` file
