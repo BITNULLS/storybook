@@ -6,8 +6,8 @@ conditions and returns.
 Table of Contents:
  - [Meta Notes](#meta_notes)
  - [`login/`](#login)
- - [`/password/forgot/`](#/password/forgot)
- - [`/password/reset/`](#/password/reset)
+ - [`password/forgot/`](#password/forgot)
+ - [`password/reset/`](#password/reset)
 
 ## Meta Notes
 

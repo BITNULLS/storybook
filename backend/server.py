@@ -385,7 +385,7 @@ def register():
         "...": "..."
     }
 
-#inputs: email address
+# verify email address
 @app.route("/password/forgot", methods=['POST'])
 def password_forgot(): 
 
@@ -477,9 +477,48 @@ def password_forgot():
 #new password updates old password in db; must check if both fields (of new password) match
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
-    return {
-        "...": "..."
-    }
+   # check that all expected inputs are received
+    try:
+        assert 'password' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "The password was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    if re_alphanumeric8.match( request.form['password'] ) is None:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The password failed a sanitize check. The POSTed fields should be alphanumeric, longer than 8 characters."
+        }, 400, {"Content-Type": "application/json"}
+    
+    result = cursor.fetchone() 
+    if result is None:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "No email matches what was passed."
+        }, 400, {"Content-Type": "application/json"}
+
+    #print(result)
+    #print(result[8])
+    if not bcrypt.checkpw( request.form['password'].encode('utf8'), result['PASSWORD'].encode('utf8') ):
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Password is incorrect."
+        }, 400, {"Content-Type": "application/json"}
+
+    
+        #domain=domain_name#, # TODO: uncomment in production
+        #secure=True,
+        #httponly=True
+    
+
+    return res
 
 @app.route("/book", methods=['POST'])
 def get_users_books():
