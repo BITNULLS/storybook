@@ -503,17 +503,54 @@ def admin_grant_user_book_access():
         "...": "..."
     }
 
-@app.route("/admin/page/edit", methods=['POST'])
-def admin_page_edit():
-    return {
-        "...": "..."
-    }
+@app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
+def admin_page_handler():
+    # Post = adding a page
+    # Get = get (retrieve pages)
+    # Put = updating a page
+    # Delete = deleting a page
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=1
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+  
+    match request.method: 
+        case 'POST':
+            return "POST"
+        case 'GET':
+            return "GET"
+        case 'PUT':
+            return "PUT"
+        case 'DELETE':
+            return "DELETE"
+        case '': 
+            return "Invadid Operation"
+    
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "update USER_SESSION set active=0 where user_id='" + token['sub'] + "'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 8,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }
 
-@app.route("/admin/page/add", methods=['POST'])
-def admin_page_add():
-    return {
-        "...": "..."
-    }
+    res = make_response({
+        "status": "ok"
+    })
+    res.set_cookie('Authorization', '', expires=0)
+    return res
 
 @app.route("/admin/download/user", methods=['POST'])
 def admin_download_user_data():
