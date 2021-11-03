@@ -6,8 +6,13 @@ conditions and returns.
 Table of Contents:
  - [Meta Notes](#meta_notes)
  - [`login/`](#login)
+<<<<<<< HEAD
  - [`password/forgot/`](#password/forgot)
  - [`password/reset/`](#password/reset)
+=======
+ - [`admin/download/user/`](#admin/download/user)
+ - [`admin/download/action/`](#admin/download/action)
+>>>>>>> origin
 
 ## Meta Notes
 
@@ -84,6 +89,7 @@ But this can fail because of,
  5. Password incorrect
  6. Error when updating the database
 
+<<<<<<< HEAD
 
  ## Password Forgot
 
@@ -96,4 +102,37 @@ But this can fail because of,
 
 
 
+=======
+## admin/download/user/
+
+`POST /admin/download/user`
+
+This lets an admin download user data as a csv.
+
+### Inputs 
+
+none
+
+### Returns
+
+On success, returns a CSV file.
+
+The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
+
+## admin/download/action/
+
+`POST /admin/download/action`
+
+This lets an admin download user data as a csv. 
+
+### Inputs 
+
+none
+
+### Returns
+
+On success, returns a CSV file.
+
+The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
+>>>>>>> origin
 

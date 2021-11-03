@@ -2,6 +2,10 @@
     "production": false,
     "login_duration": 86400,
     "_login_duration": "How many seconds can a user login for before needing to sign in again",
+    "buffer_size": 65536, 
+    "_buffer_size": "The size of file reading buffer",
+    "temp_file_expire": 300,
+    "_temp_file_expire": "How many seconds minimum to keep a temporary download file on the server",
     "sensitives": {
         "folders": {
             "wallet": "data/Wallet_EDUStorybook"
