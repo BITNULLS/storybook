@@ -603,10 +603,10 @@ def admin_book_upload():
         filename = str(uuid.uuid4()) + "_" + file.filename
 
         # save file to local /temp/file_upload folder
-        file.save(os.path.join("../temp/file_upload", filename))
+        file.save(os.path.join("temp/file_upload", filename))
 
         try: 
-            upload_bucket_file('../temp/file_upload/' + filename, filename)
+            upload_bucket_file('temp/file_upload/' + filename, filename)
             return {
                 "status": "success",
                 "message": "file uploaded"
