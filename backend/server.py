@@ -476,7 +476,6 @@ def register():
         assert 'password' in request.form
         assert 'first_name' in request.form
         assert 'last_name' in request.form
-        assert 'admin' in request.form
         assert 'school_id' in request.form
         assert 'study_id' in request.form
     except AssertionError:
@@ -501,7 +500,6 @@ def register():
     email = (request.form['email']).lower().strip()
     first_name = (request.form['first_name']).lower().strip()
     last_name = (request.form['last_name']).lower().strip()
-    admin = (request.form['admin']).lower().strip()
     school_id = (request.form['school_id']).lower().strip()
     study_id = (request.form['study_id']).lower().strip()
 
@@ -534,7 +532,7 @@ def register():
             + email + "', '" 
             + first_name + "', '" 
             + last_name + "', '" 
-            + admin + "', '"
+            + "0', '"
             + school_id + "', '" 
             + study_id + "', '" 
             + hashed.decode('utf8')
