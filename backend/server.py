@@ -350,6 +350,12 @@ def future_del_temp(filepath: str='', files: list=[]) -> None:
         remove_queue.put(map(lambda f: {"filepath": f, "expiration": exp}, files))
 
 def allowed_file(filename):
+    """
+    checks that a file extension is one of the allowed extensions, defined by ALLOWED_EXTENSIONS
+
+    :param filename: name of file to be uploaded
+    :returns: bool. True if file extension allowed, False if extension not allowed
+    """
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 # =================================== routes ===================================
