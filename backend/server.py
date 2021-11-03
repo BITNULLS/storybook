@@ -20,6 +20,8 @@ import csv
 import hashlib 
 import sys
 
+ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
+
 # ==================================== setup ===================================
 
 app = Flask(__name__)
@@ -111,7 +113,6 @@ bucket_config = bucket['config']
 
 oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
 bucket_uploader = oci.object_storage.UploadManager(object_storage_client=oracle_cloud_client, allow_multipart_uploads=True, allow_parallel_uploads=True)
-
 
 # ============================== helper functions ==============================
 
@@ -348,6 +349,9 @@ def future_del_temp(filepath: str='', files: list=[]) -> None:
         exp = int(time.time()) + config['temp_file_expire']
         remove_queue.put(map(lambda f: {"filepath": f, "expiration": exp}, files))
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 # =================================== routes ===================================
 
 @app.route("/")
@@ -544,10 +548,82 @@ def quiz_submit_answer():
         "...": "..."
     }
 
+@app.route("/admin/book/download", methods=['POST'])
+def admin_download_book():
+
+    # get file name from request
+    fileInput = request.form['filename']
+    try:
+        download_bucket_file(fileInput)
+        return {
+            "status": "success",
+            "message": "file downloaded"
+        }
+    except: 
+        return {
+            "status": "fail",
+            "fail_no": 14,
+            "message": "could not download file"
+        }
+
+
 @app.route("/admin/book/upload", methods=['POST'])
 def admin_book_upload():
+
+    # validate that user has admin rights to upload books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    # check if the post request has the file part
+    if 'file' not in request.files:
+        return {
+            "status": "fail",
+            "fail_no": 10,
+            "message": "no file selected"
+        }
+
+    # get file from request files
+    file = request.files['file']
+
+    if file.filename == '':
+        return {
+            "status": "fail",
+            "fail_no": 11,
+            "message": "filename is empty string"
+        }
+
+    if file and allowed_file(file.filename):
+
+        # prepend unique uuid for filename
+        filename = str(uuid.uuid4()) + "_" + file.filename
+
+        # save file to local /temp/file_upload folder
+        file.save(os.path.join("../temp/file_upload", filename))
+
+        try: 
+            upload_bucket_file('../temp/file_upload/' + filename, filename)
+            return {
+                "status": "success",
+                "message": "file uploaded"
+            }
+
+        except Exception as e:
+            return {
+            "status": "fail",
+            "fail_no": 12,
+            "message": "Error when trying to upload file.",
+            "flask_message": str(e)
+        }
+
     return {
-        "...": "..."
+       "status": "fail",
+        "fail_no": 13,
+        "message": "invalid file format or file"
     }
 
 @app.route("/admin/book/grant", methods=['POST'])
@@ -757,5 +833,4 @@ def admin_download_action_data():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port="5000", debug=True)
-
 
