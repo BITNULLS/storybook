@@ -7,8 +7,8 @@ class NavBar extends Component {
 
 // both user/admin cannot be logged in at same time 
     this.state = {
-      userLoggedIn: true,
-      adminLoggedIn: false
+      userLoggedIn: false,
+      adminLoggedIn: true
     }
   }
 
