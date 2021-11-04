@@ -532,7 +532,7 @@ def register():
             + email + "', '" 
             + first_name + "', '" 
             + last_name + "', '" 
-            + "0', '"
+            + 0 + "', '"
             + school_id + "', '" 
             + study_id + "', '" 
             + hashed.decode('utf8')
