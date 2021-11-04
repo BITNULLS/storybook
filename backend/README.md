@@ -50,7 +50,7 @@ For now, we will use Postman to send test requests to the backend server.
 Requirements/Steps to use the Chum-Bucket:
  - Download our oracle_bucket.json and Chum-Bucket.pem, and place the files in backend/data/. These files contain the information to connect to our Cloud Bucket. This will allow you to use the functions `upload_bucket_file` and `download_bucket_file`
  
-### Upload
+### Upload File to Cloud
  
 To upload, the function `upload_bucket_file` is used.
 
@@ -59,7 +59,7 @@ To upload, the function `upload_bucket_file` is used.
    - `cloud_file_name`: string of the new name of file in Chum-Bucket
  - The function will return a boolean, depending on if the file was uploaded or not.
 
-### Download
+### Download File to Local Machine
 
 To download, the function `download_bucket_file` is used.
 
@@ -69,7 +69,7 @@ To download, the function `download_bucket_file` is used.
    - If the folder is not present, it will be created automatically.
    - If the object does not exist in the bucket, `None` will be returned.
 
-### Delete
+### Delete File in Cloud
 
 To delete a file in the bucket, the function `delete_bucket_file` is used.
 
