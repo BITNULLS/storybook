@@ -229,10 +229,22 @@ def download_bucket_file(filename: str) -> str:
             f.close()
         return new_file
     except oci.exceptions.ServiceError as e:
-        print(e.message)
-        print('Returning None')
+        print("The object '" + filename + "' does not exist in bucket.")
         return None
 
+
+def delete_bucket_file(filename: str) -> bool:
+    """
+    Deletes a given file in Chum-Bucket
+    :param filename: Filename of file to delete in Chum-Bucket
+    :return: Boolean depending on if the file was deleted or not.
+    """
+    try:
+        oracle_cloud_client.delete_object(bucket['namespace'], bucket['name'], filename)
+        return True
+    except oci.exceptions.ServiceError as e:
+        print("The object '" + filename + "' does not exist in bucket.")
+        return False
 
 def list_bucket_files():
     """
