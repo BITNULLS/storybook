@@ -5,7 +5,7 @@
 # === Backend ===
 
 # Email Folder
-backend/tmp/
+email.password 
 
 # Oracle Connection details
 oracle_key.json
