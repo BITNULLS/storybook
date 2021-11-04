@@ -415,14 +415,10 @@ def login():
         #secure=True,
         #httponly=True
     )
-
-    # Updating the Last_Login when user successfully logged in
-    today = date.today()
-    d = today.strftime("%d-%b-%y")
     
     try:
         cursor.execute(
-            "update USER_PROFILE set LAST_LOGIN=to_date('" + d + "', 'DD-MON-YY') where user_id='" + str(user_id) + "'"
+            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" + str(user_id) + "'"
         )
     except cx_Oracle.Error as e:
         return {
