@@ -43,26 +43,25 @@ For now, we will use Postman to send test requests to the backend server.
  13. **Critical**: To test POST form data, use `Body` tab, and select the `x-www-form-urlencoded` option.
  14. **Critical**: In the `Headers` tab, add a new key value pair: Key=`Origin` and value=`localhost`.
 
- ## How to Upload/Download from the Bucket
+## How to Upload/Download/Delete/List from the Bucket
 
- ### Bucket Configurations Files
+### Bucket Configurations Files
 
- Requirements/Steps to Upload to the Chum-Bucket:
-
- - Download our oracke_bucket.json and Chum-Bucket.pem, and place the files in backend/data/. These files contain the information to connect to our Cloud Bucket. This will allow you to use the functions `upload_bucket_file` and `download_bucket_file`
+Requirements/Steps to use the Chum-Bucket:
+ - Download our oracle_bucket.json and Chum-Bucket.pem, and place the files in backend/data/. These files contain the information to connect to our Cloud Bucket. This will allow you to use the functions `upload_bucket_file` and `download_bucket_file`
  
- ### Upload
+### Upload
  
- To upload, the function `upload_bucket_file` is used.
+To upload, the function `upload_bucket_file` is used.
 
  - The function takes 2 parameter:
    - `local_file_path`: string of the local path of file to upload 
    - `cloud_file_name`: string of the new name of file in Chum-Bucket
  - The function will return a boolean, depending on if the file was uploaded or not.
 
- ### Download
+### Download
 
- To download, the function `download_bucket_file` is used.
+To download, the function `download_bucket_file` is used.
 
  - The function takes a single parameter:
    - `filename`: string of the name of the file in Chum-Bucket
@@ -70,9 +69,22 @@ For now, we will use Postman to send test requests to the backend server.
    - If the folder is not present, it will be created automatically.
    - If the object does not exist in the bucket, `None` will be returned.
 
-### Check Bucket Contents
+### Delete
 
-To check the contents of the bucket, the function `list_bucket_files` is used.
+To delete a file in the bucket, the function `delete_bucket_file` is used.
+
+ - The function takes a single parameter:
+   - `filename`: string of the file to delete from Chum-Bucket
+ - The function returns a boolean
+   - True if the file is deleted
+   - False if the file is not deleted or does not exist in the
+ - This will **permanently remove** the file from the bucket.
+   - **BE CAREFUL**
+
+
+### List Bucket Contents
+
+ To check the contents of the bucket, the function `list_bucket_files` is used.
 
  - The function takes no parameters and returns `None`
  - It will print out each file in Chum-Bucket on a new line.
