@@ -256,10 +256,7 @@ def list_bucket_files():
     get_name = lambda f: f.name
     for file in files.data.objects:
         file_names.append(get_name(file))
-    if file_names:
-        return file_names
-    else:
-        return None
+    return file_names
 
 
 
