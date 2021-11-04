@@ -215,7 +215,7 @@ def download_bucket_file(filename: str) -> str:
     """
     Downloads files from cloud bucket
     :param filename: The name of the file to download
-    :return: the local path of the downloaded file
+    :return: the local path of the downloaded file, None if there is an error
     """
     if not os.path.isdir('bucket_files'):
         os.mkdir('bucket_files')
@@ -252,9 +252,14 @@ def list_bucket_files():
     :return: None
     """
     files = oracle_cloud_client.list_objects(bucket['namespace'], bucket['name'])
+    file_names = []
+    get_name = lambda f: f.name
     for file in files.data.objects:
-        print(file.name)
-    return None
+        file_names.append(get_name(file))
+    if file_names:
+        return file_names
+    else:
+        return None
 
 
 

@@ -86,8 +86,8 @@ To delete a file in the bucket, the function `delete_bucket_file` is used.
 
  To check the contents of the bucket, the function `list_bucket_files` is used.
 
- - The function takes no parameters and returns `None`
- - It will print out each file in Chum-Bucket on a new line.
+ - The function takes no parameters and returns a list containing the names of the objects in the bucket.
+ - If the bucket is empty, it will return `None`
 
 ## Notes
 
