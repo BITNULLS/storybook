@@ -249,7 +249,7 @@ def delete_bucket_file(filename: str) -> bool:
 def list_bucket_files():
     """
     Prints each object in the bucket on a separate line. Used for testing/checking.
-    :return: None
+    :return: List of filenames, if bucket is empty returns None
     """
     files = oracle_cloud_client.list_objects(bucket['namespace'], bucket['name'])
     file_names = []
