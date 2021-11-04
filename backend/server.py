@@ -531,8 +531,8 @@ def register():
             "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
             + email + "', '" 
             + first_name + "', '" 
-            + last_name + "', '" 
-            + 0 + "', '"
+            + last_name + "', " 
+            + "0 , '"
             + school_id + "', '" 
             + study_id + "', '" 
             + hashed.decode('utf8')
