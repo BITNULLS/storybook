@@ -19,6 +19,7 @@ import datetime
 import csv
 import hashlib 
 import sys
+from datetime import date
 
 # ==================================== setup ===================================
 
@@ -27,6 +28,8 @@ app = Flask(__name__)
 # regexes
 # they're faster compiled, and they can be used throughout
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
+re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
+re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
 re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
 re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
@@ -465,6 +468,18 @@ def login():
         #secure=True,
         #httponly=True
     )
+    
+    try:
+        cursor.execute(
+            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" + str(user_id) + "'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 7,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
 
     return res
 
@@ -504,9 +519,86 @@ def logout():
     
 @app.route("/register", methods=['POST'])
 def register():
+    # check that all expected inputs are received
+    try:
+        assert 'email' in request.form
+        assert 'password' in request.form
+        assert 'first_name' in request.form
+        assert 'last_name' in request.form
+        assert 'school_id' in request.form
+        assert 'study_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "A field was not provided"
+        }
+
+    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    if re_email.match( request.form['email'] ) is None or \
+        re_alphanumeric8.match( request.form['password'] ) is None or \
+        re_alphanumeric2.match( request.form['first_name'] ) is None or \
+        re_alphanumeric2.match( request.form['last_name'] ) is None:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "Some field failed a sanitize check. The POSTed fields should be alphanumeric, longer than 8 characters."
+        }
+
+    # all good, now query database
+    email = (request.form['email']).lower().strip()
+    first_name = (request.form['first_name']).lower().strip()
+    last_name = (request.form['last_name']).lower().strip()
+    school_id = (request.form['school_id']).lower().strip()
+    study_id = (request.form['study_id']).lower().strip()
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            "select * from USER_PROFILE where email='" + email + "'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+    
+    result = cursor.fetchone() 
+    if result is not None:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Email is Already Registered."
+        }
+
+    hashed = bcrypt.hashpw(request.form['password'].encode('utf8'), bcrypt.gensalt())
+
+    try:
+        cursor.execute(
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
+            + email + "', '" 
+            + first_name + "', '" 
+            + last_name + "', " 
+            + "0 , "
+            + school_id + ", " 
+            + study_id + ", '" 
+            + hashed.decode('utf8')
+            + "')"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
     return {
-        "...": "..."
+        "status": "ok"
     }
+    
 
 @app.route("/password/forgot", methods=['POST'])
 def password_forgot(): 
