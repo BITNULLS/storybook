@@ -246,7 +246,7 @@ def delete_bucket_file(filename: str) -> bool:
         print("The object '" + filename + "' does not exist in bucket.")
         return False
 
-def list_bucket_files():
+def list_bucket_files() -> list[str]:
     """
     Prints each object in the bucket on a separate line. Used for testing/checking.
     :return: List of filenames, if bucket is empty returns None
