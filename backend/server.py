@@ -218,17 +218,49 @@ def download_bucket_file(filename: str) -> str:
     """
     Downloads files from cloud bucket
     :param filename: The name of the file to download
+    :return: the local path of the downloaded file, None if there is an error
     """
     if not os.path.isdir('bucket_files'):
         os.mkdir('bucket_files')
 
-    obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
-    new_file = 'bucket_files' + filename
-    with open(new_file, 'wb') as f:
-        for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
-            f.write(chunk)
-        f.close()
-    return new_file
+    try:
+        obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
+        new_file = 'bucket_files' + filename
+        with open(new_file, 'wb') as f:
+            for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
+                f.write(chunk)
+            f.close()
+        return new_file
+    except oci.exceptions.ServiceError as e:
+        print("The object '" + filename + "' does not exist in bucket.")
+        return None
+
+
+def delete_bucket_file(filename: str) -> bool:
+    """
+    Deletes a given file in Chum-Bucket
+    :param filename: Filename of file to delete in Chum-Bucket
+    :return: Boolean depending on if the file was deleted or not.
+    """
+    try:
+        oracle_cloud_client.delete_object(bucket['namespace'], bucket['name'], filename)
+        return True
+    except oci.exceptions.ServiceError as e:
+        print("The object '" + filename + "' does not exist in bucket.")
+        return False
+
+def list_bucket_files() -> list[str]:
+    """
+    Prints each object in the bucket on a separate line. Used for testing/checking.
+    :return: List of filenames, if bucket is empty returns None
+    """
+    files = oracle_cloud_client.list_objects(bucket['namespace'], bucket['name'])
+    file_names = []
+    get_name = lambda f: f.name
+    for file in files.data.objects:
+        file_names.append(get_name(file))
+    return file_names
+
 
 
 def validate_login(auth: str, permission=0):
