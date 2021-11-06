@@ -3,6 +3,8 @@ from flask import request
 from flask import Response
 from flask import send_file
 from flask import make_response
+import string
+import random
 from multiprocessing import Process, Pipe, Queue
 import re
 import cx_Oracle
@@ -509,11 +511,11 @@ def register():
         "...": "..."
     }
 
-# verify email address
+# input email & check if email exists 
 @app.route("/password/forgot", methods=['POST'])
 def password_forgot(): 
 
-    # check that all expected inputs are received
+    # check input is received
     try:
         assert 'email' in request.form
     except AssertionError:
@@ -531,13 +533,17 @@ def password_forgot():
             "message": "Email failed sanitize check. The POSTed fields should be alphanumeric"
         }, 400, {"Content-Type": "application/json"}
     
-  # all good, now query database
     email = (request.form['email']).lower().strip()
+
+    #create random sequence of 512 byte string
+    rand_str =''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(512))
+
 
     cursor = connection.cursor()
     try:
         cursor.execute(
-            "select * from USER_PROFILE where email='" + email + "'"
+            "SELECT USER_ID FROM USER_SESSION ses WHERE ses.USER_ID = (SELECT USER_ID FROM USER_PROFILE WHERE'" + email + "= EMAIL)'"
+            "INSERT INTO PASSWORD_RESET(RESET_KEY) VALUES('" + rand_str + "')"
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
@@ -556,47 +562,7 @@ def password_forgot():
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json" }
     
-    
-    # is this right?
-    user_id = result['USER_ID']
-    session_id = str(uuid.uuid4()) # generate a unique token for a user
-    
-    try:
-        cursor.execute(
-            "update USER_SESSION set session_id='" + session_id + "', active=1 where user_id='" + str(user_id) + "'"
-        )
-    except cx_Oracle.Error as e:
-        return {
-            "status": "fail",
-            "fail_no": 6,
-            "message": "Error when updating database.",
-            "database_message": str(e)
-        }, 400, {"Content-Type": "application/json"}
-    
-    iat = int(time.time())
-
-    res = make_response({
-        "status": "ok",
-        "message": "Successfully authenticated",
-        "iat": iat
-    })
-    token = jwt.encode({
-        "iat": iat,
-        "session": session_id,
-        "sub": user_id,
-        "permission": result['ADMIN']
-    }, jwt_key, algorithm=config['jwt_alg'])
-    res.set_cookie(
-        "Authorization", 
-        "Bearer " + token, 
-        max_age=config["login_duration"],
-        #domain=domain_name#, # TODO: uncomment in production
-        #secure=True,
-        #httponly=True
-    )
-
-    return res
-
+    return result
 
 #new password updates old password in db; must check if both fields (of new password) match
 @app.route("/password/reset", methods=['POST'])
@@ -636,7 +602,24 @@ def password_reset():
             "message": "Password is incorrect."
         }, 400, {"Content-Type": "application/json"}
 
-    
+    user_id = result['USER_ID']
+    password = result['PASSWORD'] 
+
+    try:
+        cursor.execute(
+            "update USER_PROFILE set password='" + str(password) + "', active=1 where user_id='" + str(user_id) + "'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 6,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+   
+
+
+
         #domain=domain_name#, # TODO: uncomment in production
         #secure=True,
         #httponly=True
