@@ -4,8 +4,6 @@ import { Link } from "react-router-dom";
 import {Container, Nav, NavDropdown,  Carousel} from "react-bootstrap";
 import "./StoryBoardCSS/StoryBoardViewer.css";
 
-
-
 /**
  * 
  * @returns 
