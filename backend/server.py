@@ -8,7 +8,7 @@ import re
 import cx_Oracle
 import json
 import bcrypt
-import uuid 
+import uuid
 import jwt
 import os
 import time
@@ -17,7 +17,7 @@ import ssl
 import oci
 import datetime
 import csv
-import hashlib 
+import hashlib
 import sys
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
@@ -29,8 +29,8 @@ app = Flask(__name__)
 # regexes
 # they're faster compiled, and they can be used throughout
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
-re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
-re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
+re_hex36 = re.compile(r"[a-f0-9-]{36,}")  # for uuid.uuid4
+re_hex32 = re.compile(r"[A-F0-9]{32,}")  # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 # server settings to load in
@@ -42,10 +42,12 @@ assert config is not None, 'Could not find data/config.json file; Did you downlo
 
 for folder in config['sensitives']['folders']:
     folder_act = config['sensitives']['folders'][folder]
-    assert os.path.isdir(folder_act), 'Missing a sensitive data folder: ' + folder_act
+    assert os.path.isdir(
+        folder_act), 'Missing a sensitive data folder: ' + folder_act
 for file in config['sensitives']['files']:
     file_act = config['sensitives']['files'][file]
-    assert os.path.isfile(file_act), 'Missing a sensitive data file: ' + file_act
+    assert os.path.isfile(
+        file_act), 'Missing a sensitive data file: ' + file_act
 
 # domain
 domain_name = None
@@ -53,7 +55,8 @@ with open(config['sensitives']['files']['domain']) as txtfile:
     for line in txtfile.readlines():
         domain_name = str(line)
         break
-assert domain_name is not None and domain_name != '', config['sensitives']['files']['domain_name'] + ' is empty; It should not be empty'
+assert domain_name is not None and domain_name != '', config['sensitives'][
+    'files']['domain_name'] + ' is empty; It should not be empty'
 
 # json web tokens key
 jwt_key = None
@@ -61,16 +64,18 @@ with open(config['sensitives']['files']['jwt_key']) as txtfile:
     for line in txtfile.readlines():
         jwt_key = str(line)
         break
-assert jwt_key is not None and jwt_key != '', config['sensitives']['files']['jwt_key'] + ' is empty; It should not be empty'
+assert jwt_key is not None and jwt_key != '', config['sensitives'][
+    'files']['jwt_key'] + ' is empty; It should not be empty'
 
 # database connection
 print('Connecting to database...', end=' ')
-oracle_lib_dir = None 
+oracle_lib_dir = None
 with open(config['sensitives']['files']['oracle_dir']) as txtfile:
     for line in txtfile.readlines():
         oracle_lib_dir = str(line)
         break
-assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives']['folders']['oracle_dir'] + ' is empty, it needs the filepath to the Oracle Instant Client'
+assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives'][
+    'folders']['oracle_dir'] + ' is empty, it needs the filepath to the Oracle Instant Client'
 
 cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
 
@@ -81,8 +86,8 @@ with open(config['sensitives']['files']['oracle_key']) as jsonfile:
 assert oracle_config is not None, 'Oracle Key json was empty for some reason'
 
 connection = cx_Oracle.connect(
-    oracle_config['username'], 
-    oracle_config['password'], 
+    oracle_config['username'],
+    oracle_config['password'],
     oracle_config['connect_string']
 )
 print('connected')
@@ -99,7 +104,7 @@ try:
     server = smtplib.SMTP(smtp, port)
     server.starttls(context=context)
     server.login('edustorybooks@gmail.com', email_password)
-except Exception as e: 
+except Exception as e:
     print("Email Server Error")
     print(e)
 
@@ -112,9 +117,11 @@ assert bucket is not None, 'oracle_bucket.json file was empty'
 bucket_config = bucket['config']
 
 oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
-bucket_uploader = oci.object_storage.UploadManager(object_storage_client=oracle_cloud_client, allow_multipart_uploads=True, allow_parallel_uploads=True)
+bucket_uploader = oci.object_storage.UploadManager(
+    object_storage_client=oracle_cloud_client, allow_multipart_uploads=True, allow_parallel_uploads=True)
 
 # ============================== helper functions ==============================
+
 
 def label_results_from(cursor: cx_Oracle.Cursor):
     """
@@ -138,6 +145,7 @@ def label_results_from(cursor: cx_Oracle.Cursor):
     cursor.rowfactory = lambda *args: dict(zip(columns, args))
     return cursor
 
+
 def issue_auth_token(res, token):
     """
     Reissues Authorization token for the user.
@@ -154,13 +162,14 @@ def issue_auth_token(res, token):
         "permission": old_token['permission']
     }, jwt_key, algorithm=config['jwt_alg'])
     res.set_cookie(
-        "Authorization", 
-        "Bearer " + new_token, 
-        max_age=config["login_duration"]#,
-        #domain=domain_name,
-        #secure=True,
-        #httponly=True
+        "Authorization",
+        "Bearer " + new_token,
+        max_age=config["login_duration"]  # ,
+        # domain=domain_name,
+        # secure=True,
+        # httponly=True
     )
+
 
 def send_email(user_name: str, user_email: str, admin_name: str, admin_email: str, subject: str, body: str) -> bool:
     """
@@ -184,7 +193,7 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
     body_lines = body
     email_text = to_line + from_line + reply_to_line + subject_line + body_lines
 
-    #Email Command
+    # Email Command
     try:
         server = smtplib.SMTP(smtp, port)
         server.starttls(context=context)
@@ -220,8 +229,9 @@ def download_bucket_file(filename: str) -> str:
     if not os.path.isdir('bucket_files'):
         os.mkdir('bucket_files')
 
-    obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
-    new_file = 'bucket_files' + filename
+    obj = oracle_cloud_client.get_object(
+        bucket['namespace'], bucket['name'], filename)
+    new_file = 'bucket_files/' + filename
     with open(new_file, 'wb') as f:
         for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
             f.write(chunk)
@@ -248,9 +258,11 @@ def validate_login(auth: str, permission=0):
     """
     # TODO: later maybe track Origin header?
     try:
-        assert type(auth) is not None, 'You need to pass a valid auth param to validate_login()'
+        assert type(
+            auth) is not None, 'You need to pass a valid auth param to validate_login()'
         #assert type(origin) is not None, 'You need to pass a valid origin param to validate_login()'
-        assert type(permission) is not None, 'You need to pass a valid permission param to validate_login()'
+        assert type(
+            permission) is not None, 'You need to pass a valid permission param to validate_login()'
     except AssertionError:
         return {
             "status": "fail",
@@ -275,17 +287,18 @@ def validate_login(auth: str, permission=0):
                 "time": t
             }
         }, 400, {"Content-Type": "application/json"}
-    
+
     if token['permission'] < permission:
         return {
             "status": "fail",
             "fail_no": "3",
             "message": "You do not have high enough permissions to view this endpoint."
         }, 403, {"Content-Type": "application/json"}
-    
-    return True 
+
+    return True
 
 # ================================ remove queue ================================
+
 
 def remove_watchdog(remove_queue):
     """
@@ -306,7 +319,7 @@ def remove_watchdog(remove_queue):
     print('Remove Watchdog is now running')
     sys.stdout.flush()
     while True:
-        destruct = remove_queue.get(True) # wait until remove queue is gotten
+        destruct = remove_queue.get(True)  # wait until remove queue is gotten
         for file in destruct:
             if os.path.isfile(file["filepath"]):
                 # wait for a file's expiration time to come about
@@ -315,13 +328,15 @@ def remove_watchdog(remove_queue):
                         time.sleep(10)
                         continue
                     else:
-                        break 
+                        break
                 os.remove(file['filepath'])
+
 
 remove_queue = Queue()
 rmwd = Process(target=remove_watchdog, args=(remove_queue,))
 
-def future_del_temp(filepath: str='', files: list=[]) -> None:
+
+def future_del_temp(filepath: str = '', files: list = []) -> None:
     """
     Marks the temporary files that should be removed later by the Remove 
     Watchdog in the future.
@@ -334,8 +349,10 @@ def future_del_temp(filepath: str='', files: list=[]) -> None:
     :type files: str
     :returns: None.
     """
-    assert not (filepath == '' and len(files) == 0), 'filepath and files args cannot both be empty'
-    assert not (filepath != '' and len(files) != 0), 'filepath and files args cannot both be valued'
+    assert not (filepath == '' and len(files) ==
+                0), 'filepath and files args cannot both be empty'
+    assert not (filepath != '' and len(files) !=
+                0), 'filepath and files args cannot both be valued'
     if rmwd.is_alive() == False:
         rmwd.start()
     if len(files) == 0:
@@ -347,7 +364,9 @@ def future_del_temp(filepath: str='', files: list=[]) -> None:
         ])
     elif len(filepath) == 0:
         exp = int(time.time()) + config['temp_file_expire']
-        remove_queue.put(map(lambda f: {"filepath": f, "expiration": exp}, files))
+        remove_queue.put(
+            map(lambda f: {"filepath": f, "expiration": exp}, files))
+
 
 def allowed_file(filename):
     """
@@ -360,19 +379,20 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 # =================================== routes ===================================
 
+
 @app.route("/")
 def index():
     # revalidate login
     if 'Authorization' in request.cookies:
         # check if a user has valid credentials
         auth = request.cookies.get('Authorization')
-        vl = validate_login( 
-            auth, 
+        vl = validate_login(
+            auth,
             permission=0
         )
         if vl != True:
             return vl
-        
+
         res = make_response({
             "status": "ok",
             "login": "reverified"
@@ -382,6 +402,7 @@ def index():
     return {
         "status": "ok"
     }
+
 
 @app.route("/login", methods=['POST'])
 def login():
@@ -397,14 +418,14 @@ def login():
         }, 400, {"Content-Type": "application/json"}
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    if re_email.match( request.form['email'] ) is None or \
-        re_alphanumeric8.match( request.form['password'] ) is None:
+    if re_email.match(request.form['email']) is None or \
+            re_alphanumeric8.match(request.form['password']) is None:
         return {
             "status": "fail",
             "fail_no": 2,
             "message": "Either the email or the password failed a sanitize check. The POSTed fields should be alphanumeric, longer than 8 characters."
         }, 400, {"Content-Type": "application/json"}
-    
+
     # all good, now query database
     email = (request.form['email']).lower().strip()
 
@@ -421,8 +442,8 @@ def login():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    
-    result = cursor.fetchone() 
+
+    result = cursor.fetchone()
     if result is None:
         return {
             "status": "fail",
@@ -430,21 +451,22 @@ def login():
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json"}
 
-    #print(result)
-    #print(result[8])
-    if not bcrypt.checkpw( request.form['password'].encode('utf8'), result['PASSWORD'].encode('utf8') ):
+    # print(result)
+    # print(result[8])
+    if not bcrypt.checkpw(request.form['password'].encode('utf8'), result['PASSWORD'].encode('utf8')):
         return {
             "status": "fail",
             "fail_no": 5,
             "message": "Password is incorrect."
         }, 400, {"Content-Type": "application/json"}
-    
+
     user_id = result['USER_ID']
-    session_id = str(uuid.uuid4()) # generate a unique token for a user
-    
+    session_id = str(uuid.uuid4())  # generate a unique token for a user
+
     try:
         cursor.execute(
-            "update USER_SESSION set session_id='" + session_id + "', active=1 where user_id='" + str(user_id) + "'"
+            "update USER_SESSION set session_id='" + session_id +
+            "', active=1 where user_id='" + str(user_id) + "'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -453,7 +475,7 @@ def login():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    
+
     iat = int(time.time())
 
     res = make_response({
@@ -468,35 +490,37 @@ def login():
         "permission": result['ADMIN']
     }, jwt_key, algorithm=config['jwt_alg'])
     res.set_cookie(
-        "Authorization", 
-        "Bearer " + token, 
+        "Authorization",
+        "Bearer " + token,
         max_age=config["login_duration"],
-        #domain=domain_name#, # TODO: uncomment in production
-        #secure=True,
-        #httponly=True
+        # domain=domain_name#, # TODO: uncomment in production
+        # secure=True,
+        # httponly=True
     )
 
     return res
+
 
 @app.route("/logout", methods=['POST'])
 def logout():
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
-    vl = validate_login( 
-        auth, 
+    vl = validate_login(
+        auth,
         permission=0
     )
     if vl != True:
-        return vl 
-    
+        return vl
+
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-    
+
     cursor = connection.cursor()
     try:
         cursor.execute(
-            "update USER_SESSION set active=0 where user_id='" + token['sub'] + "'"
+            "update USER_SESSION set active=0 where user_id='" +
+            token['sub'] + "'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -511,18 +535,21 @@ def logout():
     })
     res.set_cookie('Authorization', '', expires=0)
     return res
-    
+
+
 @app.route("/register", methods=['POST'])
 def register():
     return {
         "...": "..."
     }
 
+
 @app.route("/password/forgot", methods=['POST'])
-def password_forgot(): 
+def password_forgot():
     return {
         "...": "..."
     }
+
 
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
@@ -530,11 +557,13 @@ def password_reset():
         "...": "..."
     }
 
+
 @app.route("/book", methods=['POST'])
 def get_users_books():
     return {
         "...": "..."
     }
+
 
 @app.route("/storyboard/page", methods=['POST'])
 def storyboard_get_page():
@@ -542,11 +571,13 @@ def storyboard_get_page():
         "...": "..."
     }
 
+
 @app.route("/storyboard/action", methods=['POST'])
 def storyboard_save_user_action():
     return {
         "...": "..."
     }
+
 
 @app.route("/quiz/submit", methods=['POST'])
 def quiz_submit_answer():
@@ -554,23 +585,32 @@ def quiz_submit_answer():
         "...": "..."
     }
 
+
 @app.route("/admin/book/download", methods=['POST'])
 def admin_download_book():
+
+    # validate that user has admin rights to download books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
 
     # get file name from request
     fileInput = request.form['filename']
     try:
-        download_bucket_file(fileInput)
-        return {
-            "status": "success",
-            "message": "file downloaded"
-        }
-    except: 
+        # download file to bucket
+        filepath = download_bucket_file(fileInput)
+        # send file back
+        return send_file(filepath)
+    except:
         return {
             "status": "fail",
             "fail_no": 14,
             "message": "could not download file"
-        }
+        }, 400, {"Content-Type": "application/json"}
 
 
 @app.route("/admin/book/upload", methods=['POST'])
@@ -578,8 +618,8 @@ def admin_book_upload():
 
     # validate that user has admin rights to upload books
     auth = request.cookies.get('Authorization')
-    vl = validate_login( 
-        auth, 
+    vl = validate_login(
+        auth,
         permission=0
     )
     if vl != True:
@@ -591,7 +631,7 @@ def admin_book_upload():
             "status": "fail",
             "fail_no": 10,
             "message": "no file selected"
-        }
+        }, 400, {"Content-Type": "application/json"}
 
     # get file from request files
     file = request.files['file']
@@ -601,7 +641,7 @@ def admin_book_upload():
             "status": "fail",
             "fail_no": 11,
             "message": "filename is empty string"
-        }
+        }, 400, {"Content-Type": "application/json"}
 
     if file and allowed_file(file.filename):
 
@@ -611,26 +651,27 @@ def admin_book_upload():
         # save file to local /temp/file_upload folder
         file.save(os.path.join("temp/file_upload", filename))
 
-        try: 
+        try:
             upload_bucket_file('temp/file_upload/' + filename, filename)
             return {
-                "status": "success",
+                "status": "ok",
                 "message": "file uploaded"
             }
 
         except Exception as e:
             return {
-            "status": "fail",
-            "fail_no": 12,
-            "message": "Error when trying to upload file.",
-            "flask_message": str(e)
-        }
+                "status": "fail",
+                "fail_no": 12,
+                "message": "Error when trying to upload file.",
+                "flask_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
 
     return {
-       "status": "fail",
+        "status": "fail",
         "fail_no": 13,
         "message": "invalid file format or file"
-    }
+    }, 400, {"Content-Type": "application/json"}
+
 
 @app.route("/admin/book/grant", methods=['POST'])
 def admin_grant_user_book_access():
@@ -638,11 +679,13 @@ def admin_grant_user_book_access():
         "...": "..."
     }
 
+
 @app.route("/admin/page/edit", methods=['POST'])
 def admin_page_edit():
     return {
         "...": "..."
     }
+
 
 @app.route("/admin/page/add", methods=['POST'])
 def admin_page_add():
@@ -650,9 +693,9 @@ def admin_page_add():
         "...": "..."
     }
 
+
 @app.route("/admin/download/user", methods=['POST'])
 def admin_download_user_data():
-
     """
     Exports user profile data to a csv file
 
@@ -663,8 +706,8 @@ def admin_download_user_data():
     """
     # validate that user can access data
     auth = request.cookies.get('Authorization')
-    vl = validate_login( 
-        auth, 
+    vl = validate_login(
+        auth,
         permission=0
     )
     if vl != True:
@@ -712,7 +755,7 @@ def admin_download_user_data():
     filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
-    with open(filename, "w", newline = "") as csvfile:
+    with open(filename, "w", newline="") as csvfile:
         # init csv writer
         writer = csv.writer(csvfile)
         # add headers
@@ -729,7 +772,7 @@ def admin_download_user_data():
             if not data:
                 break
             sha1.update(data)
-    
+
     # queue the file to be removed
     future_del_temp(filename)
 
@@ -744,6 +787,7 @@ def admin_download_user_data():
             "flask_message": str(e)
         }
 
+
 @app.route("/admin/download/action", methods=['POST'])
 def admin_download_action_data():
     """
@@ -756,8 +800,8 @@ def admin_download_action_data():
     """
     # validate that user can access data
     auth = request.cookies.get('Authorization')
-    vl = validate_login( 
-        auth, 
+    vl = validate_login(
+        auth,
         permission=0
     )
     if vl != True:
@@ -793,11 +837,11 @@ def admin_download_action_data():
 
     # column headers for csv
     headers = [
-        "Email", 
-        "Start", 
-        "Stop", 
-        "Book Name", 
-        "Action", 
+        "Email",
+        "Start",
+        "Stop",
+        "Book Name",
+        "Action",
         "Details"
     ]
 
@@ -805,7 +849,7 @@ def admin_download_action_data():
     filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
-    with open(filename, 'w', newline = '') as csvfile:
+    with open(filename, 'w', newline='') as csvfile:
         # init csv writer
         writer = csv.writer(csvfile)
         # add headers
@@ -822,7 +866,7 @@ def admin_download_action_data():
             if not data:
                 break
             sha1.update(data)
-    
+
     # queue the file to be removed
     future_del_temp(filename)
 
@@ -837,6 +881,6 @@ def admin_download_action_data():
             "flask_message": str(e)
         }
 
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port="5000", debug=True)
-
