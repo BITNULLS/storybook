@@ -3,6 +3,8 @@ from flask import request
 from flask import Response
 from flask import send_file
 from flask import make_response
+from flask import Mail 
+from flask import Message
 import string
 import random
 from multiprocessing import Process, Pipe, Queue
@@ -25,6 +27,7 @@ import sys
 # ==================================== setup ===================================
 
 app = Flask(__name__)
+mail = Mail(app)
 
 # regexes
 # they're faster compiled, and they can be used throughout
@@ -535,7 +538,7 @@ def password_forgot():
     
     email = (request.form['email']).lower().strip()
 
-    #create random sequence of 512 byte string
+    # create random sequence of 512 byte string
     rand_str =''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(512))
 
 
@@ -555,6 +558,9 @@ def password_forgot():
         }, 400, {"Content-Type": "application/json"}
     
     result = cursor.fetchone() 
+    msg = Message("testing",
+                  sender="from@example.com",
+                  recipients=[email])
     if result is None:
         return {
             "status": "fail",
@@ -562,9 +568,10 @@ def password_forgot():
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json" }
     
-    return result
+    mail.send(msg)
 
-#new password updates old password in db; must check if both fields (of new password) match
+
+# new password updates old password in db; must check if both fields (of new password) match
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
    # check that all expected inputs are received
