@@ -558,9 +558,12 @@ def password_forgot():
         }, 400, {"Content-Type": "application/json"}
     
     result = cursor.fetchone() 
-    msg = Message("testing",
-                  sender="from@example.com",
-                  recipients=[email])
+    msg = Message("Test",
+    sender="no-reply.com",
+    recipients=[email])
+
+    msg.body = "cloudflare.com/Password/Reset#key='" + rand_str, #cloudflare?
+
     if result is None:
         return {
             "status": "fail",
@@ -569,7 +572,7 @@ def password_forgot():
         }, 400, {"Content-Type": "application/json" }
     
     mail.send(msg)
-
+    return result
 
 # new password updates old password in db; must check if both fields (of new password) match
 @app.route("/password/reset", methods=['POST'])
@@ -577,6 +580,7 @@ def password_reset():
    # check that all expected inputs are received
     try:
         assert 'password' in request.form
+        assert 'reset_key' in request.form
     except AssertionError:
         return {
             "status": "fail",
@@ -623,16 +627,8 @@ def password_reset():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-   
 
-
-
-        #domain=domain_name#, # TODO: uncomment in production
-        #secure=True,
-        #httponly=True
-    
-
-    return res
+    return result
 
 @app.route("/book", methods=['POST'])
 def get_users_books():
