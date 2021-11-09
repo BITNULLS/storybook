@@ -556,12 +556,9 @@ def admin_grant_user_book_access():
         "...": "..."
     }
 
+#only handle quiz questions
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
 def admin_page_handler():
-    # Post = adding a page
-    # Get = get (retrieve pages)
-    # Put = updating a page
-    # Delete = deleting a page
     auth = request.cookies.get('Authorization')
     vl = validate_login( 
         auth, 
@@ -572,16 +569,64 @@ def admin_page_handler():
     
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-  
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg']) 
+
+    #check to make sure you have a book_id
+    try:
+        assert 'book_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    try:
+        book_id = int(request.form['book_id'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "book_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
     match request.method: 
-        case 'POST':
+        case 'POST': # Post = adding a page
             return "POST"
-        case 'GET':
-            return "GET"
-        case 'PUT':
+
+        case 'GET': # Get = get (retrieve pages)
+            cursor = connection.cursor()
+            try:
+                cursor.execute(
+                    "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION\
+                        INNER JOIN USER_RESPONSE\
+                            ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID\
+                        INNER JOIN ANSWER\
+                            ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID\
+                        WHERE BOOK_ID = " + book_id
+                )
+                label_results_from(cursor)
+            except cx_Oracle.Error as e:
+                return {
+                    "status": "fail",
+                    "fail_no": 3,
+                    "message": "Error when querying database.",
+                    "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+            
+            result = cursor.fetchall() 
+            if result is None:
+                return {
+                    "status": "fail",
+                    "fail_no": 4,
+                    "message": "No book_id matches what was passed."
+                }, 400, {"Content-Type": "application/json"}
+            return result
+
+        case 'PUT': # Put = updating a page
             return "PUT"
-        case 'DELETE':
+        case 'DELETE': # Put = updating a page
             return "DELETE"
         case '': 
             return "Invadid Operation"
