@@ -294,7 +294,7 @@ REM INSERTING into ACTION
             job_name => '"KPELSTER"."PASSWORD_RESET_DELTE_OLD_KEYS"',
             job_type => 'PLSQL_BLOCK',
             job_action => 'BEGIN
-DELETE FROM PASSWORD_RESET WHERE REQUEST_DATE + 1 > SYSDATE; 
+DELETE FROM PASSWORD_RESET WHERE REQUEST_DATE + 1 < SYSDATE; 
 END;',
             number_of_arguments => 0,
             start_date => TO_TIMESTAMP_TZ
