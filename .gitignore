@@ -21,6 +21,10 @@ oracle_bucket.json
 backend/data/domain.txt
 backend/data/jwt.key
 
+# file uploads
+backend/bucket_files
+backend/temp/
+
 # === Node JS ===
 
 # Logs
