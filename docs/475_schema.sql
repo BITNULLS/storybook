@@ -239,7 +239,7 @@ BEGIN
             job_type => 'PLSQL_BLOCK',
             job_action => 'BEGIN
 
-SELECT * FROM USER_PROFILE;
+SELECT * FROM USER_PROFILE OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY;
 
 END;',
             number_of_arguments => 0,
