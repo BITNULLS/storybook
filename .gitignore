@@ -23,7 +23,7 @@ backend/data/jwt.key
 
 # file uploads
 backend/bucket_files
-backnd/temp/file_upload
+backend/temp/
 
 # === Node JS ===
 
