@@ -590,65 +590,53 @@ def admin_page_handler():
             "fail_no": 2,
             "message": "book_id failed a sanitize check. The POSTed field should be an integer."
         }, 400, {"Content-Type": "application/json"}
+ 
+    if request.method == 'POST': # Post = adding a page
+        return "POST"
 
-    match request.method: 
-        case 'POST': # Post = adding a page
-            return "POST"
+    elif request.method == 'GET': # Get = get (retrieve pages)
+        cursor = connection.cursor()
 
-        case 'GET': # Get = get (retrieve pages)
-            cursor = connection.cursor()
-            try:
-                cursor.execute(
-                    "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION\
-                        INNER JOIN USER_RESPONSE\
-                            ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID\
-                        INNER JOIN ANSWER\
-                            ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID\
-                        WHERE BOOK_ID = " + book_id
-                )
-                label_results_from(cursor)
-            except cx_Oracle.Error as e:
-                return {
-                    "status": "fail",
-                    "fail_no": 3,
-                    "message": "Error when querying database.",
-                    "database_message": str(e)
-                }, 400, {"Content-Type": "application/json"}
-            
-            result = cursor.fetchall() 
-            if result is None:
-                return {
-                    "status": "fail",
-                    "fail_no": 4,
-                    "message": "No book_id matches what was passed."
-                }, 400, {"Content-Type": "application/json"}
-            return result
+        try:
+            cursor.execute(
+                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION "+\
+                "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID "+\
+                "INNER JOIN ANSWER ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID "+\
+                "WHERE BOOK_ID=" + request.form["book_id"] 
+            )
+            label_results_from(cursor)
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+        
+        #fetching all the questions and storing them in questions array
+        questions=[]
 
-        case 'PUT': # Put = updating a page
-            return "PUT"
-        case 'DELETE': # Put = updating a page
-            return "DELETE"
-        case '': 
-            return "Invadid Operation"
-    
-    cursor = connection.cursor()
-    try:
-        cursor.execute(
-            "update USER_SESSION set active=0 where user_id='" + token['sub'] + "'"
-        )
-    except cx_Oracle.Error as e:
-        return {
-            "status": "fail",
-            "fail_no": 8,
-            "message": "Error when updating database.",
-            "database_message": str(e)
-        }
+        while True:
+            result = cursor.fetchone() 
+            if result is None: 
+                break
+            questions.append(result)
+        if len(questions) == 0:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "No book_id matches what was passed."
+            }, 400, {"Content-Type": "application/json"}
+        return {"questions": questions}
 
-    res = make_response({
-        "status": "ok"
-    })
-    res.set_cookie('Authorization', '', expires=0)
-    return res
+    elif request.method == 'PUT': # Put = updating a page
+        return "PUT"
+
+    elif request.method == 'DELETE': # DELETE = delete a page 
+        return "DELETE"
+
+    else: 
+        return "Invadid Operation"
 
 @app.route("/admin/download/user", methods=['POST'])
 def admin_download_user_data():
