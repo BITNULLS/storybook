@@ -797,11 +797,48 @@ def admin_book_upload():
 
 
 @app.route("/admin/book/grant", methods=['POST'])
-def admin_grant_user_book_access():
-    return {
-        "...": "..."
-    }
+def admin_add_book_to_study():
+    
+    # validate that user can access data
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
 
+    # get parameters
+    book_name = (request.form['book_name']).lower().strip()
+    book_url = (request.form['book_url']).lower().strip()
+    book_description = (request.form['book_description']).lower().strip()
+    study_id = (request.form['study_id'])
+    # book_id and created_on handled by trigger
+
+    # connect to database
+    cursor = connection.cursor()
+
+    # insert query
+    try:
+        cursor.execute("\
+            INSERT into BOOK (book_name, url, description, study_id) VALUES ('" 
+            + book_name + "', '" 
+            + book_url + "', '" 
+            + book_description + "', "
+            + study_id
+            + ")")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
+    return {
+        "status": "ok"
+    }
 
 @app.route("/admin/page/edit", methods=['POST'])
 def admin_page_edit():
