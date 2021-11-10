@@ -228,3 +228,41 @@ SET DEFINE OFF;
 
   ALTER TABLE "USER_STUDY" MODIFY ("USERNAME" NOT NULL ENABLE);
   ALTER TABLE "USER_STUDY" MODIFY ("STUDY_ID" NOT NULL ENABLE);
+
+--------------------------------------------------------
+--  Scheduler job to ping database
+--------------------------------------------------------
+
+BEGIN
+    DBMS_SCHEDULER.CREATE_JOB (
+            job_name => '"KPELSTER"."PING_DATABASE"',
+            job_type => 'PLSQL_BLOCK',
+            job_action => 'BEGIN
+
+SELECT * FROM USER_PROFILE OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY;
+
+END;',
+            number_of_arguments => 0,
+            start_date => TO_TIMESTAMP_TZ('2021-11-06 12:58:52.000000000 AMERICA/NEW_YORK','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+            repeat_interval => 'FREQ=DAILY; INTERVAL=6',
+            end_date => TO_TIMESTAMP_TZ('2025-11-06 12:58:52.000000000 AMERICA/NEW_YORK','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+            enabled => FALSE,
+            auto_drop => FALSE,
+            comments => 'Every 6 days, pings  database by computing a simple select query.');
+
+         
+     
+ 
+    DBMS_SCHEDULER.SET_ATTRIBUTE( 
+             name => '"KPELSTER"."PING_DATABASE"', 
+             attribute => 'store_output', value => TRUE);
+    DBMS_SCHEDULER.SET_ATTRIBUTE( 
+             name => '"KPELSTER"."PING_DATABASE"', 
+             attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+      
+   
+  
+    
+    DBMS_SCHEDULER.enable(
+             name => '"KPELSTER"."PING_DATABASE"');
+END;
