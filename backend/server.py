@@ -809,29 +809,27 @@ def admin_add_book_to_study():
         return vl
 
     # get parameters
-    book_name = (request.form['book_name']).lower().strip()
-    book_url = (request.form['book_url']).lower().strip()
-    book_description = (request.form['book_description']).lower().strip()
-    study_id = (request.form['study_id'])
+    book_name = (request.form.get('book_name')).lower().strip()
+    book_url = (request.form.get('book_url')).lower().strip()
+    book_description = (request.form.get('book_description')).lower().strip()
+    study_id = (request.form.get('study_id'))
     # book_id and created_on handled by trigger
 
     # connect to database
     cursor = connection.cursor()
 
-    print ("INSERT into BOOK (book_name, url, description, study_id, created_on, book_id) VALUES ('" 
-            + book_name + "', '" 
-            + book_url + "', '" 
-            + book_description + "', "
-            + study_id
-            + ", '12-Nov-21', 101)")
     # insert query
     try:
-        cursor.execute("INSERT into BOOK (book_name, url, description, study_id, created_on, book_id) VALUES ('" 
+        cursor.execute("INSERT into BOOK (book_name, url, description, study_id) VALUES ('" 
             + book_name + "', '" 
             + book_url + "', '" 
             + book_description + "', "
             + study_id
-            + ", '12-NOV-21', 101)")
+            + ")"
+            )
+
+        # commit to database
+        connection.commit()
 
     except cx_Oracle.Error as e:
         return {
