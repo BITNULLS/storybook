@@ -3,8 +3,7 @@ from flask import request
 from flask import Response
 from flask import send_file
 from flask import make_response
-from flask import Mail 
-from flask import Message
+from datetime import date
 import string
 import random
 from multiprocessing import Process, Pipe, Queue
@@ -28,7 +27,6 @@ from datetime import date
 # ==================================== setup ===================================
 
 app = Flask(__name__)
-mail = Mail(app)
 
 # regexes
 # they're faster compiled, and they can be used throughout
@@ -97,6 +95,8 @@ print('connected')
 with open('data/email.password') as email_config:
     email_login = json.load(email_config)
     email_password = email_login['password']
+    print(email_login)
+    print(email_password)
 
 try:
     smtp = 'smtp.gmail.com'
@@ -207,20 +207,18 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         del subject_line
         del body_lines
         del email_text
-
-
+        
 def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
-    """
+    """ 
     Uploads local file to cloud bucket
     :param local_file_path: path to local file to upload
     :param cloud_file_name: Name for file in cloud
     :return: the http status code of the upload response
     """
     return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
-
-
+    
 def download_bucket_file(filename: str) -> str:
-    """
+    """ 
     Downloads files from cloud bucket
     :param filename: The name of the file to download
     :return: the local path of the downloaded file, None if there is an error
@@ -239,10 +237,9 @@ def download_bucket_file(filename: str) -> str:
     except oci.exceptions.ServiceError as e:
         print("The object '" + filename + "' does not exist in bucket.")
         return None
-
-
+        
 def delete_bucket_file(filename: str) -> bool:
-    """
+    """"
     Deletes a given file in Chum-Bucket
     :param filename: Filename of file to delete in Chum-Bucket
     :return: Boolean depending on if the file was deleted or not.
@@ -255,7 +252,7 @@ def delete_bucket_file(filename: str) -> bool:
         return False
 
 def list_bucket_files() -> list[str]:
-    """
+    """"
     Prints each object in the bucket on a separate line. Used for testing/checking.
     :return: List of filenames, if bucket is empty returns None
     """
@@ -265,7 +262,6 @@ def list_bucket_files() -> list[str]:
     for file in files.data.objects:
         file_names.append(get_name(file))
     return file_names
-
 
 
 def validate_login(auth: str, permission=0):
@@ -642,7 +638,7 @@ def register():
 @app.route("/password/forgot", methods=['POST'])
 def password_forgot(): 
 
-    # check input is received
+    # checks for input
     try:
         assert 'email' in request.form
     except AssertionError:
@@ -652,7 +648,7 @@ def password_forgot():
             "message": "Email was not provided"
         }, 400, {"Content-Type": "application/json"}
         
-        # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    # sanitize inputs: alphanumeric, > 8 chars
     if re_email.match( request.form['email'] ) is None:
         return {
             "status": "fail",
@@ -660,19 +656,17 @@ def password_forgot():
             "message": "Email failed sanitize check. The POSTed fields should be alphanumeric"
         }, 400, {"Content-Type": "application/json"}
     
+
+    # begin querying database
     email = (request.form['email']).lower().strip()
 
     # create random sequence of 512 byte string
     rand_str =''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(512))
 
-
     cursor = connection.cursor()
     try:
         cursor.execute(
-            "SELECT USER_ID FROM USER_SESSION ses WHERE ses.USER_ID = (SELECT USER_ID FROM USER_PROFILE WHERE'" + email + "= EMAIL)'"
-            "INSERT INTO PASSWORD_RESET(RESET_KEY) VALUES('" + rand_str + "')"
-        )
-        label_results_from(cursor)
+            "SELECT USER_ID FROM USER_SESSION ses WHERE ses.USER_ID = (SELECT USER_ID FROM USER_PROFILE WHERE EMAIL = '" + email + "');")
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -680,31 +674,74 @@ def password_forgot():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    
-    result = cursor.fetchone() 
-    msg = Message("Test",
-    sender="no-reply.com",
-    recipients=[email])
-
-    msg.body = "cloudflare.com/Password/Reset#key='" + rand_str, #cloudflare?
-
+        
+    result = cursor.fetchone()
     if result is None:
         return {
             "status": "fail",
             "fail_no": 4,
             "message": "No email matches what was passed."
-        }, 400, {"Content-Type": "application/json" }
+        }, 400, {"Content-Type": "application/json"}
+
+    user_id = result['USER_ID']
+    user_name = result['FIRST_NAME'] + ' ' + result['LAST_NAME']
+
+    now = datetime.datetime.now()
+    req_date = (now.strftime("%Y/%m/%d"))
     
-    mail.send(msg)
-    return result
+    try:
+        cursor.execute(
+            "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "'," + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'));")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    try:
+        cursor.execute(
+            "SELECT FIRST_NAME, LAST_NAME, EMAIL FROM USER_PROFILE WHERE ADMIN = 1;"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+        
+    result = cursor.fetchone()
+    if result is None:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "No email matches what was passed."
+        }, 400, {"Content-Type": "application/json"}
+        
+        
+    key = 'edustorybook.com/Password/Reset#key=' + rand_str
+    
+    # need to test 
+    send_email(user_name, email, result['FIRST_NAME'] + result['LAST_NAME'], result['EMAIL'], 'Password Reset Request', key)
+    
+    return {
+        "status": "ok"
+    }
+    
+    
 
 # new password updates old password in db; must check if both fields (of new password) match
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
-   # check that all expected inputs are received
+
+   # check expected input fields
     try:
-        assert 'password' in request.form
-        assert 'reset_key' in request.form
+        assert 'password1' in request.form
+        assert 'password2' in request.form
+
     except AssertionError:
         return {
             "status": "fail",
@@ -720,39 +757,28 @@ def password_reset():
             "message": "The password failed a sanitize check. The POSTed fields should be alphanumeric, longer than 8 characters."
         }, 400, {"Content-Type": "application/json"}
     
-    result = cursor.fetchone() 
-    if result is None:
-        return {
-            "status": "fail",
-            "fail_no": 4,
-            "message": "No email matches what was passed."
-        }, 400, {"Content-Type": "application/json"}
-
-    #print(result)
-    #print(result[8])
-    if not bcrypt.checkpw( request.form['password'].encode('utf8'), result['PASSWORD'].encode('utf8') ):
-        return {
-            "status": "fail",
-            "fail_no": 5,
-            "message": "Password is incorrect."
-        }, 400, {"Content-Type": "application/json"}
-
-    user_id = result['USER_ID']
-    password = result['PASSWORD'] 
-
+    cursor = connection.cursor()   
     try:
-        cursor.execute(
-            "update USER_PROFILE set password='" + str(password) + "', active=1 where user_id='" + str(user_id) + "'"
-        )
+        # fix this line
+        cursor.execute("update USER_PROFILE set password='" + str(password) + "', active=1 where user_id='" + str(user_id))
+
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
-            "fail_no": 6,
-            "message": "Error when updating database.",
+            "fail_no": 3,
+            "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-
-    return result
+        
+        '''
+    user_id = result['USER_ID']
+    password = result['PASSWORD']
+     '''
+    
+    return {
+        "status": "ok"
+    }
+    
 
 @app.route("/book", methods=['POST'])
 def get_users_books():

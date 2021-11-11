@@ -87,7 +87,7 @@ But this can fail because of,
  6. Error when updating the database
 
 
- ## Password Forgot
+## Password Forgot
 
 `POST /password/forgot/`
 
