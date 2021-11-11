@@ -818,10 +818,15 @@ def admin_add_book_to_study():
     # connect to database
     cursor = connection.cursor()
 
+    print ("INSERT into BOOK (book_name, url, description, study_id) VALUES ('" 
+            + book_name + "', '" 
+            + book_url + "', '" 
+            + book_description + "', "
+            + study_id
+            + ")")
     # insert query
     try:
-        cursor.execute("\
-            INSERT into BOOK (book_name, url, description, study_id) VALUES ('" 
+        cursor.execute("INSERT into BOOK (book_name, url, description, study_id) VALUES ('" 
             + book_name + "', '" 
             + book_url + "', '" 
             + book_description + "', "
