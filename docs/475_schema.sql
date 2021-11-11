@@ -289,39 +289,31 @@ REM INSERTING into ACTION
                   --------------------------------------------------------
 
                   BEGIN
-    DBMS_SCHEDULER.CREATE_JOB
-                  (
-            job_name => '"KPELSTER"."PASSWORD_RESET_DELTE_OLD_KEYS"',
-            job_type => 'PLSQL_BLOCK',
-            job_action => 'BEGIN
-DELETE FROM PASSWORD_RESET WHERE REQUEST_DATE + 1 < SYSDATE; 
-END;',
-            number_of_arguments => 0,
-            start_date => TO_TIMESTAMP_TZ
-                  ('2021-11-06 12:47:10.000000000 AMERICA/NEW_YORK','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-            repeat_interval => 'FREQ=DAILY',
-            end_date => TO_TIMESTAMP_TZ
-                  ('2025-11-06 12:51:05.000000000 AMERICA/NEW_YORK','YYYY-MM-DD HH24:MI:SS.FF TZR'),
-            enabled => FALSE,
-            auto_drop => FALSE,
-            comments => 'Deletes rows from PASSWORD_RESET where the request date is at least 24 hours old.');
+                        DBMS_SCHEDULER.CREATE_JOB
+                                      (
+                                job_name => '"KPELSTER"."PASSWORD_RESET_DELETE_OLD_KEYS"',
+                                job_type => 'PLSQL_BLOCK',
+                                job_action => 'BEGIN DELETE FROM PASSWORD_RESET WHERE REQUEST_DATE + 1 < SYSDATE; END;',
+                                number_of_arguments => 0,
+                                start_date => TO_TIMESTAMP_TZ
+                                      ('2021-11-11 12:47:10.000000000 AMERICA/NEW_YORK','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+                                repeat_interval => 'FREQ=DAILY',
+                                end_date => TO_TIMESTAMP_TZ
+                                      ('2025-11-25 12:51:05.000000000 AMERICA/NEW_YORK','YYYY-MM-DD HH24:MI:SS.FF TZR'),
+                                enabled => FALSE,
+                                auto_drop => FALSE,
+                                comments => 'Deletes rows from PASSWORD_RESET where the request date is at least 24 hours old.');
 
-         
-     
- 
-    DBMS_SCHEDULER.SET_ATTRIBUTE
-                  ( 
-             name => '"KPELSTER"."PASSWORD_RESET_DELTE_OLD_KEYS"', 
-             attribute => 'store_output', value => TRUE);
-    DBMS_SCHEDULER.SET_ATTRIBUTE
-                  ( 
-             name => '"KPELSTER"."PASSWORD_RESET_DELTE_OLD_KEYS"', 
-             attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
-      
-   
-  
-    
-    DBMS_SCHEDULER.enable
-                  (
-             name => '"KPELSTER"."PASSWORD_RESET_DELTE_OLD_KEYS"');
-                  END;
+                        DBMS_SCHEDULER.SET_ATTRIBUTE
+                                      ( 
+                                name => '"KPELSTER"."PASSWORD_RESET_DELETE_OLD_KEYS"', 
+                                attribute => 'store_output', value => TRUE);
+                        DBMS_SCHEDULER.SET_ATTRIBUTE
+                                      ( 
+                                name => '"KPELSTER"."PASSWORD_RESET_DELETE_OLD_KEYS"', 
+                                attribute => 'logging_level', value => DBMS_SCHEDULER.LOGGING_OFF);
+                          
+                        DBMS_SCHEDULER.enable
+                                      (
+                                name => '"KPELSTER"."PASSWORD_RESET_DELETE_OLD_KEYS"');
+                                      END;
