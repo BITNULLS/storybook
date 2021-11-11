@@ -50,6 +50,7 @@ for file in config['sensitives']['files']:
 
 # domain
 domain_name = None
+
 with open(config['sensitives']['files']['domain']) as txtfile:
     for line in txtfile.readlines():
         domain_name = str(line)
@@ -249,7 +250,7 @@ def delete_bucket_file(filename: str) -> bool:
         print("The object '" + filename + "' does not exist in bucket.")
         return False
 
-def list_bucket_files() -> list[str]:
+def list_bucket_files() -> "list[str]":
     """
     Prints each object in the bucket on a separate line. Used for testing/checking.
     :return: List of filenames, if bucket is empty returns None
@@ -658,8 +659,85 @@ def storyboard_get_page():
 
 @app.route("/storyboard/action", methods=['POST'])
 def storyboard_save_user_action():
+    '''
+    Code the storyboard_save_user_action() function in the same style as logout()
+    Screenshot a successful POST request to the /storyboard/action endpoint.
+    Add to the backend/API.md the relevant documentation for the /storyboard/action endpoint
+    in the same style as the login/ endpoint documentation.
+    '''
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms= config['jwt_alg'])  
+
+    # check that all expected inputs are received
+    try:
+        assert 'book_id' in request.form
+        assert 'detail_description' in request.form
+        assert 'action_key_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Either the book_id, detail_description, or action_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure book_id and action_id are ints
+    try: 
+        book_id = int(request.form["book_id"])
+        action_id = int(request.form["action_key_id"])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id, or action_id failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
+        }, 400, {"Content-Type": "application/json"}
+
+    cursor = connection.cursor()    
+    try:
+        cursor.execute(   
+            "DECLARE"+\
+                "USER_ID_IN VARCHAR2(200)"+\
+                "ACTION_START_IN VARCHAR2(200)"+\
+                "ACTION_STOP_IN VARCHAR2(200)"+\
+                "BOOK_ID_IN VARCHAR2(200)"+\
+                "DETAIL_DESCRIPTION_IN VARCHAR2(200)"+\
+                "ACTION_KEY_ID_IN VARCHAR2(200)"+\
+            "BEGIN"+\
+                "USER_ID_IN = '"+token['sub']+"',"+\
+                "ACTION_START_IN = 'CURRENT_TIMESTAMP',"+\
+                "ACTION_STOP_IN = 'CURRENT_TIMESTAMP',"+\
+                "BOOK_ID_IN = '"+request.form["book_id"]+"',"+\
+                "DETAIL_DESCRIPTION_IN = '"+ request.form["detail_description"]+"',"+\
+                "ACTION_KEY_ID_IN = '"+request.form["action_key_id"]+"',"+\
+                "CHECK_DETAIL_ID_PROC("+\
+                    "USER_ID_IN => USER_ID_IN,"+\
+                    "ACTION_START_IN => ACTION_START_IN,"+\
+                    "ACTION_STOP_IN => ACTION_STOP_IN,"+\
+                    "BOOK_ID_IN => BOOK_ID_IN,"+\
+                    "DETAIL_DESCRIPTION_IN => DETAIL_DESCRIPTION_IN,"+\
+                    "ACTION_KEY_ID_IN => ACTION_KEY_ID_IN"+\
+                ")"+\
+            "END"    
+        )
+    except cx_Oracle.Error as e:
+        return{
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when updating database action",
+            "database_message": str(e)
+        } , 400, {"Content-Type": "application/json"}
     return {
-        "...": "..."
+        "status": "ok"
     }
 
 @app.route("/quiz/submit", methods=['POST'])
