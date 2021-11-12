@@ -613,7 +613,7 @@ def admin_page_handler():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
         
-        #fetching all the questions and storing them in questions array
+        # fetching all the questions and storing them in questions array
         questions=[]
 
         while True:
@@ -627,7 +627,10 @@ def admin_page_handler():
                 "fail_no": 4,
                 "message": "No book_id matches what was passed."
             }, 400, {"Content-Type": "application/json"}
-        return {"questions": questions}
+        return {
+            "status": "ok",
+            "questions": questions
+        }
 
     elif request.method == 'PUT': # Put = updating a page
         return "PUT"
@@ -636,7 +639,7 @@ def admin_page_handler():
         return "DELETE"
 
     else: 
-        return "Invadid Operation"
+        return "Invalid Operation"
 
 @app.route("/admin/download/user", methods=['POST'])
 def admin_download_user_data():
