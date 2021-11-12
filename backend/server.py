@@ -684,6 +684,8 @@ def storyboard_save_user_action():
         assert 'book_id' in request.form
         assert 'detail_description' in request.form
         assert 'action_key_id' in request.form
+        assert 'action_start' in request.form
+        assert 'action_stop' in request.form
     except AssertionError:
         return {
             "status": "fail",
@@ -691,7 +693,7 @@ def storyboard_save_user_action():
             "message": "Either the book_id, detail_description, or action_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
-    # sanitize inputs: make sure book_id and action_id are ints
+    # sanitize inputs: make sure book_id, action_id, action_start, action_stop are ints
     try: 
         book_id = int(request.form["book_id"])
         action_id = int(request.form["action_key_id"])
@@ -699,36 +701,37 @@ def storyboard_save_user_action():
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "The book_id, or action_id failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
+            "message": "The book_id, action_id, action_start, or action_stop failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
         }, 400, {"Content-Type": "application/json"}
-
-    cursor = connection.cursor()    
+ 
+    cursor = connection.cursor()  
     try:
-        cursor.execute(   
-            "DECLARE"+\
-                "USER_ID_IN VARCHAR2(200)"+\
-                "ACTION_START_IN VARCHAR2(200)"+\
-                "ACTION_STOP_IN VARCHAR2(200)"+\
-                "BOOK_ID_IN VARCHAR2(200)"+\
-                "DETAIL_DESCRIPTION_IN VARCHAR2(200)"+\
-                "ACTION_KEY_ID_IN VARCHAR2(200)"+\
-            "BEGIN"+\
-                "USER_ID_IN = '"+token['sub']+"',"+\
-                "ACTION_START_IN = 'CURRENT_TIMESTAMP',"+\
-                "ACTION_STOP_IN = 'CURRENT_TIMESTAMP',"+\
-                "BOOK_ID_IN = '"+request.form["book_id"]+"',"+\
-                "DETAIL_DESCRIPTION_IN = '"+ request.form["detail_description"]+"',"+\
-                "ACTION_KEY_ID_IN = '"+request.form["action_key_id"]+"',"+\
-                "CHECK_DETAIL_ID_PROC("+\
-                    "USER_ID_IN => USER_ID_IN,"+\
-                    "ACTION_START_IN => ACTION_START_IN,"+\
-                    "ACTION_STOP_IN => ACTION_STOP_IN,"+\
-                    "BOOK_ID_IN => BOOK_ID_IN,"+\
-                    "DETAIL_DESCRIPTION_IN => DETAIL_DESCRIPTION_IN,"+\
-                    "ACTION_KEY_ID_IN => ACTION_KEY_ID_IN"+\
-                ")"+\
-            "END"    
+        cursor.execute( 
+             "DECLARE "+\
+                "USER_ID_IN VARCHAR2(200); "+\
+                "ACTION_START_IN VARCHAR2(200); "+\
+                "ACTION_STOP_IN VARCHAR2(200); "+\
+                "BOOK_ID_IN VARCHAR2(200); "+\
+                "DETAIL_DESCRIPTION_IN VARCHAR2(200); "+\
+                "ACTION_KEY_ID_IN VARCHAR2(200); "+\
+            "BEGIN "+\
+                "USER_ID_IN := '"+ token["sub"]+"'; "+\
+                "ACTION_START_IN := TO_DATE('"+ request.form["action_start"]+"', 'DD-MON-YYYY HH24:MI:SS'); "+\
+                "ACTION_STOP_IN := TO_DATE('"+ request.form["action_stop"]+"',  'DD-MON-YYYY HH24:MI:SS'); "+\
+                "BOOK_ID_IN := "+ request.form["book_id"]+"; "+\
+                "DETAIL_DESCRIPTION_IN := '"+ request.form["detail_description"]+ "'; "+\
+                "ACTION_KEY_ID_IN := "+ request.form["action_key_id"]+ "; "+\
+                "CHECK_DETAIL_ID_PROC ("+\
+                    "USER_ID_IN => USER_ID_IN, "+\
+                    "ACTION_START_IN => ACTION_START_IN, "+\
+                    "ACTION_STOP_IN => ACTION_STOP_IN, "+\
+                    "BOOK_ID_IN => BOOK_ID_IN, "+\
+                    "DETAIL_DESCRIPTION_IN => DETAIL_DESCRIPTION_IN, "+\
+                    "ACTION_KEY_ID_IN => ACTION_KEY_ID_IN "+\
+                ");"+\
+            "END;"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return{
             "status": "fail",

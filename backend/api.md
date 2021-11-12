@@ -116,3 +116,30 @@ On success, returns a CSV file.
 
 The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
 
+
+## storyboard/action/
+
+`POST /storyboard/action`
+
+This saves a user action. 
+
+### Inputs 
+
+- `detail_description`: Description of action.
+- `book_id`: A book number.
+- `action_id`: A user action.
+- `action_start`: A epoch time of when action started.
+- `action_stop`: A epoch time of when action stopped.
+
+### Returns
+
+On success, returns 
+
+```
+{
+    "status": "ok"
+}
+```
+
+The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
+
