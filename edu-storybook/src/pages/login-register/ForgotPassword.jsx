@@ -13,7 +13,7 @@ export default class ForgotPassword extends React.Component {
   render() {
     return (
       <div class="row mt-5">
-        <div class="col"></div>
+        <div class="col-12 col-md-4 col-sm-3"></div>
         <div class="col">
           <h1 class="text-center mb-5">Forgot Your Password? </h1>
           <h4 class="text-center mb-5"> Don't worry! We will send you an email to update your password. </h4>
@@ -36,7 +36,7 @@ export default class ForgotPassword extends React.Component {
             <Link to="/Login" class="btn btn-link">Back to Sign In</Link>
           </div>
         </div >
-        <div class="col"></div>
+        <div class="col-12 col-md-4 col-sm-3"></div>
       </div >
     );
   }
