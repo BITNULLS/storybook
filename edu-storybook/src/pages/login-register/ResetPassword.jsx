@@ -12,7 +12,7 @@ export default class ResetPassword extends React.Component{
  render() {
     return (
       <div class="row mt-5">
-        <div class="col"></div>
+        <div class="col-12 col-md-4 col-sm-3"></div>
         <div class="col">
           <h1 class="text-center mb-5"> Reset Password </h1>  
               <form>
@@ -66,7 +66,7 @@ export default class ResetPassword extends React.Component{
           <div class="text-center mt-5">
           </div>
         </div >
-        <div class="col"></div>
+        <div class="col-12 col-md-4 col-sm-3"></div>
       </div >
     );
   }

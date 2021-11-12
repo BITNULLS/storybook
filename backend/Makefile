@@ -5,4 +5,5 @@ run:
 setup:
 	rm -r temp/
 	mkdir temp/
+	mkdir temp/file_upload/
 	pip3 install -r requirements.txt
