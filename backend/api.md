@@ -8,6 +8,7 @@ Table of Contents:
  - [`login/`](#login)
  - [`admin/download/user/`](#admin/download/user)
  - [`admin/download/action/`](#admin/download/action)
+ - [`quiz/submit`](#quiz/submit)
 
 ## Meta Notes
 
@@ -116,3 +117,32 @@ On success, returns a CSV file.
 
 The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
 
+## quiz/submit
+
+`POST /quiz/submit`
+
+Inserts a user's quiz answer into the user_response table.
+
+### Inputs 
+
+ - `answer_id` - ID of the answer to the given question
+ - `question_id` - ID of the question being answered
+
+### Returns
+
+On success,
+
+```
+{
+    "status": "ok"
+}
+```
+
+Two things happen:
+ - An **`Authorization: Bearer <token>`** cookie is set, which validates your login session.
+
+But this can fail because of,
+
+ 1. Either the `answer_id` or `question_id` is not provided
+ 2. `answer_id` or `question_id` is not clean (invalid characters)
+ 3. No `answer_id` or `question_id` matches found

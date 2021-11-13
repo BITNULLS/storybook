@@ -4,6 +4,7 @@ from flask import Response
 from flask import send_file
 from flask import make_response
 from multiprocessing import Process, Pipe, Queue
+from threading import Lock
 import re
 import cx_Oracle
 import json
@@ -87,6 +88,8 @@ connection = cx_Oracle.connect(
     oracle_config['connect_string']
 )
 print('connected')
+
+conn_lock = Lock()
 
 # email login
 with open('data/email.password') as email_config:
@@ -631,7 +634,20 @@ def storyboard_save_user_action():
     }
 
 @app.route("/quiz/submit", methods=['POST'])
-def quiz_submit_answer(question_id, answer_id):
+def quiz_submit_answer():
+    try:
+        assert 'answer_id' in request.form
+        assert 'question_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Either the email or the password was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    answer_id = int(request.form['answer_id'])
+    question_id = int(request.form['question_id'])
+
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
     vl = validate_login( 
@@ -647,10 +663,11 @@ def quiz_submit_answer(question_id, answer_id):
     
     cursor = connection.cursor()
     try:
+        conn_lock.acquire()
         cursor.execute(
-            "update user_response set answer_id='" + answer_id + "' where question_id='" + question_id + "' and" \
-            " user_id='" + token['sub'] + "'"
+            "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" + token['sub'] + "', " + str(question_id) + ", " + str(answer_id) + ", current_timestamp)"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -658,6 +675,8 @@ def quiz_submit_answer(question_id, answer_id):
             "message": "Error when updating database.",
             "database_message": str(e)
         }
+    finally:
+        conn_lock.release()
 
     return {"status": "ok"}
     
