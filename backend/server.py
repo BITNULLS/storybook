@@ -219,7 +219,8 @@ def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
     :param cloud_file_name: Name for file in cloud
     :return: the http status code of the upload response
     """
-    return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
+    with open(local_file_path, 'rb') as fh:
+        return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
 
 
 def download_bucket_file(filename: str) -> str:
@@ -233,6 +234,8 @@ def download_bucket_file(filename: str) -> str:
 
     try:
         obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
+        if filename[filename.rfind('/')+1:] != -1:
+            filename = filename[filename.rfind('/')+1:]
         new_file = 'bucket_files/' + filename
         with open(new_file, 'wb') as f:
             for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
