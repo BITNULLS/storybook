@@ -95,8 +95,6 @@ print('connected')
 with open('data/email.password') as email_config:
     email_login = json.load(email_config)
     email_password = email_login['password']
-    print(email_login)
-    print(email_password)
 
 try:
     smtp = 'smtp.gmail.com'
@@ -666,7 +664,8 @@ def password_forgot():
     cursor = connection.cursor()
     try:
         cursor.execute(
-            "SELECT USER_ID FROM USER_SESSION ses WHERE ses.USER_ID = (SELECT USER_ID FROM USER_PROFILE WHERE EMAIL = '" + email + "');")
+            # fix the SQL statement with user_session?
+            "SELECT * FROM USER_PROFILE WHERE EMAIL ='" + email + "'")
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -683,32 +682,33 @@ def password_forgot():
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json"}
 
-    user_id = result['USER_ID']
-    user_name = result['FIRST_NAME'] + ' ' + result['LAST_NAME']
+    
+    user_id = result[9]
+    user_name = result[1] + ' ' + result[2]
 
     now = datetime.datetime.now()
     req_date = (now.strftime("%Y/%m/%d"))
     
-    try:
+    try: # it does not insert with Oracle db (but works in SQLDeveloper)
         cursor.execute(
-            "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "'," + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'));")
+            "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "','" + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'))")
 
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
-            "fail_no": 3,
+            "fail_no": 5,
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
 
     try:
         cursor.execute(
-            "SELECT FIRST_NAME, LAST_NAME, EMAIL FROM USER_PROFILE WHERE ADMIN = 1;"
+            "SELECT FIRST_NAME, LAST_NAME, EMAIL FROM USER_PROFILE WHERE ADMIN = 1"
         )
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
-            "fail_no": 3,
+            "fail_no": 6,
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
@@ -717,64 +717,89 @@ def password_forgot():
     if result is None:
         return {
             "status": "fail",
-            "fail_no": 4,
-            "message": "No email matches what was passed."
-        }, 400, {"Content-Type": "application/json"}
-        
+            "fail_no": 7,
+            "message": "No admin exists."
+        }, 400, {"Content-Type": "application/json"}      
         
     key = 'edustorybook.com/Password/Reset#key=' + rand_str
     
-    # need to test 
-    send_email(user_name, email, result['FIRST_NAME'] + result['LAST_NAME'], result['EMAIL'], 'Password Reset Request', key)
+    send_email(user_name, email, result[1] + result[2], result[0], 'Password Reset Request', key)
     
     return {
         "status": "ok"
     }
     
     
-
-# new password updates old password in db; must check if both fields (of new password) match
+# new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
+# check if both password fields match
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
 
    # check expected input fields
     try:
-        assert 'password1' in request.form
-        assert 'password2' in request.form
-
+        assert 'new_pass' in request.form
+        assert 'confirm_pass' in request.form
+        assert 'reset_key' in request.form
     except AssertionError:
         return {
             "status": "fail",
             "fail_no": 1,
-            "message": "The password was not provided."
-        }, 400, {"Content-Type": "application/json"}
+            "message": "Either password was not provided."
+        }, 400, {"Content-Type": "application/json"}  
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    if re_alphanumeric8.match( request.form['password'] ) is None:
+    if re_alphanumeric8.match( request.form['new_pass'] ) is None or \
+        re_alphanumeric8.match( request.form['confirm_pass'] ) is None:
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "The password failed a sanitize check. The POSTed fields should be alphanumeric, longer than 8 characters."
+            "message": "Either both or one of the passwords failed the sanitize check. The POSTed fields should be alphanumeric, longer than 8 characters."
         }, 400, {"Content-Type": "application/json"}
-    
-    cursor = connection.cursor()   
-    try:
-        # fix this line
-        cursor.execute("update USER_PROFILE set password='" + str(password) + "', active=1 where user_id='" + str(user_id))
+
+    # check if both passwords match
+    if (request.form['new_pass'] != request.form['confirm_pass']):
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Both passwords do not match."
+        }, 400, {"Content-Type": "application/json"}
+
+    hashed = bcrypt.hashpw(request.form['confirm_pass'].encode('utf8'), bcrypt.gensalt())
+
+    reset_key = (request.form['reset_key']).lower().strip()
+
+    # connect to database
+    cursor = connection.cursor()
+    try: 
+        cursor.execute("SELECT USER_ID FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
 
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
-            "fail_no": 3,
+            "fail_no": 4,
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-        
-        '''
-    user_id = result['USER_ID']
-    password = result['PASSWORD']
-     '''
-    
+
+    result = cursor.fetchone()
+    if result is None:
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "No reset_key matches what was passed."
+        }, 400, {"Content-Type": "application/json"}   
+               
+    try:
+        cursor.execute("UPDATE USER_PROFILE set PASSWORD ='" + hashed.decode('utf8') + "' WHERE user_id ='" + result[0] + "'")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 6,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+               
     return {
         "status": "ok"
     }
