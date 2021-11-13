@@ -683,6 +683,17 @@ def password_reset():
 
 @app.route("/book", methods=['POST'])
 def get_users_books():
+
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+    
+    
     return {
         "...": "..."
     }
