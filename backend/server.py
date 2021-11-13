@@ -120,8 +120,6 @@ assert bucket is not None, 'oracle_bucket.json file was empty'
 bucket_config = bucket['config']
 
 oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
-bucket_uploader = oci.object_storage.UploadManager(
-    object_storage_client=oracle_cloud_client, allow_multipart_uploads=True, allow_parallel_uploads=True)
 
 # ============================== helper functions ==============================
 
@@ -221,7 +219,7 @@ def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
     :param cloud_file_name: Name for file in cloud
     :return: the http status code of the upload response
     """
-    return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
+    return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
 
 
 def download_bucket_file(filename: str) -> str:
