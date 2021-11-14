@@ -10,6 +10,8 @@ Table of Contents:
  - [`password/reset/`](#password/reset)
  - [`admin/download/user/`](#admin/download/user)
  - [`admin/download/action/`](#admin/download/action)
+ - [`admin/book/upload/`](#admin/book/upload)
+ - [`admin/book/download/`](#admin/book/download)
 
 ## Meta Notes
 
@@ -130,3 +132,61 @@ On success, returns a CSV file.
 
 The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
 
+## admin/book/upload/
+
+`POST /admin/book/upload/`
+
+Allows admin user to upload file to bucket
+
+### Inputs
+
+ - `file`: A file.
+
+### Returns
+
+On Success, 
+
+```
+{
+    "message": "file uploaded",
+    "status": "success"
+}
+```
+
+When testing in Postman, the input file should be input into the body form-data. The key should be "file" with type "File". If you successfully change the type of the key to a file type, the value column will allow you to select a file from your machine.
+
+To ensure that a valid file is selected the code checks that a request file exists, that the filename is not an empty string, and that the file extension is pdf, ppt, or pptx.
+
+Failure may occur because of,
+
+10. No file was found in request.files
+11. The filename is an empty string
+12. Error when uploading file
+13. File is not of valid format or file is invalid
+
+
+## admin/book/download/
+
+`POST /admin/book/download/`
+
+Allows admin user to download a book from the file bucket.
+
+### Inputs
+
+ - `file`: A file.
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "success",
+    "message": "file downloaded"
+}
+```
+
+When testing with postman, the input filename is set in the request Body form-data. The key should be called "file" and should be of type Text. Then, enter the exact filename of the file to be downloaded as the value.
+
+Failure may occur because of,
+14. File could not be downloaded
