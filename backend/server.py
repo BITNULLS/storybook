@@ -716,7 +716,7 @@ def get_users_books():
             "database_message": str(e)
         }
     
-    # assign variable data to cursor.fetchall(). if i do not assign it to a variable, Response() sees it as an empty string
+    # assign variable data to cursor.fetchall()
     data = cursor.fetchall()
 
     print(data)
