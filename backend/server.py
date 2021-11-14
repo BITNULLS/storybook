@@ -120,8 +120,6 @@ assert bucket is not None, 'oracle_bucket.json file was empty'
 bucket_config = bucket['config']
 
 oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
-bucket_uploader = oci.object_storage.UploadManager(
-    object_storage_client=oracle_cloud_client, allow_multipart_uploads=True, allow_parallel_uploads=True)
 
 # ============================== helper functions ==============================
 
@@ -221,7 +219,8 @@ def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
     :param cloud_file_name: Name for file in cloud
     :return: the http status code of the upload response
     """
-    return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
+    with open(local_file_path, 'rb') as fh:
+        return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
 
 
 def download_bucket_file(filename: str) -> str:
@@ -235,6 +234,8 @@ def download_bucket_file(filename: str) -> str:
 
     try:
         obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
+        if filename[filename.rfind('/')+1:] != -1:
+            filename = filename[filename.rfind('/')+1:]
         new_file = 'bucket_files/' + filename
         with open(new_file, 'wb') as f:
             for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
@@ -843,18 +844,93 @@ def admin_add_book_to_study():
         "status": "ok"
     }
 
-@app.route("/admin/page/edit", methods=['POST'])
-def admin_page_edit():
-    return {
-        "...": "..."
-    }
 
+@app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
+def admin_page_handler():
+    """
+    This endpoint will only handle quiz questions.
+    """
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=1
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg']) 
 
-@app.route("/admin/page/add", methods=['POST'])
-def admin_page_add():
-    return {
-        "...": "..."
-    }
+    #check to make sure you have a book_id
+    try:
+        assert 'book_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    try:
+        book_id = int(request.form['book_id'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "book_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+ 
+    if request.method == 'POST': # Post = adding a page
+        return "POST"
+
+    elif request.method == 'GET': # Get = get (retrieve pages)
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(
+                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION "+\
+                "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID "+\
+                "INNER JOIN ANSWER ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID "+\
+                "WHERE BOOK_ID=" + request.form["book_id"] 
+            )
+            label_results_from(cursor)
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+        
+        # fetching all the questions and storing them in questions array
+        questions=[]
+
+        while True:
+            result = cursor.fetchone() 
+            if result is None: 
+                break
+            questions.append(result)
+        if len(questions) == 0:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "No book_id matches what was passed."
+            }, 400, {"Content-Type": "application/json"}
+        return {
+            "status": "ok",
+            "questions": questions
+        }
+
+    elif request.method == 'PUT': # Put = updating a page
+        return "PUT"
+
+    elif request.method == 'DELETE': # DELETE = delete a page 
+        return "DELETE"
+
+    else: 
+        return "Invalid Operation"
 
 
 @app.route("/admin/download/user", methods=['POST'])
