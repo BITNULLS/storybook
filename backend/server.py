@@ -762,22 +762,6 @@ def password_forgot():
     send_email(user_name, email, result[1] + result[2], result[0], 'Password Reset Request', key)
     
 
-
-@app.route("/password/forgot", methods=['POST'])
-def password_forgot():
-
-    return {
-        "status": "ok"
-    }
-
-    
-    
-# new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
-# check if both password fields match
-
-
-
-
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
 
