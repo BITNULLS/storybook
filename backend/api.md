@@ -10,6 +10,7 @@ Table of Contents:
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
+ - [`/admin/book/grant/`](#admin/book/grant)
 
 ## Meta Notes
 
@@ -134,8 +135,8 @@ On Success,
 
 ```
 {
-    "message": "file uploaded",
-    "status": "success"
+    "status": "ok"
+    "message": "file uploaded"
 }
 ```
 
@@ -167,7 +168,7 @@ On Success,
 
 ```
 {
-    "status": "success",
+    "status": "ok",
     "message": "file downloaded"
 }
 ```
@@ -176,3 +177,30 @@ When testing with postman, the input filename is set in the request Body form-da
 
 Failure may occur because of,
 14. File could not be downloaded
+
+## /admin/book/grant/
+
+`POST /admin/book/grant/`
+
+Allows admin user to upload a book that is associated with a study id.
+
+### Inputs
+
+ - `book_name`: Text of full name of book.
+ - `book_url`: Text of full url for book.
+ - `book_description`: Text of full description for book.
+ - `study_id`: Number id for the study that the book belongs to
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "ok"
+}
+```
+
+When testing with postman, the inputs will be input in "form-data" as text inputs. Enter the same exact input variables as above into the key column. Then, supply inputs to the value column.
+
+4. Failure may occur if the input study_id does not exist in the table STUDY since the parent key will not be found.
