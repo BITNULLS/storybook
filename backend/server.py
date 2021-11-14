@@ -123,8 +123,6 @@ assert bucket is not None, 'oracle_bucket.json file was empty'
 bucket_config = bucket['config']
 
 oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
-bucket_uploader = oci.object_storage.UploadManager(
-    object_storage_client=oracle_cloud_client, allow_multipart_uploads=True, allow_parallel_uploads=True)
 
 # ============================== helper functions ==============================
 
@@ -236,6 +234,8 @@ def download_bucket_file(filename: str) -> str:
 
     try:
         obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
+        if filename[filename.rfind('/')+1:] != -1:
+            filename = filename[filename.rfind('/')+1:]
         new_file = 'bucket_files/' + filename
         with open(new_file, 'wb') as f:
             for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
