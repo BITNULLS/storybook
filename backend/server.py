@@ -672,8 +672,9 @@ def password_forgot():
             "fail_no": 3,
             "message": "Error when querying database.",
             "database_message": str(e)
-        }, 400, {"Content-Type": "application/json"}
-        
+        }, 400, {"Content-Type": "application/json"} 
+    connection.commit()    
+    
     result = cursor.fetchone()
     if result is None:
         return {
@@ -689,7 +690,7 @@ def password_forgot():
     now = datetime.datetime.now()
     req_date = (now.strftime("%Y/%m/%d"))
     
-    try: # it does not insert with Oracle db (but works in SQLDeveloper)
+    try: # it does not insert with Oracle db? (but works in SQLDeveloper)
         cursor.execute(
             "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "','" + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'))")
 
@@ -700,6 +701,7 @@ def password_forgot():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
+    connection.commit() 
 
     try:
         cursor.execute(
@@ -712,7 +714,8 @@ def password_forgot():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-        
+    connection.commit() 
+
     result = cursor.fetchone()
     if result is None:
         return {
@@ -735,7 +738,7 @@ def password_forgot():
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
 
-   # check expected input fields
+   # check expected input 
     try:
         assert 'new_pass' in request.form
         assert 'confirm_pass' in request.form
@@ -766,7 +769,7 @@ def password_reset():
 
     hashed = bcrypt.hashpw(request.form['confirm_pass'].encode('utf8'), bcrypt.gensalt())
 
-    reset_key = (request.form['reset_key']).lower().strip()
+    reset_key = (request.form['reset_key'])
 
     # connect to database
     cursor = connection.cursor()
@@ -780,6 +783,7 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
+    connection.commit()
 
     result = cursor.fetchone()
     if result is None:
@@ -799,7 +803,20 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-               
+    connection.commit()
+
+    try: 
+        cursor.execute("DELETE FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 7,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    connection.commit()
+
     return {
         "status": "ok"
     }

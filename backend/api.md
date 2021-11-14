@@ -91,12 +91,32 @@ But this can fail because of,
 
 `POST /password/forgot/`
 
+This lets a user reset a password.
+
+### Inputs 
+
+- user email
+
+### Returns
+
+On success, returns "status": "ok" if email is a match and sends a link to the password/reset endpoint. If not, returns "status": "fail".
+
+
 ## Password Reset
 
 `POST /password/reset/`
 
+This lets a user change their password.
 
+### Inputs 
 
+- new password
+- confirm new password
+- reset key string
+
+### Returns
+
+On success, returns "status": "ok" if the input reset key matches the reset_key contained in the database & both password fields match. If not, returns "status": "fail".
 
 ## admin/download/user/
 
