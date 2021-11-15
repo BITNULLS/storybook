@@ -735,49 +735,17 @@ def password_forgot():
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
     connection.commit() 
-
-    try:
-        cursor.execute(
-            "SELECT FIRST_NAME, LAST_NAME, EMAIL FROM USER_PROFILE WHERE ADMIN = 1"
-        )
-    except cx_Oracle.Error as e:
-        return {
-            "status": "fail",
-            "fail_no": 6,
-            "message": "Error when querying database.",
-            "database_message": str(e)
-        }, 400, {"Content-Type": "application/json"}
-    connection.commit() 
-
-    result = cursor.fetchone()
-    if result is None:
-        return {
-            "status": "fail",
-            "fail_no": 7,
-            "message": "No admin exists."
-        }, 400, {"Content-Type": "application/json"}      
-        
+    
     key = 'edustorybook.com/Password/Reset#key=' + rand_str
     
-    send_email(user_name, email, result[1] + result[2], result[0], 'Password Reset Request', key)
+    send_email(user_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 'Password Reset Request', key)
     
-
-
-@app.route("/password/forgot", methods=['POST'])
-def password_forgot():
-
     return {
         "status": "ok"
     }
-
-    
     
 # new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
 # check if both password fields match
-
-
-
-
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
 
