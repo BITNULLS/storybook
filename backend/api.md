@@ -6,6 +6,8 @@ conditions and returns.
 Table of Contents:
  - [Meta Notes](#meta_notes)
  - [`login/`](#login)
+ - [`password/forgot/`](#password/forgot)
+ - [`password/reset/`](#password/reset)
  - [`admin/download/user/`](#admin/download/user)
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
@@ -87,6 +89,70 @@ But this can fail because of,
  4. No email matches found
  5. Password incorrect
  6. Error when updating the database
+
+
+## Password Forgot
+
+`POST /password/forgot/`
+
+This lets a user reset a password.
+
+### Inputs 
+
+- `email`: user email
+
+### Returns
+
+On success, returns 
+
+```
+ return {
+        "status": "ok"
+    }
+```
+
+if an email is a match, then sends a link to the password/reset endpoint. If not, returns "status": "fail" for the following conditions:
+
+1. Email was not provided.
+2. Email failed sanitization check of more than 8 characters &/or alphanumeric.
+3. Error when querying database.
+4. No email matches what was passed.
+5. Error when querying database.
+
+
+## Password Reset
+
+`POST /password/reset/`
+
+This lets a user change their password.
+
+### Inputs 
+
+- `new_pass`: new password
+- `confirm_pass`: confirm password
+- `reset_key`: 512 random byte string
+
+### Returns
+
+On success, returns 
+
+```
+ return {
+        "status": "ok"
+    }
+```
+
+resets the password in database. If not, returns "status": "fail" for the following conditions:
+
+1. Either password was not provided.
+2. Either one or both passwords failed sanitization check of more than 8
+    characters &/or alphanumeric.
+3. Both passwords do not match.
+4. Error when querying database.
+5. No reset_key matches what was passed.
+6. Error when querying database.
+7. Error when querying database.
+
 
 ## admin/download/user/
 
@@ -204,6 +270,7 @@ On Success,
 When testing with postman, the input filename is set in the request Body form-data. The key should be called "file" and should be of type Text. Then, enter the exact filename of the file to be downloaded as the value.
 
 Failure may occur because of,
+
 14. File could not be downloaded
 
 ## /admin/book/grant/
@@ -232,3 +299,4 @@ On Success,
 When testing with postman, the inputs will be input in "form-data" as text inputs. Enter the same exact input variables as above into the key column. Then, supply inputs to the value column.
 
 4. Failure may occur if the input study_id does not exist in the table STUDY since the parent key will not be found.
+
