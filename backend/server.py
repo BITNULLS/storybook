@@ -222,7 +222,7 @@ def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
     :return: the http status code of the upload response
     """
     with open(local_file_path, 'rb') as fh:
-        return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
+        return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
     
 def download_bucket_file(filename: str) -> str:
     """ 
