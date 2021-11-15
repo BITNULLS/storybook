@@ -97,11 +97,19 @@ This lets a user reset a password.
 
 ### Inputs 
 
-- user email
+- `user email`
 
 ### Returns
 
-On success, returns "status": "ok" if email is a match and sends a link to the password/reset endpoint. If not, returns "status": "fail" for the following conditions:
+On success, returns 
+
+```
+ return {
+        "status": "ok"
+    }
+```
+
+if email is a match and sends a link to the password/reset endpoint. If not, returns "status": "fail" for the following conditions:
 
 1. Email was not provided
 2. Email failed sanitization check of more than 8 characters &/or
@@ -118,13 +126,21 @@ This lets a user change their password.
 
 ### Inputs 
 
-- new password
-- confirm new password
-- reset key string
+- `new_pass`: new password
+- `confirm_pass`: confirm password
+- `reset_key`: 512 random byte string
 
 ### Returns
 
-On success, returns "status": "ok" and resets the password in database. If not, returns "status": "fail" for the following conditions:
+On success, returns 
+
+```
+ return {
+        "status": "ok"
+    }
+```
+
+resets the password in database. If not, returns "status": "fail" for the following conditions:
 
 1. Either password was not provided
 2. Either one or both passwords failed sanitization check of more than 8
@@ -132,6 +148,7 @@ On success, returns "status": "ok" and resets the password in database. If not, 
 3. Both passwords do not match
 4. Error when querying database
 5. No reset_key matches what was passed
+
 
 ## admin/download/user/
 
