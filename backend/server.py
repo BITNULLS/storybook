@@ -221,7 +221,8 @@ def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
     :param cloud_file_name: Name for file in cloud
     :return: the http status code of the upload response
     """
-    return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
+    with open(local_file_path, 'rb') as fh:
+        return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
     
 def download_bucket_file(filename: str) -> str:
     """ 
@@ -247,7 +248,7 @@ def download_bucket_file(filename: str) -> str:
         return None
         
 def delete_bucket_file(filename: str) -> bool:
-    """"
+    """
     Deletes a given file in Chum-Bucket
     :param filename: Filename of file to delete in Chum-Bucket
     :return: Boolean depending on if the file was deleted or not.
@@ -260,7 +261,7 @@ def delete_bucket_file(filename: str) -> bool:
         return False
 
 def list_bucket_files() -> list[str]:
-    """"
+    """
     Prints each object in the bucket on a separate line. Used for testing/checking.
     :return: List of filenames, if bucket is empty returns None
     """
@@ -706,7 +707,6 @@ def password_forgot():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"} 
-    connection.commit()    
     
     result = cursor.fetchone()
     if result is None:
@@ -794,7 +794,6 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    connection.commit()
 
     result = cursor.fetchone()
     if result is None:
