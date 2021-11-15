@@ -101,7 +101,13 @@ This lets a user reset a password.
 
 ### Returns
 
-On success, returns "status": "ok" if email is a match and sends a link to the password/reset endpoint. If not, returns "status": "fail".
+On success, returns "status": "ok" if email is a match and sends a link to the password/reset endpoint. If not, returns "status": "fail" for the following conditions:
+
+1. Email was not provided
+2. Email failed sanitization check of more than 8 characters &/or
+    alphanumeric
+3. Error when querying the database
+4. No email matches what was passed
 
 
 ## Password Reset
@@ -118,7 +124,14 @@ This lets a user change their password.
 
 ### Returns
 
-On success, returns "status": "ok" if the input reset key matches the reset_key contained in the database & both password fields match. If not, returns "status": "fail".
+On success, returns "status": "ok" and resets the password in database. If not, returns "status": "fail" for the following conditions:
+
+1. Either password was not provided
+2. Either one or both passwords failed sanitization check of more than 8
+    characters &/or alphanumeric 
+3. Both passwords do not match
+4. Error when querying database
+5. No reset_key matches what was passed
 
 ## admin/download/user/
 
