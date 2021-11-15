@@ -143,6 +143,6 @@ Two things happen:
 
 But this can fail because of,
 
- 1. Either the `answer_id` or `question_id` is not provided
- 2. `answer_id` or `question_id` is not clean (invalid characters)
- 3. No `answer_id` or `question_id` matches found
+ 4. Either the `answer_id` or `question_id` is not provided
+ 5. `answer_id` or `question_id` is not clean (invalid characters)
+ 6. No `answer_id` or `question_id` matches found

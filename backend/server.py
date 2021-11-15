@@ -641,12 +641,20 @@ def quiz_submit_answer():
     except AssertionError:
         return {
             "status": "fail",
-            "fail_no": 1,
-            "message": "Either the email or the password was not provided."
+            "fail_no": 4,
+            "message": "Either the answer_id or the question_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
-    answer_id = int(request.form['answer_id'])
-    question_id = int(request.form['question_id'])
+    try:
+        answer_id = int(request.form['answer_id'])
+        question_id = int(request.form['question_id'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Either the answer_id or the question_id contained invalid characters."
+        }, 400, {"Content-Type": "application/json"}
+
 
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
@@ -671,10 +679,10 @@ def quiz_submit_answer():
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
-            "fail_no": 8,
+            "fail_no": 6,
             "message": "Error when updating database.",
             "database_message": str(e)
-        }
+        }, 400, {"Content-Type": "application/json"}
     finally:
         conn_lock.release()
 
