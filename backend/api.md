@@ -12,6 +12,8 @@ Table of Contents:
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
+ - [`/admin/book/grant/`](#admin/book/grant)
+ - [`quiz/submit`](#quiz/submit)
 
 ## Meta Notes
 
@@ -184,6 +186,33 @@ On success, returns a CSV file.
 
 The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
 
+## quiz/submit
+
+`POST /quiz/submit`
+
+Inserts a user's quiz answer into the user_response table.
+
+### Inputs 
+
+ - `answer_id` - ID of the answer to the given question
+ - `question_id` - ID of the question being answered
+
+### Returns
+
+On success,
+
+```
+{
+    "status": "ok"
+}
+```
+
+But this can fail because of,
+
+ 4. Either the `answer_id` or `question_id` is not provided
+ 5. `answer_id` or `question_id` is not clean (invalid characters)
+ 6. No `answer_id` or `question_id` matches found
+
 ## admin/book/upload/
 
 `POST /admin/book/upload/`
@@ -200,8 +229,8 @@ On Success,
 
 ```
 {
-    "message": "file uploaded",
-    "status": "success"
+    "status": "ok",
+    "message": "file uploaded"
 }
 ```
 
@@ -233,7 +262,7 @@ On Success,
 
 ```
 {
-    "status": "success",
+    "status": "ok",
     "message": "file downloaded"
 }
 ```
@@ -241,4 +270,33 @@ On Success,
 When testing with postman, the input filename is set in the request Body form-data. The key should be called "file" and should be of type Text. Then, enter the exact filename of the file to be downloaded as the value.
 
 Failure may occur because of,
+
 14. File could not be downloaded
+
+## /admin/book/grant/
+
+`POST /admin/book/grant/`
+
+Allows admin user to upload a book that is associated with a study id.
+
+### Inputs
+
+ - `book_name`: Text of full name of book.
+ - `book_url`: Text of full url for book.
+ - `book_description`: Text of full description for book.
+ - `study_id`: Number id for the study that the book belongs to
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "ok"
+}
+```
+
+When testing with postman, the inputs will be input in "form-data" as text inputs. Enter the same exact input variables as above into the key column. Then, supply inputs to the value column.
+
+4. Failure may occur if the input study_id does not exist in the table STUDY since the parent key will not be found.
+
