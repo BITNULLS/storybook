@@ -138,9 +138,6 @@ On success,
 }
 ```
 
-Two things happen:
- - An **`Authorization: Bearer <token>`** cookie is set, which validates your login session.
-
 But this can fail because of,
 
  4. Either the `answer_id` or `question_id` is not provided
