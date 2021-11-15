@@ -4,6 +4,7 @@ from flask import Response
 from flask import send_file
 from flask import make_response
 from multiprocessing import Process, Pipe, Queue
+from threading import Lock
 import re
 import cx_Oracle
 import json
@@ -94,6 +95,8 @@ connection = cx_Oracle.connect(
     oracle_config['connect_string']
 )
 print('connected')
+
+conn_lock = Lock()
 
 # email login
 with open('data/email.password') as email_config:
@@ -705,9 +708,59 @@ def storyboard_save_user_action():
 
 @app.route("/quiz/submit", methods=['POST'])
 def quiz_submit_answer():
-    return {
-        "...": "..."
-    }
+    try:
+        assert 'answer_id' in request.form
+        assert 'question_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Either the answer_id or the question_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    try:
+        answer_id = int(request.form['answer_id'])
+        question_id = int(request.form['question_id'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Either the answer_id or the question_id contained invalid characters."
+        }, 400, {"Content-Type": "application/json"}
+
+
+    # make sure the user is authenticated first
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    
+    cursor = connection.cursor()
+    try:
+        conn_lock.acquire()
+        cursor.execute(
+            "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" + token['sub'] + "', " + str(question_id) + ", " + str(answer_id) + ", current_timestamp)"
+        )
+        connection.commit()
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 6,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
+
+    return {"status": "ok"}
+    
 
 
 @app.route("/admin/book/download", methods=['POST'])

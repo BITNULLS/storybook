@@ -11,6 +11,7 @@ Table of Contents:
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
  - [`/admin/book/grant/`](#admin/book/grant)
+ - [`quiz/submit`](#quiz/submit)
 
 ## Meta Notes
 
@@ -119,6 +120,33 @@ On success, returns a CSV file.
 
 The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
 
+## quiz/submit
+
+`POST /quiz/submit`
+
+Inserts a user's quiz answer into the user_response table.
+
+### Inputs 
+
+ - `answer_id` - ID of the answer to the given question
+ - `question_id` - ID of the question being answered
+
+### Returns
+
+On success,
+
+```
+{
+    "status": "ok"
+}
+```
+
+But this can fail because of,
+
+ 4. Either the `answer_id` or `question_id` is not provided
+ 5. `answer_id` or `question_id` is not clean (invalid characters)
+ 6. No `answer_id` or `question_id` matches found
+
 ## admin/book/upload/
 
 `POST /admin/book/upload/`
@@ -135,7 +163,7 @@ On Success,
 
 ```
 {
-    "status": "ok"
+    "status": "ok",
     "message": "file uploaded"
 }
 ```
