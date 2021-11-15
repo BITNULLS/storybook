@@ -677,7 +677,7 @@ def password_forgot():
         return {
             "status": "fail",
             "fail_no": 1,
-            "message": "Email was not provided"
+            "message": "Email was not provided."
         }, 400, {"Content-Type": "application/json"}
         
     # sanitize inputs: alphanumeric, > 8 chars
@@ -685,7 +685,7 @@ def password_forgot():
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "Email failed sanitize check. The POSTed fields should be alphanumeric"
+            "message": "Email failed sanitization check of more than 8 characters &/or alphanumeric."
         }, 400, {"Content-Type": "application/json"}
     
 
@@ -767,7 +767,7 @@ def password_reset():
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "Either both or one of the passwords failed the sanitize check. The POSTed fields should be alphanumeric, longer than 8 characters."
+            "message": "Either one or both passwords failed sanitization check of more than 8 characters &/or alphanumeric."
         }, 400, {"Content-Type": "application/json"}
 
     # check if both passwords match
