@@ -8,6 +8,9 @@ Table of Contents:
  - [`login/`](#login)
  - [`admin/download/user/`](#admin/download/user)
  - [`admin/download/action/`](#admin/download/action)
+ - [`admin/book/upload/`](#admin/book/upload)
+ - [`admin/book/download/`](#admin/book/download)
+ - [`/admin/book/grant/`](#admin/book/grant)
  - [`quiz/submit`](#quiz/submit)
 
 ## Meta Notes
@@ -143,3 +146,89 @@ But this can fail because of,
  4. Either the `answer_id` or `question_id` is not provided
  5. `answer_id` or `question_id` is not clean (invalid characters)
  6. No `answer_id` or `question_id` matches found
+
+## admin/book/upload/
+
+`POST /admin/book/upload/`
+
+Allows admin user to upload file to bucket
+
+### Inputs
+
+ - `file`: A file.
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "ok",
+    "message": "file uploaded"
+}
+```
+
+When testing in Postman, the input file should be input into the body form-data. The key should be "file" with type "File". If you successfully change the type of the key to a file type, the value column will allow you to select a file from your machine.
+
+To ensure that a valid file is selected the code checks that a request file exists, that the filename is not an empty string, and that the file extension is pdf, ppt, or pptx.
+
+Failure may occur because of,
+
+10. No file was found in request.files
+11. The filename is an empty string
+12. Error when uploading file
+13. File is not of valid format or file is invalid
+
+
+## admin/book/download/
+
+`POST /admin/book/download/`
+
+Allows admin user to download a book from the file bucket.
+
+### Inputs
+
+ - `file`: A file.
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "ok",
+    "message": "file downloaded"
+}
+```
+
+When testing with postman, the input filename is set in the request Body form-data. The key should be called "file" and should be of type Text. Then, enter the exact filename of the file to be downloaded as the value.
+
+Failure may occur because of,
+14. File could not be downloaded
+
+## /admin/book/grant/
+
+`POST /admin/book/grant/`
+
+Allows admin user to upload a book that is associated with a study id.
+
+### Inputs
+
+ - `book_name`: Text of full name of book.
+ - `book_url`: Text of full url for book.
+ - `book_description`: Text of full description for book.
+ - `study_id`: Number id for the study that the book belongs to
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "ok"
+}
+```
+
+When testing with postman, the inputs will be input in "form-data" as text inputs. Enter the same exact input variables as above into the key column. Then, supply inputs to the value column.
+
+4. Failure may occur if the input study_id does not exist in the table STUDY since the parent key will not be found.

@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+import NavBar from './NavBar.js';
 import HomePage from "./pages/HomePage";
 import Login from "./pages/login-register/Login";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -16,10 +17,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 function App() {
+ // const [loggedIn, setLoggedIn] = useState(localStorage.getItem("token"));
+
   return (
     <BrowserRouter>
     
     <div className="App">
+
+    <NavBar /* isAuth={loggedIn} *//>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <Link class="navbar-brand" to="/">EduStorybook</Link>
@@ -39,7 +44,8 @@ function App() {
       </div>
     </nav>
 
-        <Switch>
+
+        <Switch>          
           <Route exact path="/">
             <HomePage />
           </Route>
@@ -72,6 +78,7 @@ function App() {
           </Route>
         </Switch>
       </div>
+
     </BrowserRouter>
 
   );
