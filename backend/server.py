@@ -33,6 +33,7 @@ re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
 re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
 re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
+re_timestamp = re.compile(r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
 
 # server settings to load in
 config = None
@@ -250,7 +251,7 @@ def delete_bucket_file(filename: str) -> bool:
         print("The object '" + filename + "' does not exist in bucket.")
         return False
 
-def list_bucket_files() -> "list[str]":
+def list_bucket_files() -> list[str]:
     """
     Prints each object in the bucket on a separate line. Used for testing/checking.
     :return: List of filenames, if bucket is empty returns None
@@ -693,31 +694,41 @@ def storyboard_save_user_action():
             "message": "Either the book_id, detail_description, or action_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
-    # sanitize inputs: make sure book_id, action_id, action_start, action_stop are ints
+    # sanitize inputs: make sure book_id, action_key_id are ints
     try: 
         book_id = int(request.form["book_id"])
-        action_id = int(request.form["action_key_id"])
+        action_key_id = int(request.form["action_key_id"])
     except ValueError:
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "The book_id, action_id, action_start, or action_stop failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
+            "message": "The book_id or action_key_id failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
         }, 400, {"Content-Type": "application/json"}
  
+    # sanitize inputs: make sure action_start and action_stop are in correct format
+    if re_timestamp.match(request.form["action_start"]) is None or \
+            re_timestamp.match(request.form["action_stop"]) is None:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Either the action_start or the action_stop failed a sanitize check. The POSTed fields should be in date format YYYY-MM-DD HH:MM:SS."
+        }, 400, {"Content-Type": "application/json"}
+
+
     cursor = connection.cursor()  
     try:
         cursor.execute( 
              "DECLARE "+\
-                "USER_ID_IN VARCHAR2(200); "+\
-                "ACTION_START_IN VARCHAR2(200); "+\
-                "ACTION_STOP_IN VARCHAR2(200); "+\
-                "BOOK_ID_IN VARCHAR2(200); "+\
-                "DETAIL_DESCRIPTION_IN VARCHAR2(200); "+\
-                "ACTION_KEY_ID_IN VARCHAR2(200); "+\
+                "USER_ID_IN VARCHAR2(36);"+\
+                "ACTION_START_IN DATE;"+\
+                "ACTION_STOP_IN DATE;"+\
+                "BOOK_ID_IN NUMBER;"+\
+                "DETAIL_DESCRIPTION_IN VARCHAR2(100);"+\
+                "ACTION_KEY_ID_IN NUMBER;"+\
             "BEGIN "+\
                 "USER_ID_IN := '"+ token["sub"]+"'; "+\
-                "ACTION_START_IN := TO_DATE('"+ request.form["action_start"]+"', 'DD-MON-YYYY HH24:MI:SS'); "+\
-                "ACTION_STOP_IN := TO_DATE('"+ request.form["action_stop"]+"',  'DD-MON-YYYY HH24:MI:SS'); "+\
+                "ACTION_START_IN := TO_DATE('"+ request.form["action_start"]+"', 'YYYY-MM-DD HH24:MI:SS'); "+\
+                "ACTION_STOP_IN := TO_DATE('"+ request.form["action_stop"]+"',  'YYYY-MM-DD HH24:MI:SS'); "+\
                 "BOOK_ID_IN := "+ request.form["book_id"]+"; "+\
                 "DETAIL_DESCRIPTION_IN := '"+ request.form["detail_description"]+ "'; "+\
                 "ACTION_KEY_ID_IN := "+ request.form["action_key_id"]+ "; "+\

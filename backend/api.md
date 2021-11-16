@@ -128,8 +128,8 @@ This saves a user action.
 - `detail_description`: Description of action.
 - `book_id`: A book number.
 - `action_id`: A user action.
-- `action_start`: A epoch time of when action started.
-- `action_stop`: A epoch time of when action stopped.
+- `action_start`: A epoch time of when action started. (In format YYYY-MM-DD HH:MM:SS)
+- `action_stop`: A epoch time of when action stopped. (In format YYYY-MM-DD HH:MM:SS)
 
 ### Returns
 
