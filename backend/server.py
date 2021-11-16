@@ -711,7 +711,7 @@ def get_users_books():
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
-            "fail_no": 1,
+            "fail_no": 4,
             "message": "Error when accessing books.",
             "database_message": str(e)
         }

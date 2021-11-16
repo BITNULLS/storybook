@@ -5,7 +5,8 @@ conditions and returns.
 
 Table of Contents:
  - [Meta Notes](#meta_notes)
- - [`login/`](#login)
+ - [`book`](#book)
+ - [`login`](#login)
  - [`admin/download/user/`](#admin/download/user)
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
@@ -50,6 +51,24 @@ When users are authenticated by the `POST /login` endpoint, they are given a JSO
     "permission": ADMIN of the user
 }
 ```
+
+## Book
+`POST \book`
+
+This retrieves all books that the user has access to.
+
+### Inputs
+None
+
+### Returns
+On success,
+```
+{
+    "status": "ok"
+}
+```
+
+It has a data object which contains all the book_id's to the books the user has access to.
 
 ## Login
 
