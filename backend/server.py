@@ -857,9 +857,11 @@ def admin_page_handler():
                 )
 
         try:
-            cursor.execute("DELETE FROM ANSWER WHERE QUESTION_ID = " + request.form['question_id_in'] + "; \
-            DELETE FROM QUESTION WHERE QUESTION_ID = " + request.form['question_id_in'] + ";"
-                )
+            cursor.execute("DELETE FROM ANSWER WHERE QUESTION_ID = " + request.form['question_id_in'])
+            
+            #  + "; \
+            # DELETE FROM QUESTION WHERE QUESTION_ID = " + request.form['question_id_in'] + ";"
+            #     )
             connection.commit()
 
         except cx_Oracle.Error as e:
