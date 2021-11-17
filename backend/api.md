@@ -10,6 +10,7 @@ Table of Contents:
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
+ - [`admin/page/`](#admin/page)
 
 ## Meta Notes
 
@@ -176,3 +177,28 @@ When testing with postman, the input filename is set in the request Body form-da
 
 Failure may occur because of,
 14. File could not be downloaded
+
+## admin/page/
+
+`DELETE /admin/page/`
+
+Allows admin user to delete questions and answers given a question id
+
+### Inputs 
+
+ - `question_id_in`: number id for a question
+
+ ### Returns 
+
+```
+{
+    "status": "ok"
+}
+```
+
+When testing with postman, the input question id is set in teh request Body form-data. The key should be "question_id_in" and be of type text.
+
+Failure may occur because of,
+
+2. question_id_in is not of type int
+ 
