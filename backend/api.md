@@ -153,6 +153,35 @@ resets the password in database. If not, returns "status": "fail" for the follow
 6. Error when querying database.
 7. Error when querying database.
 
+## storyboard/action/
+
+`POST /storyboard/action`
+
+This saves a user action. 
+
+### Inputs 
+
+- `detail_description`: Description of action.
+- `book_id`: A book number.
+- `action_id`: A user action.
+- `action_start`: A epoch time of when action started. (In format YYYY-MM-DD HH:MM:SS)
+- `action_stop`: A epoch time of when action stopped. (In format YYYY-MM-DD HH:MM:SS)
+
+### Returns
+
+On success, returns
+
+```
+{
+    "status": "ok"
+}
+```
+
+But this can fail because of,
+ 1. `book_id`, `detail_description`, `action_key_id`, `action_start`, and `action_stop` is not provided
+ 2. `book_id` or `action_key_id` is not clean
+ 3. `action_start`,`action_stop`, or `detail_description` is not clean
+ 4.  Error when uploading file
 
 ## admin/download/user/
 

@@ -33,12 +33,14 @@ app = Flask(__name__)
 
 # regexes
 # they're faster compiled, and they can be used throughout
-re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
+re_alphanumeric = re.compile(r"[a-zA-Z0-9]")
 re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
+re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
 re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
 re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
+re_timestamp = re.compile(r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
 
 # server settings to load in
 config = None
@@ -58,6 +60,7 @@ for file in config['sensitives']['files']:
 
 # domain
 domain_name = None
+
 with open(config['sensitives']['files']['domain']) as txtfile:
     for line in txtfile.readlines():
         domain_name = str(line)
@@ -852,8 +855,99 @@ def storyboard_get_page():
 
 @app.route("/storyboard/action", methods=['POST'])
 def storyboard_save_user_action():
+    '''
+    Code the storyboard_save_user_action() function in the same style as logout()
+    Screenshot a successful POST request to the /storyboard/action endpoint.
+    Add to the backend/API.md the relevant documentation for the /storyboard/action endpoint
+    in the same style as the login/ endpoint documentation.
+    '''
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms= config['jwt_alg'])  
+
+    # check that all expected inputs are received
+    try:
+        assert 'book_id' in request.form
+        assert 'detail_description' in request.form
+        assert 'action_key_id' in request.form
+        assert 'action_start' in request.form
+        assert 'action_stop' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Either the book_id, detail_description, or action_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure book_id, action_key_id are ints
+    try: 
+        book_id = int(request.form["book_id"])
+        action_key_id = int(request.form["action_key_id"])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id or action_key_id failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
+        }, 400, {"Content-Type": "application/json"}
+ 
+    # sanitize inputs: make sure action_start and action_stop are in correct format
+    if re_timestamp.match(request.form["action_start"]) is None or \
+            re_timestamp.match(request.form["action_stop"]) is None or \
+            re_alphanumeric.match(request.form["detail_description"]) is None:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Either the action_start, action_stop, or detail_description failed a sanitize check. The POSTed fields should be in date format YYYY-MM-DD HH:MM:SS. detail_description should be alphanumeric only."
+        }, 400, {"Content-Type": "application/json"}
+
+
+    cursor = connection.cursor()  
+    try:
+        cursor.execute( 
+             "DECLARE "+\
+                "USER_ID_IN VARCHAR2(36);"+\
+                "ACTION_START_IN DATE;"+\
+                "ACTION_STOP_IN DATE;"+\
+                "BOOK_ID_IN NUMBER;"+\
+                "DETAIL_DESCRIPTION_IN VARCHAR2(100);"+\
+                "ACTION_KEY_ID_IN NUMBER;"+\
+            "BEGIN "+\
+                "USER_ID_IN := '"+ token["sub"]+"'; "+\
+                "ACTION_START_IN := TO_DATE('"+ request.form["action_start"]+"', 'YYYY-MM-DD HH24:MI:SS'); "+\
+                "ACTION_STOP_IN := TO_DATE('"+ request.form["action_stop"]+"',  'YYYY-MM-DD HH24:MI:SS'); "+\
+                "BOOK_ID_IN := "+ request.form["book_id"]+"; "+\
+                "DETAIL_DESCRIPTION_IN := '"+ request.form["detail_description"]+ "'; "+\
+                "ACTION_KEY_ID_IN := "+ request.form["action_key_id"]+ "; "+\
+                "CHECK_DETAIL_ID_PROC ("+\
+                    "USER_ID_IN => USER_ID_IN, "+\
+                    "ACTION_START_IN => ACTION_START_IN, "+\
+                    "ACTION_STOP_IN => ACTION_STOP_IN, "+\
+                    "BOOK_ID_IN => BOOK_ID_IN, "+\
+                    "DETAIL_DESCRIPTION_IN => DETAIL_DESCRIPTION_IN, "+\
+                    "ACTION_KEY_ID_IN => ACTION_KEY_ID_IN "+\
+                ");"+\
+            "END;"
+        )
+        connection.commit()
+    except cx_Oracle.Error as e:
+        return{
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when updating database action",
+            "database_message": str(e)
+        } , 400, {"Content-Type": "application/json"}
     return {
-        "...": "..."
+        "status": "ok"
     }
 
 
