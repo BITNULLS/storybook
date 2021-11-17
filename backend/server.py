@@ -810,11 +810,72 @@ def admin_page_edit():
     }
 
 
-@app.route("/admin/page/add", methods=['POST'])
-def admin_page_add():
-    return {
-        "...": "..."
-    }
+@app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
+def admin_page_handler():
+    """
+    This endpoint handles quiz questions and answers
+    """
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    if request.method == 'POST':
+        return 'DELETE'
+
+    elif request.method == 'PUT':
+
+        return 'PUT'
+
+    elif request.method == 'GET':
+
+        return 'GET'
+
+    elif request.method == 'DELETE':  # DELETE = delete a page
+
+        try: 
+            question_id_in = int(request.form['question_id_in'])
+
+        except ValueError:
+                return {
+                    "status": "fail",
+                    "fail_no": 2,
+                    "message": "question_id_in failed a sanitize check. The posted field should be an integer."
+                }, 400, {"Content-Type": "application/json"}
+
+        cursor = connection.cursor()
+
+        print("DELETE FROM ANSWER WHERE QUESTION_ID = " + request.form['question_id_in'] + "; \
+            DELETE FROM QUESTION WHERE QUESTION_ID = " + request.form['question_id_in'] + ";"
+                )
+
+        try:
+            cursor.execute("DELETE FROM ANSWER WHERE QUESTION_ID = " + request.form['question_id_in'] + "; \
+            DELETE FROM QUESTION WHERE QUESTION_ID = " + request.form['question_id_in'] + ";"
+                )
+            connection.commit()
+
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }
+
+        return {
+            "status" : "ok"
+        }
+
+    else:
+        return "Invalid Operation"
 
 
 @app.route("/admin/download/user", methods=['POST'])
