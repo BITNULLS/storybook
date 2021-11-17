@@ -824,7 +824,7 @@ def admin_page_handler():
         auth = auth.replace('Bearer ', '', 1)
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
-    if request.method == 'POST' or request.method == 'PUT':  # Post = adding a page
+    if request.method == 'POST':
 
         # check to make sure you have a book_id
         try:
@@ -847,6 +847,7 @@ def admin_page_handler():
 
         # sanitize inputs: check ints
         try:
+            
             book_id_in = int(request.form['book_id_in'])
             school_id_in = int(request.form['school_id_in'])
             page_prev_in = int(request.form['page_prev_in'])
@@ -862,85 +863,36 @@ def admin_page_handler():
         # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
         # regex is not very efficient method here for sql injection check
 
-        if request.method == 'POST':
-            cursor = connection.cursor()
+        cursor = connection.cursor()
 
-            try:
-                cursor.callproc("insert_question_proc",\
-                    [request.form['question_in'],\
-                        request.form['school_id_in'],\
-                        request.form['book_id_in'],\
-                        request.form['page_prev_in'],\
-                        request.form['page_next_in'],\
-                        request.form['answer_1_in'],\
-                        request.form['answer_2_in'],\
-                        request.form['answer_3_in'],\
-                        request.form['answer_4_in']])
-                    
-                # commit changes to db
-                connection.commit()
+        try:
+            cursor.callproc("insert_question_proc",\
+                [request.form['question_in'],\
+                    request.form['school_id_in'],\
+                    request.form['book_id_in'],\
+                    request.form['page_prev_in'],\
+                    request.form['page_next_in'],\
+                    request.form['answer_1_in'],\
+                    request.form['answer_2_in'],\
+                    request.form['answer_3_in'],\
+                    request.form['answer_4_in']])
+                
+            # commit changes to db
+            connection.commit()
 
-            except cx_Oracle.Error as e:
-                return {
-                    "status": "fail",
-                    "fail_no": 3,
-                    "message": "Error when querying database. line 889",
-                    "database_message": str(e)
-                }, 400, {"Content-Type": "application/json"}
-
+        except cx_Oracle.Error as e:
             return {
-                "status": "ok"
-                }
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database. line 889",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
 
-        elif request.method == 'PUT':
-
-            # sanitize inputs: check question id int
-            try:
-                question_id_in = int(request.form['question_id_in'])
-                answer_id_1_in = int(request.form['answer_id_1_in'])
-                answer_id_2_in = int(request.form['answer_id_2_in'])
-                answer_id_3_in = int(request.form['answer_id_3_in'])
-                answer_id_4_in = int(request.form['answer_id_4_in'])
-
-
-            except ValueError:
-                return {
-                    "status": "fail",
-                    "fail_no": 2,
-                    "message": "question_id_in, answer_id_1_in, answer_id_2_in, answer_id_3_in, or answer_id_4_in failed a sanitize check. The posted field should be an integer."
-                }, 400, {"Content-Type": "application/json"}
-
-            cursor = connection.cursor()
-
-            try:
-                cursor.execute("UPDATE question SET \
-                    school_id = " + request.form['school_id_in']
-                    + ", book_id = " + request.form['book_id_in']
-                    + ", question = " + request.form['question_in']
-                    + ", page_prev = " + request.form['page_prev_in']
-                    + ", page_next = " + request.form['page_next']
-                    + " where question_id = " + request.form["question_id_in"]
-                    + "; \
-                    UPDATE ANSWER set answer = " + request.form['answer_1_in']
-                    + " where answer_id = " + request.form['answer_id_1_in'] + "; \
-                    UPDATE ANSWER set answer = " + request.form['answer_2_in']
-                    + " where answer_id = " + request.form['answer_id_2_in'] + "; \
-                    UPDATE ANSWER set answer = " + request.form['answer_3_in']
-                    + " where answer_id = " + request.form['answer_id_3_in'] + "; \
-                    UPDATE ANSWER set answer = " + request.form['answer_4_in']
-                    + " where answer_id = " + request.form['answer_id_4_in'] + "; \
-                    ")
-
-            except cx_Oracle.Error as e:
-                return {
-                    "status": "fail",
-                    "fail_no": 3,
-                    "message": "Error when querying database. line 889",
-                    "database_message": str(e)
-                }, 400, {"Content-Type": "application/json"}
-
-
-
+        return {
+            "status": "ok"
+            }
+    elif request.method == 'PUT':
+        return 'PUT'
 
     elif request.method == 'GET':
 
