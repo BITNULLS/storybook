@@ -10,7 +10,7 @@ Table of Contents:
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
- - [`admin/page/`](#admin/page)
+ - [`admin/page/add`](#admin/page/add)
 
 ## Meta Notes
 
@@ -179,9 +179,9 @@ Failure may occur because of,
 
 14. File could not be downloaded
 
-## admin/page
+## admin/page/add
 
-`POST admin/page`
+`POST admin/page/add`
 
 Allows admin user to upload a question and answers.
 
