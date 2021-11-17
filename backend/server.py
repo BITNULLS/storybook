@@ -664,7 +664,8 @@ def register():
         }
     
     send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
-        'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + '\n\nThanks for registering an account with Edu Storybooks! :)')
+        'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + 
+        '\n\nThanks for registering an account with Edu Storybooks! :)')
 
     return {
         "status": "ok"
