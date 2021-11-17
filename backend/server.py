@@ -662,6 +662,9 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+    
+    send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
+    'Welcome to Edu Storybooks', 'Thanks for signing up for EduStorybooks!')
 
     return {
         "status": "ok"
