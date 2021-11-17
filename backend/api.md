@@ -10,6 +10,7 @@ Table of Contents:
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
+ - [`admin/page/`](#admin/page)
 
 ## Meta Notes
 
@@ -176,3 +177,35 @@ When testing with postman, the input filename is set in the request Body form-da
 
 Failure may occur because of,
 14. File could not be downloaded
+
+## admin/page
+
+`POST admin/page`
+
+Allows admin user to upload a question and answers.
+
+### Inputs
+
+- `question_in` : full text question
+- `school_id_in` : school id that questions belong to
+- `book_id_in` : book id that questions belong to
+- `page_prev_in` : previous page before question
+- `page_next_in` : next page after question
+- `answer_1_in` : first possible answer for question
+- `answer_2_in` : second possible answer for question
+- `answer_3_in` : third possible answer for question
+- `answer_4_in` : fourth possible answer for question
+
+### Returns 
+
+On Success, 
+```
+{
+    "status": "ok:
+}
+
+When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text.
+
+Failure may occur because of,
+2. school_id, book_id_in, page_prev_in, or page_next_in are not integers
+
