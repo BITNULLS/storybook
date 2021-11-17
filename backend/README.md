@@ -14,15 +14,13 @@ To get this server running, you need to follow these steps:
  3. Wherever you unzipped the Oracle Instant Client, `cd` into the directory, and `pwd` to get the working directory.  Copy the Oracle Instant Client full path (e.g. `/User/you/lib/instant_client/`)
  4. Create a file, `backend/data/oracle_dir.txt` in this repo.
  5. Paste the directory filepath of Oracle Instant Client in the `.txt`.
- 6. [Download our `oracle_key.json`](https://drive.google.com/file/d/1o50RcKhDWeBZyKIsH-BwOy_yQVb79pcb/view?usp=sharing), and place the file in `backend/data/`.  So you should have `backend/data/oracle_key.json`.  Keep this safe.  This contains the username, password, and URL to connect to the database.  
- 7. [Download our `Wallet_EDUStorybook` wallet](https://drive.google.com/file/d/15tEPQTOutgKm5h2kJP3hRE4VO8czimP4/view?usp=sharing), and place the zip in `backend/data/` and unzip it. So you should have `backend/data/Wallet_EDUStorybook/`.  Keep this safe.  This contains the certificates necessary to authenticate a database connection.
- 8. [Download our `Chum-Bucket.pem`](https://drive.google.com/file/d/13v0AyIzHgV9XOMgK7hvzoygNoGmVzvdU/view?usp=sharing), and place the file in the `backend/data/`. So you should have `backend/data/Chum-Bucket.pem`. Also keep this safe.
- 9. [Download our `jwt.key`](https://drive.google.com/file/d/1fmK-E8HQQed24HzE2YslwGOTGNA4WDU5/view?usp=sharing), and place the file in the `backend/data/`. So you should have `backend/data/jwt.key`
- 10. Create a `domain.txt` in the `backend/data/` folder, such that `backend/data/domain.txt` file exists.
- 11. Run `make setup` in this `backend/` directory to the install the necessary Python dependencies.  Or just run `pip3 install -r requirements.txt` for Windows.
- 12. [Install `cloudflared` according to these instructions.](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation)
- 13. You're all done!  Now execute `make run` to start the server.
- 14. Flask may have trouble running, so you will have to execute all of the `make run` commands one by one, copying from the makefile.
+ 6. [Download our `StorybookFiles.json`](https://drive.google.com/file/d/1HVrLbauaq_3jEqMXVs9yUFw0UIGSiPDP/view?usp=sharing) and place in `backend/data/`.
+ 7. [Download our `StorybookFiles.pem`](https://drive.google.com/file/d/14r0GyoITrOjcbVH_RaezkB8TL7gzBTfR/view?usp=sharing) and place in `backend/data/`.
+ 8. Create a `domain.txt` in the `backend/data/` folder, such that `backend/data/domain.txt` file exists.
+ 9. Run `make setup` in this `backend/` directory to the install the necessary Python dependencies.  Or just run `pip3 install -r requirements.txt` for Windows.
+ 10. [Install `cloudflared` according to these instructions.](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation)
+ 11. You're all done!  Now execute `make run` to start the server.
+ 12. Flask may have trouble running, so you will have to execute all of the `make run` commands one by one, copying from the makefile.
 
 ## How to Test the API
 
@@ -96,3 +94,5 @@ To delete a file in the bucket, the function `delete_bucket_file` is used.
  - We are using Python `3.x`
  - Yes, getting the Oracle Database client working is an absolute pain in the caboose, and this is the way it is meant to be done
  - Our current test login is `test@udel.edu` and password `password`.
+ - The sensitive files are downloaded from the cloud
+   - The only file that are needed to download the other files are `StorybookFiles.json` and `StorybookFiles.pem`
