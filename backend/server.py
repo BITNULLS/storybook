@@ -615,8 +615,8 @@ def register():
 
     # all good, now query database
     email = (request.form['email']).lower().strip()
-    first_name = (request.form['first_name']).lower().strip()
-    last_name = (request.form['last_name']).lower().strip()
+    first_name = request.form['first_name']
+    last_name = request.form['last_name']
     school_id = (request.form['school_id']).lower().strip()
     study_id = (request.form['study_id']).lower().strip()
 
@@ -664,7 +664,7 @@ def register():
         }
     
     send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
-    'Welcome to Edu Storybooks', 'Thanks for signing up for EduStorybooks!')
+        'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + '\n\nThanks for registering an account with Edu Storybooks! :)')
 
     return {
         "status": "ok"
