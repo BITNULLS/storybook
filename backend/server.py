@@ -27,8 +27,9 @@ app = Flask(__name__)
 
 # regexes
 # they're faster compiled, and they can be used throughout
-re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
+re_alphanumeric = re.compile(r"[a-zA-Z0-9]")
 re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
+re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
 re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
 re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
@@ -707,11 +708,12 @@ def storyboard_save_user_action():
  
     # sanitize inputs: make sure action_start and action_stop are in correct format
     if re_timestamp.match(request.form["action_start"]) is None or \
-            re_timestamp.match(request.form["action_stop"]) is None:
+            re_timestamp.match(request.form["action_stop"]) is None or \
+            re_alphanumeric.match(request.form["detail_description"]) is None:
         return {
             "status": "fail",
             "fail_no": 3,
-            "message": "Either the action_start or the action_stop failed a sanitize check. The POSTed fields should be in date format YYYY-MM-DD HH:MM:SS."
+            "message": "Either the action_start, action_stop, or detail_description failed a sanitize check. The POSTed fields should be in date format YYYY-MM-DD HH:MM:SS. detail_description should be alphanumeric only."
         }, 400, {"Content-Type": "application/json"}
 
 
