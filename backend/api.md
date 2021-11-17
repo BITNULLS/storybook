@@ -179,9 +179,9 @@ Failure may occur because of,
 
 14. File could not be downloaded
 
-## admin/page/add
+## admin/page/
 
-`POST admin/page/add`
+`POST admin/page/`
 
 Allows admin user to upload a question and answers.
 
