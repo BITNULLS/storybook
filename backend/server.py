@@ -32,8 +32,8 @@ app = Flask(__name__)
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
 re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
-re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
-re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
+re_hex36 = re.compile(r"[a-f0-9-]{36,}")  # for uuid.uuid4
+re_hex32 = re.compile(r"[A-F0-9]{32,}")  # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 # server settings to load in
@@ -234,7 +234,8 @@ def download_bucket_file(filename: str) -> str:
         os.mkdir('bucket_files')
 
     try:
-        obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
+        obj = oracle_cloud_client.get_object(
+            bucket['namespace'], bucket['name'], filename)
         new_file = 'bucket_files/' + filename
         with open(new_file, 'wb') as f:
             for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
@@ -253,24 +254,26 @@ def delete_bucket_file(filename: str) -> bool:
     :return: Boolean depending on if the file was deleted or not.
     """
     try:
-        oracle_cloud_client.delete_object(bucket['namespace'], bucket['name'], filename)
+        oracle_cloud_client.delete_object(
+            bucket['namespace'], bucket['name'], filename)
         return True
     except oci.exceptions.ServiceError as e:
         print("The object '" + filename + "' does not exist in bucket.")
         return False
+
 
 def list_bucket_files() -> list[str]:
     """
     Prints each object in the bucket on a separate line. Used for testing/checking.
     :return: List of filenames, if bucket is empty returns None
     """
-    files = oracle_cloud_client.list_objects(bucket['namespace'], bucket['name'])
+    files = oracle_cloud_client.list_objects(
+        bucket['namespace'], bucket['name'])
     file_names = []
-    get_name = lambda f: f.name
+    def get_name(f): return f.name
     for file in files.data.objects:
         file_names.append(get_name(file))
     return file_names
-
 
 
 def validate_login(auth: str, permission=0):
@@ -531,10 +534,11 @@ def login():
         # secure=True,
         # httponly=True
     )
-    
+
     try:
         cursor.execute(
-            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" + str(user_id) + "'"
+            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" +
+            str(user_id) + "'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -601,10 +605,10 @@ def register():
         }
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    if re_email.match( request.form['email'] ) is None or \
-        re_alphanumeric8.match( request.form['password'] ) is None or \
-        re_alphanumeric2.match( request.form['first_name'] ) is None or \
-        re_alphanumeric2.match( request.form['last_name'] ) is None:
+    if re_email.match(request.form['email']) is None or \
+            re_alphanumeric8.match(request.form['password']) is None or \
+            re_alphanumeric2.match(request.form['first_name']) is None or \
+            re_alphanumeric2.match(request.form['last_name']) is None:
         return {
             "status": "fail",
             "fail_no": 2,
@@ -630,8 +634,8 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-    
-    result = cursor.fetchone() 
+
+    result = cursor.fetchone()
     if result is not None:
         return {
             "status": "fail",
@@ -639,17 +643,18 @@ def register():
             "message": "Email is Already Registered."
         }
 
-    hashed = bcrypt.hashpw(request.form['password'].encode('utf8'), bcrypt.gensalt())
+    hashed = bcrypt.hashpw(
+        request.form['password'].encode('utf8'), bcrypt.gensalt())
 
     try:
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
-            + email + "', '" 
-            + first_name + "', '" 
-            + last_name + "', " 
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('"
+            + email + "', '"
+            + first_name + "', '"
+            + last_name + "', "
             + "0 , "
-            + school_id + ", " 
-            + study_id + ", '" 
+            + school_id + ", "
+            + study_id + ", '"
             + hashed.decode('utf8')
             + "')"
         )
@@ -664,7 +669,6 @@ def register():
     return {
         "status": "ok"
     }
-    
 
 
 @app.route("/password/forgot", methods=['POST'])
@@ -806,54 +810,151 @@ def admin_grant_user_book_access():
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
 def admin_page_handler():
     """
-    This endpoint will only handle quiz questions.
+    This endpoint handles quiz questions and answers
     """
     auth = request.cookies.get('Authorization')
-    vl = validate_login( 
-        auth, 
+    vl = validate_login(
+        auth,
         permission=1
     )
     if vl != True:
-        return vl 
-    
+        return vl
+
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg']) 
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
-    #check to make sure you have a book_id
-    try:
-        assert 'book_id' in request.form
-    except AssertionError:
-        return {
-            "status": "fail",
-            "fail_no": 1,
-            "message": "book_id was not provided."
-        }, 400, {"Content-Type": "application/json"}
+    if request.method == 'POST' or request.method == 'PUT':  # Post = adding a page
 
-    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    try:
-        book_id = int(request.form['book_id'])
-    except ValueError:
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "book_id failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
- 
-    if request.method == 'POST': # Post = adding a page
-        return "POST"
+        # check to make sure you have a book_id
+        try:
+            assert 'book_id_in' in request.form
+            assert 'school_id_in' in request.form
+            assert 'question_in' in request.form
+            assert 'page_prev_in' in request.form
+            assert 'page_next_in' in request.form
+            assert 'answer_1_in' in request.form
+            assert 'answer_2_in' in request.form
+            assert 'answer_3_in' in request.form
+            assert 'answer_4_in' in request.form
 
-    elif request.method == 'GET': # Get = get (retrieve pages)
+        except AssertionError:
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "book_id_in, school_id_in, question_in, page_prev_in, page_next_in, answer_1_in, answer_2_in, answer_3_in, or answer_4_in not provided"
+            }, 400, {"Content-Type": "application/json"}
+
+        # sanitize inputs: check ints
+        try:
+            book_id_in = int(request.form['book_id_in'])
+            school_id_in = int(request.form['school_id_in'])
+            page_prev_in = int(request.form['page_prev_in'])
+            page_next_in = int(request.form['page_next_in'])
+
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "book_id_in, school_id_in, page_prev_in, or  page_next_in failed a sanitize check. The posted fields should be integers."
+            }, 400, {"Content-Type": "application/json"}
+
+        # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
+        # regex is not very efficient method here for sql injection check
+
+        if request.method == 'POST':
+            cursor = connection.cursor()
+
+            try:
+                cursor.callproc("insert_question_proc",\
+                    [request.form['question_in'],\
+                        request.form['school_id_in'],\
+                        request.form['book_id_in'],\
+                        request.form['page_prev_in'],\
+                        request.form['page_next_in'],\
+                        request.form['answer_1_in'],\
+                        request.form['answer_2_in'],\
+                        request.form['answer_3_in'],\
+                        request.form['answer_4_in']])
+                    
+                # commit changes to db
+                connection.commit()
+
+            except cx_Oracle.Error as e:
+                return {
+                    "status": "fail",
+                    "fail_no": 3,
+                    "message": "Error when querying database. line 889",
+                    "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+
+            return {
+                "status": "ok"
+                }
+
+        elif request.method == 'PUT':
+
+            # sanitize inputs: check question id int
+            try:
+                question_id_in = int(request.form['question_id_in'])
+                answer_id_1_in = int(request.form['answer_id_1_in'])
+                answer_id_2_in = int(request.form['answer_id_2_in'])
+                answer_id_3_in = int(request.form['answer_id_3_in'])
+                answer_id_4_in = int(request.form['answer_id_4_in'])
+
+
+            except ValueError:
+                return {
+                    "status": "fail",
+                    "fail_no": 2,
+                    "message": "question_id_in, answer_id_1_in, answer_id_2_in, answer_id_3_in, or answer_id_4_in failed a sanitize check. The posted field should be an integer."
+                }, 400, {"Content-Type": "application/json"}
+
+            cursor = connection.cursor()
+
+            try:
+                cursor.execute("UPDATE question SET \
+                    school_id = " + request.form['school_id_in']
+                    + ", book_id = " + request.form['book_id_in']
+                    + ", question = " + request.form['question_in']
+                    + ", page_prev = " + request.form['page_prev_in']
+                    + ", page_next = " + request.form['page_next']
+                    + " where question_id = " + request.form["question_id_in"]
+                    + "; \
+                    UPDATE ANSWER set answer = " + request.form['answer_1_in']
+                    + " where answer_id = " + request.form['answer_id_1_in'] + "; \
+                    UPDATE ANSWER set answer = " + request.form['answer_2_in']
+                    + " where answer_id = " + request.form['answer_id_2_in'] + "; \
+                    UPDATE ANSWER set answer = " + request.form['answer_3_in']
+                    + " where answer_id = " + request.form['answer_id_3_in'] + "; \
+                    UPDATE ANSWER set answer = " + request.form['answer_4_in']
+                    + " where answer_id = " + request.form['answer_id_4_in'] + "; \
+                    ")
+
+            except cx_Oracle.Error as e:
+                return {
+                    "status": "fail",
+                    "fail_no": 3,
+                    "message": "Error when querying database. line 889",
+                    "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+
+
+
+
+    elif request.method == 'GET':
+
         cursor = connection.cursor()
 
         try:
             cursor.execute(
-                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION "+\
-                "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID "+\
-                "INNER JOIN ANSWER ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID "+\
-                "WHERE BOOK_ID=" + request.form["book_id"] 
+                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER_ID, ANSWER.ANSWER FROM QUESTION " +
+                "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID " +
+                "INNER JOIN ANSWER ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID " +
+                "WHERE BOOK_ID=" + request.form["book_id"]
             )
             label_results_from(cursor)
+
         except cx_Oracle.Error as e:
             return {
                 "status": "fail",
@@ -861,13 +962,13 @@ def admin_page_handler():
                 "message": "Error when querying database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        
+
         # fetching all the questions and storing them in questions array
-        questions=[]
+        questions = []
 
         while True:
-            result = cursor.fetchone() 
-            if result is None: 
+            result = cursor.fetchone()
+            if result is None:
                 break
             questions.append(result)
         if len(questions) == 0:
@@ -881,13 +982,10 @@ def admin_page_handler():
             "questions": questions
         }
 
-    elif request.method == 'PUT': # Put = updating a page
-        return "PUT"
-
-    elif request.method == 'DELETE': # DELETE = delete a page 
+    elif request.method == 'DELETE':  # DELETE = delete a page
         return "DELETE"
 
-    else: 
+    else:
         return "Invalid Operation"
 
 
