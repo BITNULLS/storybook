@@ -176,6 +176,7 @@ On Success,
 When testing with postman, the input filename is set in the request Body form-data. The key should be called "file" and should be of type Text. Then, enter the exact filename of the file to be downloaded as the value.
 
 Failure may occur because of,
+
 14. File could not be downloaded
 
 ## admin/page
@@ -203,9 +204,11 @@ On Success,
 {
     "status": "ok:
 }
+```
 
 When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text.
 
 Failure may occur because of,
+
 2. school_id, book_id_in, page_prev_in, or page_next_in are not integers
 
