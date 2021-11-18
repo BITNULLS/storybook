@@ -615,8 +615,8 @@ def register():
 
     # all good, now query database
     email = (request.form['email']).lower().strip()
-    first_name = request.form['first_name']
-    last_name = request.form['last_name']
+    first_name = (request.form['first_name']).strip()
+    last_name = (request.form['last_name']).strip()
     school_id = (request.form['school_id']).lower().strip()
     study_id = (request.form['study_id']).lower().strip()
 
