@@ -37,25 +37,10 @@ re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 # server settings to load in
-config = None
-
-with open('data/config.json') as jsonfile:
-    config = json.load(jsonfile)
-assert config is not None, 'Could not find data/config.json file; Did you download it?'
-
-for folder in config['sensitives']['folders']:
-    folder_act = config['sensitives']['folders'][folder]
-    assert os.path.isdir(
-        folder_act), 'Missing a sensitive data folder: ' + folder_act
-for file in config['sensitives']['files']:
-    file_act = config['sensitives']['files'][file]
-    assert os.path.isfile(
-        file_act), 'Missing a sensitive data file: ' + file_act
+config = sensitive.config
 
 # domain
 domain_name = sensitive.domain_name
-assert domain_name is not None and domain_name != '', config['sensitives'][
-    'files']['domain_name'] + ' is empty; It should not be empty'
 
 # json web tokens key
 jwt_key = sensitive.jwt_key
@@ -73,7 +58,6 @@ assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives']
 cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
 
 oracle_config = sensitive.oracle_config
-assert oracle_config is not None, 'Oracle Key json was empty for some reason'
 
 connection = cx_Oracle.connect(
     oracle_config['username'],

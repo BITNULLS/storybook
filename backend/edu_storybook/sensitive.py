@@ -5,6 +5,11 @@ import json
 import smtplib
 import ssl
 
+with open('data/config.json') as jsonfile:
+    config = json.load(jsonfile)
+assert config is not None, 'Could not find data/config.json file.'
+# TODO: Relocate in future when every part of server.py is in the module
+
 wallet = bucket.download_bucket_file("Wallet_EDUStorybook.zip", '../data')
 domain = bucket.download_bucket_file("domain.txt", '../data')
 email = bucket.download_bucket_file("email.password", '../data')
@@ -25,6 +30,9 @@ with open(domain) as txtfile:
         domain_name = str(line)
         break
 os.remove(domain)
+assert domain_name is not None and domain_name != '', config['sensitives'][
+    'files']['domain_name'] + ' is empty; It should not be empty'
+
 
 # email login
 with open(email) as email_config:
@@ -54,3 +62,4 @@ os.remove(jwt)
 with open(oracle_key) as jsonfile:
     oracle_config = json.load(jsonfile)
 os.remove(oracle_key)
+assert oracle_config is not None, 'Oracle Key json was empty for some reason'
