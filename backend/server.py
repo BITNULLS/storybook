@@ -1,4 +1,3 @@
-from backend.edu_storybook import bucket, sensitive
 from edu_storybook import bucket, sensitive
 from flask import Flask
 from flask import request
@@ -60,12 +59,6 @@ assert domain_name is not None and domain_name != '', config['sensitives'][
 
 # json web tokens key
 jwt_key = sensitive.jwt_key
-with open(config['sensitives']['files']['jwt_key']) as txtfile:
-    for line in txtfile.readlines():
-        jwt_key = str(line)
-        break
-assert jwt_key is not None and jwt_key != '', config['sensitives'][
-    'files']['jwt_key'] + ' is empty; It should not be empty'
 
 # database connection
 print('Connecting to database...', end=' ')
