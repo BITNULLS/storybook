@@ -46,11 +46,11 @@ For now, we will use Postman to send test requests to the backend server.
 ### Bucket Configurations Files
 
 Requirements/Steps to use the Chum-Bucket:
- - Download our oracle_bucket.json and Chum-Bucket.pem, and place the files in backend/data/. These files contain the information to connect to our Cloud Bucket. This will allow you to use the functions `upload_bucket_file` and `download_bucket_file`
+ - Download our oracle_bucket.json and Chum-Bucket.pem, and place the files in backend/data/. These files contain the information to connect to our Cloud Bucket. This will allow you to use the functions `upload_bucket_file` and `download_bucket_file` in `edu_storybook/bucket.py`.
  
 ### Upload File to Cloud
  
-To upload, the function `upload_bucket_file` is used.
+To upload, the function `upload_bucket_file` is used. It is located in `edu_storybook/bucket.py`.
 
  - The function takes 2 parameter:
    - `local_file_path`: string of the local path of file to upload 
@@ -59,7 +59,7 @@ To upload, the function `upload_bucket_file` is used.
 
 ### Download File to Local Machine
 
-To download, the function `download_bucket_file` is used.
+To download, the function `download_bucket_file` is used. It is located in `edu_storybook/bucket.py`.
 
  - The function takes a single parameter:
    - `filename`: string of the name of the file in Chum-Bucket
@@ -69,7 +69,7 @@ To download, the function `download_bucket_file` is used.
 
 ### Delete File in Cloud
 
-To delete a file in the bucket, the function `delete_bucket_file` is used.
+To delete a file in the bucket, the function `delete_bucket_file` is used. It is located in `edu_storybook/bucket.py`.
 
  - The function takes a single parameter:
    - `filename`: string of the file to delete from Chum-Bucket
@@ -82,7 +82,7 @@ To delete a file in the bucket, the function `delete_bucket_file` is used.
 
 ### List Bucket Contents
 
- To check the contents of the bucket, the function `list_bucket_files` is used.
+ To check the contents of the bucket, the function `list_bucket_files` is used. It is located in `edu_storybook/bucket.py`.
 
  - The function takes no parameters and returns a list containing the names of the objects in the bucket.
  - If the bucket is empty, it will return `None`
