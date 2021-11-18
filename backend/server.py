@@ -32,8 +32,8 @@ app = Flask(__name__)
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
 re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
-re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
-re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
+re_hex36 = re.compile(r"[a-f0-9-]{36,}")  # for uuid.uuid4
+re_hex32 = re.compile(r"[A-F0-9]{32,}")  # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
 # server settings to load in
@@ -234,7 +234,8 @@ def download_bucket_file(filename: str) -> str:
         os.mkdir('bucket_files')
 
     try:
-        obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
+        obj = oracle_cloud_client.get_object(
+            bucket['namespace'], bucket['name'], filename)
         new_file = 'bucket_files/' + filename
         with open(new_file, 'wb') as f:
             for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
@@ -253,24 +254,26 @@ def delete_bucket_file(filename: str) -> bool:
     :return: Boolean depending on if the file was deleted or not.
     """
     try:
-        oracle_cloud_client.delete_object(bucket['namespace'], bucket['name'], filename)
+        oracle_cloud_client.delete_object(
+            bucket['namespace'], bucket['name'], filename)
         return True
     except oci.exceptions.ServiceError as e:
         print("The object '" + filename + "' does not exist in bucket.")
         return False
+
 
 def list_bucket_files() -> list[str]:
     """
     Prints each object in the bucket on a separate line. Used for testing/checking.
     :return: List of filenames, if bucket is empty returns None
     """
-    files = oracle_cloud_client.list_objects(bucket['namespace'], bucket['name'])
+    files = oracle_cloud_client.list_objects(
+        bucket['namespace'], bucket['name'])
     file_names = []
-    get_name = lambda f: f.name
+    def get_name(f): return f.name
     for file in files.data.objects:
         file_names.append(get_name(file))
     return file_names
-
 
 
 def validate_login(auth: str, permission=0):
@@ -531,10 +534,11 @@ def login():
         # secure=True,
         # httponly=True
     )
-    
+
     try:
         cursor.execute(
-            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" + str(user_id) + "'"
+            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" +
+            str(user_id) + "'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -601,10 +605,10 @@ def register():
         }
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    if re_email.match( request.form['email'] ) is None or \
-        re_alphanumeric8.match( request.form['password'] ) is None or \
-        re_alphanumeric2.match( request.form['first_name'] ) is None or \
-        re_alphanumeric2.match( request.form['last_name'] ) is None:
+    if re_email.match(request.form['email']) is None or \
+            re_alphanumeric8.match(request.form['password']) is None or \
+            re_alphanumeric2.match(request.form['first_name']) is None or \
+            re_alphanumeric2.match(request.form['last_name']) is None:
         return {
             "status": "fail",
             "fail_no": 2,
@@ -630,8 +634,8 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-    
-    result = cursor.fetchone() 
+
+    result = cursor.fetchone()
     if result is not None:
         return {
             "status": "fail",
@@ -639,17 +643,18 @@ def register():
             "message": "Email is Already Registered."
         }
 
-    hashed = bcrypt.hashpw(request.form['password'].encode('utf8'), bcrypt.gensalt())
+    hashed = bcrypt.hashpw(
+        request.form['password'].encode('utf8'), bcrypt.gensalt())
 
     try:
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
-            + email + "', '" 
-            + first_name + "', '" 
-            + last_name + "', " 
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('"
+            + email + "', '"
+            + first_name + "', '"
+            + last_name + "', "
             + "0 , "
-            + school_id + ", " 
-            + study_id + ", '" 
+            + school_id + ", "
+            + study_id + ", '"
             + hashed.decode('utf8')
             + "')"
         )
@@ -664,7 +669,6 @@ def register():
     return {
         "status": "ok"
     }
-    
 
 
 @app.route("/password/forgot", methods=['POST'])
@@ -840,20 +844,21 @@ def admin_page_handler():
 
     elif request.method == 'DELETE':  # DELETE = delete a page
 
-        try: 
+        try:
             question_id_in = int(request.form['question_id_in'])
 
         except ValueError:
-                return {
-                    "status": "fail",
-                    "fail_no": 2,
-                    "message": "question_id_in failed a sanitize check. The posted field should be an integer."
-                }, 400, {"Content-Type": "application/json"}
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "question_id_in failed a sanitize check. The posted field should be an integer."
+            }, 400, {"Content-Type": "application/json"}
 
         cursor = connection.cursor()
 
         try:
-            cursor.callproc('delete_question_answer_proc', [request.form['question_id_in']])
+            cursor.callproc('delete_question_answer_proc', [
+                            request.form['question_id_in']])
 
             connection.commit()
 
@@ -866,11 +871,14 @@ def admin_page_handler():
             }
 
         return {
-            "status" : "ok"
+            "status": "ok"
         }
 
-    else:
-        return "Invalid Operation"
+    return {
+        "status": "fail",
+        "fail_no": 5,
+        "message": "The only supported operations for this endpoint are GET, POST, PUT, and DELETE"
+    }, 400, {"Content-Type": "application/json"}
 
 
 @app.route("/admin/download/user", methods=['POST'])

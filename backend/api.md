@@ -188,7 +188,7 @@ Allows admin user to delete questions and answers given a question id
 
  - `question_id_in`: number id for a question
 
- ### Returns 
+### Returns 
 
 ```
 {
@@ -200,5 +200,6 @@ When testing with postman, the input question id is set in teh request Body form
 
 Failure may occur because of,
 
-2. question_id_in is not of type int
+2. question_id_in is not of type int.
+5. Request type is not GET, PUT, POST, or DELETE.
  
