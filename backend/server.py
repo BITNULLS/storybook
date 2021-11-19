@@ -36,8 +36,8 @@ re_alphanumeric = re.compile(r"[a-zA-Z0-9]")
 re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
-re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
-re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
+re_hex36 = re.compile(r"[a-f0-9-]{36,}")  # for uuid.uuid4
+re_hex32 = re.compile(r"[A-F0-9]{32,}")  # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 re_timestamp = re.compile(r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
 
@@ -423,10 +423,11 @@ def login():
         # secure=True,
         # httponly=True
     )
-    
+
     try:
         cursor.execute(
-            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" + str(user_id) + "'"
+            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" +
+            str(user_id) + "'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -492,10 +493,10 @@ def register():
         }
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    if re_email.match( request.form['email'] ) is None or \
-        re_alphanumeric8.match( request.form['password'] ) is None or \
-        re_alphanumeric2.match( request.form['first_name'] ) is None or \
-        re_alphanumeric2.match( request.form['last_name'] ) is None:
+    if re_email.match(request.form['email']) is None or \
+            re_alphanumeric8.match(request.form['password']) is None or \
+            re_alphanumeric2.match(request.form['first_name']) is None or \
+            re_alphanumeric2.match(request.form['last_name']) is None:
         return {
             "status": "fail",
             "fail_no": 2,
@@ -521,8 +522,8 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-    
-    result = cursor.fetchone() 
+
+    result = cursor.fetchone()
     if result is not None:
         return {
             "status": "fail",
@@ -530,17 +531,18 @@ def register():
             "message": "Email is Already Registered."
         }
 
-    hashed = bcrypt.hashpw(request.form['password'].encode('utf8'), bcrypt.gensalt())
+    hashed = bcrypt.hashpw(
+        request.form['password'].encode('utf8'), bcrypt.gensalt())
 
     try:
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
-            + email + "', '" 
-            + first_name + "', '" 
-            + last_name + "', " 
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('"
+            + email + "', '"
+            + first_name + "', '"
+            + last_name + "', "
             + "0 , "
-            + school_id + ", " 
-            + study_id + ", '" 
+            + school_id + ", "
+            + study_id + ", '"
             + hashed.decode('utf8')
             + "')"
         )
@@ -559,7 +561,6 @@ def register():
     return {
         "status": "ok"
     }
-    
 
 
 # input email & check if email exists 
@@ -1066,9 +1067,72 @@ def admin_add_book_to_study():
             "database_message": str(e)
         }
 
+
+@app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
+def admin_page_handler():
+    """
+    This endpoint handles quiz questions and answers
+    """
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    if request.method == 'POST':
+        return 'DELETE'
+
+    elif request.method == 'PUT':
+
+        return 'PUT'
+
+    elif request.method == 'GET':
+
+        return 'GET'
+
+    elif request.method == 'DELETE':  # DELETE = delete a page
+
+        try:
+            question_id_in = int(request.form['question_id_in'])
+
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "question_id_in failed a sanitize check. The posted field should be an integer."
+            }, 400, {"Content-Type": "application/json"}
+
+        cursor = connection.cursor()
+
+        try:
+            cursor.callproc('delete_question_answer_proc', [
+                            request.form['question_id_in']])
+
+            connection.commit()
+
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }
+
+        return {
+            "status": "ok"
+        }
+
     return {
-        "status": "ok"
-    }
+        "status": "fail",
+        "fail_no": 5,
+        "message": "The only supported operations for this endpoint are GET, POST, PUT, and DELETE"
+    }, 400, {"Content-Type": "application/json"}
 
 
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
