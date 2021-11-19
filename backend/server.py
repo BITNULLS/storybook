@@ -1,3 +1,4 @@
+from edu_storybook import bucket, sensitive
 from flask import Flask
 from flask import request
 from flask import Response
@@ -17,8 +18,6 @@ import jwt
 import os
 import time
 import smtplib
-import ssl
-import oci
 import datetime
 import csv
 import hashlib
@@ -43,39 +42,13 @@ re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 re_timestamp = re.compile(r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
 
 # server settings to load in
-config = None
-
-with open('data/config.json') as jsonfile:
-    config = json.load(jsonfile)
-assert config is not None, 'Could not find data/config.json file; Did you download it?'
-
-for folder in config['sensitives']['folders']:
-    folder_act = config['sensitives']['folders'][folder]
-    assert os.path.isdir(
-        folder_act), 'Missing a sensitive data folder: ' + folder_act
-for file in config['sensitives']['files']:
-    file_act = config['sensitives']['files'][file]
-    assert os.path.isfile(
-        file_act), 'Missing a sensitive data file: ' + file_act
+config = sensitive.config
 
 # domain
-domain_name = None
-
-with open(config['sensitives']['files']['domain']) as txtfile:
-    for line in txtfile.readlines():
-        domain_name = str(line)
-        break
-assert domain_name is not None and domain_name != '', config['sensitives'][
-    'files']['domain_name'] + ' is empty; It should not be empty'
+domain_name = sensitive.domain_name
 
 # json web tokens key
-jwt_key = None
-with open(config['sensitives']['files']['jwt_key']) as txtfile:
-    for line in txtfile.readlines():
-        jwt_key = str(line)
-        break
-assert jwt_key is not None and jwt_key != '', config['sensitives'][
-    'files']['jwt_key'] + ' is empty; It should not be empty'
+jwt_key = sensitive.jwt_key
 
 # database connection
 print('Connecting to database...', end=' ')
@@ -89,11 +62,7 @@ assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives']
 
 cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
 
-oracle_config = None
-
-with open(config['sensitives']['files']['oracle_key']) as jsonfile:
-    oracle_config = json.load(jsonfile)
-assert oracle_config is not None, 'Oracle Key json was empty for some reason'
+oracle_config = sensitive.oracle_config
 
 connection = cx_Oracle.connect(
     oracle_config['username'],
@@ -104,31 +73,6 @@ print('connected')
 
 conn_lock = Lock()
 
-# email login
-with open('data/email.password') as email_config:
-    email_login = json.load(email_config)
-    email_password = email_login['password']
-
-try:
-    smtp = 'smtp.gmail.com'
-    port = 587
-    context = ssl.create_default_context()
-    server = smtplib.SMTP(smtp, port)
-    server.starttls(context=context)
-    server.login('edustorybooks@gmail.com', email_password)
-except Exception as e:
-    print("Email Server Error")
-    print(e)
-
-# Bucket Uploader/Downloader setup
-with open('data/oracle_bucket.json') as bucket_details:
-    bucket = json.load(bucket_details)
-
-assert bucket is not None, 'oracle_bucket.json file was empty'
-
-bucket_config = bucket['config']
-
-oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
 
 # ============================== helper functions ==============================
 
@@ -205,9 +149,9 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
 
     # Email Command
     try:
-        server = smtplib.SMTP(smtp, port)
-        server.starttls(context=context)
-        server.login('edustorybooks@gmail.com', email_password)
+        server = smtplib.SMTP(sensitive.smtp, sensitive.port)
+        server.starttls(context=sensitive.context)
+        server.login('edustorybooks@gmail.com', sensitive.email_password)
         server.sendmail("edustorybooks@gmail.com", user_email, email_text)
     except:
         print("Exception in Email Process")
@@ -219,64 +163,6 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         del subject_line
         del body_lines
         del email_text
-        
-def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
-    """ 
-    Uploads local file to cloud bucket
-    :param local_file_path: path to local file to upload
-    :param cloud_file_name: Name for file in cloud
-    :return: the http status code of the upload response
-    """
-    with open(local_file_path, 'rb') as fh:
-        return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
-    
-def download_bucket_file(filename: str) -> str:
-    """ 
-    Downloads files from cloud bucket
-    :param filename: The name of the file to download
-    :return: the local path of the downloaded file, None if there is an error
-    """
-    if not os.path.isdir('bucket_files'):
-        os.mkdir('bucket_files')
-
-    try:
-        obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
-        if filename[filename.rfind('/')+1:] != -1:
-            filename = filename[filename.rfind('/')+1:]
-        new_file = 'bucket_files/' + filename
-        with open(new_file, 'wb') as f:
-            for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
-                f.write(chunk)
-            f.close()
-        return new_file
-    except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
-        return None
-        
-def delete_bucket_file(filename: str) -> bool:
-    """
-    Deletes a given file in Chum-Bucket
-    :param filename: Filename of file to delete in Chum-Bucket
-    :return: Boolean depending on if the file was deleted or not.
-    """
-    try:
-        oracle_cloud_client.delete_object(bucket['namespace'], bucket['name'], filename)
-        return True
-    except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
-        return False
-
-def list_bucket_files() -> list[str]:
-    """
-    Prints each object in the bucket on a separate line. Used for testing/checking.
-    :return: List of filenames, if bucket is empty returns None
-    """
-    files = oracle_cloud_client.list_objects(bucket['namespace'], bucket['name'])
-    file_names = []
-    get_name = lambda f: f.name
-    for file in files.data.objects:
-        file_names.append(get_name(file))
-    return file_names
 
 
 def validate_login(auth: str, permission=0):
@@ -1062,7 +948,7 @@ def admin_download_book():
     fileInput = request.form['filename']
     try:
         # download file to bucket
-        filepath = download_bucket_file(fileInput)
+        filepath = bucket.download_bucket_file(fileInput)
         # send file back
         return send_file(filepath)
     except:
@@ -1112,7 +998,7 @@ def admin_book_upload():
         file.save(os.path.join("temp/file_upload", filename))
 
         try:
-            upload_bucket_file('temp/file_upload/' + filename, filename)
+            bucket.upload_bucket_file('temp/file_upload/' + filename, filename)
             return {
                 "status": "ok",
                 "message": "file uploaded"
