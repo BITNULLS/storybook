@@ -1,9 +1,14 @@
+from edu_storybook import bucket, sensitive
 from flask import Flask
 from flask import request
 from flask import Response
 from flask import send_file
 from flask import make_response
+from datetime import date
+import string
+import random
 from multiprocessing import Process, Pipe, Queue
+from threading import Lock
 import re
 import cx_Oracle
 import json
@@ -13,8 +18,6 @@ import jwt
 import os
 import time
 import smtplib
-import ssl
-import oci
 import datetime
 import csv
 import hashlib
@@ -29,46 +32,23 @@ app = Flask(__name__)
 
 # regexes
 # they're faster compiled, and they can be used throughout
-re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
+re_alphanumeric = re.compile(r"[a-zA-Z0-9]")
 re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
+re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
 re_hex36 = re.compile(r"[a-f0-9-]{36,}")  # for uuid.uuid4
 re_hex32 = re.compile(r"[A-F0-9]{32,}")  # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
+re_timestamp = re.compile(r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
 
 # server settings to load in
-config = None
-
-with open('data/config.json') as jsonfile:
-    config = json.load(jsonfile)
-assert config is not None, 'Could not find data/config.json file; Did you download it?'
-
-for folder in config['sensitives']['folders']:
-    folder_act = config['sensitives']['folders'][folder]
-    assert os.path.isdir(
-        folder_act), 'Missing a sensitive data folder: ' + folder_act
-for file in config['sensitives']['files']:
-    file_act = config['sensitives']['files'][file]
-    assert os.path.isfile(
-        file_act), 'Missing a sensitive data file: ' + file_act
+config = sensitive.config
 
 # domain
-domain_name = None
-with open(config['sensitives']['files']['domain']) as txtfile:
-    for line in txtfile.readlines():
-        domain_name = str(line)
-        break
-assert domain_name is not None and domain_name != '', config['sensitives'][
-    'files']['domain_name'] + ' is empty; It should not be empty'
+domain_name = sensitive.domain_name
 
 # json web tokens key
-jwt_key = None
-with open(config['sensitives']['files']['jwt_key']) as txtfile:
-    for line in txtfile.readlines():
-        jwt_key = str(line)
-        break
-assert jwt_key is not None and jwt_key != '', config['sensitives'][
-    'files']['jwt_key'] + ' is empty; It should not be empty'
+jwt_key = sensitive.jwt_key
 
 # database connection
 print('Connecting to database...', end=' ')
@@ -82,11 +62,7 @@ assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives']
 
 cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
 
-oracle_config = None
-
-with open(config['sensitives']['files']['oracle_key']) as jsonfile:
-    oracle_config = json.load(jsonfile)
-assert oracle_config is not None, 'Oracle Key json was empty for some reason'
+oracle_config = sensitive.oracle_config
 
 connection = cx_Oracle.connect(
     oracle_config['username'],
@@ -95,33 +71,8 @@ connection = cx_Oracle.connect(
 )
 print('connected')
 
-# email login
-with open('data/email.password') as email_config:
-    email_login = json.load(email_config)
-    email_password = email_login['password']
+conn_lock = Lock()
 
-try:
-    smtp = 'smtp.gmail.com'
-    port = 587
-    context = ssl.create_default_context()
-    server = smtplib.SMTP(smtp, port)
-    server.starttls(context=context)
-    server.login('edustorybooks@gmail.com', email_password)
-except Exception as e:
-    print("Email Server Error")
-    print(e)
-
-# Bucket Uploader/Downloader setup
-with open('data/oracle_bucket.json') as bucket_details:
-    bucket = json.load(bucket_details)
-
-assert bucket is not None, 'oracle_bucket.json file was empty'
-
-bucket_config = bucket['config']
-
-oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
-bucket_uploader = oci.object_storage.UploadManager(
-    object_storage_client=oracle_cloud_client, allow_multipart_uploads=True, allow_parallel_uploads=True)
 
 # ============================== helper functions ==============================
 
@@ -198,9 +149,9 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
 
     # Email Command
     try:
-        server = smtplib.SMTP(smtp, port)
-        server.starttls(context=context)
-        server.login('edustorybooks@gmail.com', email_password)
+        server = smtplib.SMTP(sensitive.smtp, sensitive.port)
+        server.starttls(context=sensitive.context)
+        server.login('edustorybooks@gmail.com', sensitive.email_password)
         server.sendmail("edustorybooks@gmail.com", user_email, email_text)
     except:
         print("Exception in Email Process")
@@ -212,68 +163,6 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         del subject_line
         del body_lines
         del email_text
-
-
-def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
-    """
-    Uploads local file to cloud bucket
-    :param local_file_path: path to local file to upload
-    :param cloud_file_name: Name for file in cloud
-    :return: the http status code of the upload response
-    """
-    return oci.object_storage.UploadManager.upload_file(bucket_uploader, bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
-
-
-def download_bucket_file(filename: str) -> str:
-    """
-    Downloads files from cloud bucket
-    :param filename: The name of the file to download
-    :return: the local path of the downloaded file, None if there is an error
-    """
-    if not os.path.isdir('bucket_files'):
-        os.mkdir('bucket_files')
-
-    try:
-        obj = oracle_cloud_client.get_object(
-            bucket['namespace'], bucket['name'], filename)
-        new_file = 'bucket_files/' + filename
-        with open(new_file, 'wb') as f:
-            for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
-                f.write(chunk)
-            f.close()
-        return new_file
-    except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
-        return None
-
-
-def delete_bucket_file(filename: str) -> bool:
-    """
-    Deletes a given file in Chum-Bucket
-    :param filename: Filename of file to delete in Chum-Bucket
-    :return: Boolean depending on if the file was deleted or not.
-    """
-    try:
-        oracle_cloud_client.delete_object(
-            bucket['namespace'], bucket['name'], filename)
-        return True
-    except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
-        return False
-
-
-def list_bucket_files() -> list[str]:
-    """
-    Prints each object in the bucket on a separate line. Used for testing/checking.
-    :return: List of filenames, if bucket is empty returns None
-    """
-    files = oracle_cloud_client.list_objects(
-        bucket['namespace'], bucket['name'])
-    file_names = []
-    def get_name(f): return f.name
-    for file in files.data.objects:
-        file_names.append(get_name(file))
-    return file_names
 
 
 def validate_login(auth: str, permission=0):
@@ -586,7 +475,6 @@ def logout():
     res.set_cookie('Authorization', '', expires=0)
     return res
 
-
 @app.route("/register", methods=['POST'])
 def register():
     # check that all expected inputs are received
@@ -617,8 +505,8 @@ def register():
 
     # all good, now query database
     email = (request.form['email']).lower().strip()
-    first_name = (request.form['first_name']).lower().strip()
-    last_name = (request.form['last_name']).lower().strip()
+    first_name = (request.form['first_name']).strip()
+    last_name = (request.form['last_name']).strip()
     school_id = (request.form['school_id']).lower().strip()
     study_id = (request.form['study_id']).lower().strip()
 
@@ -665,30 +553,225 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+    
+    send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
+        'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + 
+        '\n\nThanks for registering an account with Edu Storybooks! :)')
 
     return {
         "status": "ok"
     }
 
 
+# input email & check if email exists 
 @app.route("/password/forgot", methods=['POST'])
-def password_forgot():
+def password_forgot(): 
+
+    # checks for input
+    try:
+        assert 'email' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Email was not provided."
+        }, 400, {"Content-Type": "application/json"}
+        
+    # sanitize inputs: alphanumeric, > 8 chars
+    if re_email.match( request.form['email'] ) is None:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "Email failed sanitization check of more than 8 characters &/or alphanumeric."
+        }, 400, {"Content-Type": "application/json"}
+    
+
+    # begin querying database
+    email = (request.form['email']).lower().strip()
+
+    # create random sequence of 512 byte string
+    rand_str =''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(512))
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(
+            # fix the SQL statement with user_session?
+            "SELECT * FROM USER_PROFILE WHERE EMAIL ='" + email + "'")
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"} 
+    
+    result = cursor.fetchone()
+    if result is None:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "No email matches what was passed."
+        }, 400, {"Content-Type": "application/json"}
+
+    
+    user_id = result[9]
+    user_name = result[1] + ' ' + result[2]
+
+    now = datetime.datetime.now()
+    req_date = (now.strftime("%Y/%m/%d"))
+    
+    try: # it does not insert with Oracle db? (but works in SQLDeveloper)
+        cursor.execute(
+            "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "','" + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'))")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    connection.commit() 
+    
+    key = 'edustorybook.com/Password/Reset#key=' + rand_str
+    
+    send_email(user_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 'Password Reset Request', key)
+    
     return {
-        "...": "..."
+        "status": "ok"
     }
-
-
+    
+# new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
+# check if both password fields match
 @app.route("/password/reset", methods=['POST'])
 def password_reset():
+
+   # check expected input 
+    try:
+        assert 'new_pass' in request.form
+        assert 'confirm_pass' in request.form
+        assert 'reset_key' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Either password was not provided."
+        }, 400, {"Content-Type": "application/json"}  
+
+    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    if re_alphanumeric8.match( request.form['new_pass'] ) is None or \
+        re_alphanumeric8.match( request.form['confirm_pass'] ) is None:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "Either one or both passwords failed sanitization check of more than 8 characters &/or alphanumeric."
+        }, 400, {"Content-Type": "application/json"}
+
+    # check if both passwords match
+    if (request.form['new_pass'] != request.form['confirm_pass']):
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Both passwords do not match."
+        }, 400, {"Content-Type": "application/json"}
+
+    hashed = bcrypt.hashpw(request.form['confirm_pass'].encode('utf8'), bcrypt.gensalt())
+
+    reset_key = (request.form['reset_key'])
+
+    # connect to database
+    cursor = connection.cursor()
+    try: 
+        cursor.execute("SELECT USER_ID FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    result = cursor.fetchone()
+    if result is None:
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "No reset_key matches what was passed."
+        }, 400, {"Content-Type": "application/json"}   
+               
+    try:
+        cursor.execute("UPDATE USER_PROFILE set PASSWORD ='" + hashed.decode('utf8') + "' WHERE user_id ='" + result[0] + "'")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 6,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    connection.commit()
+
+    try: 
+        cursor.execute("DELETE FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 7,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    connection.commit()
+
     return {
-        "...": "..."
+        "status": "ok"
     }
+    
 
 
 @app.route("/book", methods=['POST'])
 def get_users_books():
+
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT b.BOOK_ID FROM BOOK b "
+            + "INNER JOIN STUDY s ON s.STUDY_ID = b.STUDY_ID "
+            + "INNER JOIN USER_PROFILE u ON s.STUDY_ID = u.STUDY_ID "
+            + "WHERE u.user_id='"
+            + token['sub'] + "'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing books.",
+            "database_message": str(e)
+        }
+    
+    # assign variable data to cursor.fetchall()
+    data = cursor.fetchall()
+
+    print(data)
+
     return {
-        "...": "..."
+        "status": "ok"
     }
 
 
@@ -701,16 +784,157 @@ def storyboard_get_page():
 
 @app.route("/storyboard/action", methods=['POST'])
 def storyboard_save_user_action():
+    '''
+    Code the storyboard_save_user_action() function in the same style as logout()
+    Screenshot a successful POST request to the /storyboard/action endpoint.
+    Add to the backend/API.md the relevant documentation for the /storyboard/action endpoint
+    in the same style as the login/ endpoint documentation.
+    '''
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms= config['jwt_alg'])  
+
+    # check that all expected inputs are received
+    try:
+        assert 'book_id' in request.form
+        assert 'detail_description' in request.form
+        assert 'action_key_id' in request.form
+        assert 'action_start' in request.form
+        assert 'action_stop' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Either the book_id, detail_description, or action_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure book_id, action_key_id are ints
+    try: 
+        book_id = int(request.form["book_id"])
+        action_key_id = int(request.form["action_key_id"])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id or action_key_id failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
+        }, 400, {"Content-Type": "application/json"}
+ 
+    # sanitize inputs: make sure action_start and action_stop are in correct format
+    if re_timestamp.match(request.form["action_start"]) is None or \
+            re_timestamp.match(request.form["action_stop"]) is None or \
+            re_alphanumeric.match(request.form["detail_description"]) is None:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Either the action_start, action_stop, or detail_description failed a sanitize check. The POSTed fields should be in date format YYYY-MM-DD HH:MM:SS. detail_description should be alphanumeric only."
+        }, 400, {"Content-Type": "application/json"}
+
+
+    cursor = connection.cursor()  
+    try:
+        cursor.execute( 
+             "DECLARE "+\
+                "USER_ID_IN VARCHAR2(36);"+\
+                "ACTION_START_IN DATE;"+\
+                "ACTION_STOP_IN DATE;"+\
+                "BOOK_ID_IN NUMBER;"+\
+                "DETAIL_DESCRIPTION_IN VARCHAR2(100);"+\
+                "ACTION_KEY_ID_IN NUMBER;"+\
+            "BEGIN "+\
+                "USER_ID_IN := '"+ token["sub"]+"'; "+\
+                "ACTION_START_IN := TO_DATE('"+ request.form["action_start"]+"', 'YYYY-MM-DD HH24:MI:SS'); "+\
+                "ACTION_STOP_IN := TO_DATE('"+ request.form["action_stop"]+"',  'YYYY-MM-DD HH24:MI:SS'); "+\
+                "BOOK_ID_IN := "+ request.form["book_id"]+"; "+\
+                "DETAIL_DESCRIPTION_IN := '"+ request.form["detail_description"]+ "'; "+\
+                "ACTION_KEY_ID_IN := "+ request.form["action_key_id"]+ "; "+\
+                "CHECK_DETAIL_ID_PROC ("+\
+                    "USER_ID_IN => USER_ID_IN, "+\
+                    "ACTION_START_IN => ACTION_START_IN, "+\
+                    "ACTION_STOP_IN => ACTION_STOP_IN, "+\
+                    "BOOK_ID_IN => BOOK_ID_IN, "+\
+                    "DETAIL_DESCRIPTION_IN => DETAIL_DESCRIPTION_IN, "+\
+                    "ACTION_KEY_ID_IN => ACTION_KEY_ID_IN "+\
+                ");"+\
+            "END;"
+        )
+        connection.commit()
+    except cx_Oracle.Error as e:
+        return{
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when updating database action",
+            "database_message": str(e)
+        } , 400, {"Content-Type": "application/json"}
     return {
-        "...": "..."
+        "status": "ok"
     }
 
 
 @app.route("/quiz/submit", methods=['POST'])
 def quiz_submit_answer():
-    return {
-        "...": "..."
-    }
+    try:
+        assert 'answer_id' in request.form
+        assert 'question_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Either the answer_id or the question_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    try:
+        answer_id = int(request.form['answer_id'])
+        question_id = int(request.form['question_id'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Either the answer_id or the question_id contained invalid characters."
+        }, 400, {"Content-Type": "application/json"}
+
+
+    # make sure the user is authenticated first
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    
+    cursor = connection.cursor()
+    try:
+        conn_lock.acquire()
+        cursor.execute(
+            "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" + token['sub'] + "', " + str(question_id) + ", " + str(answer_id) + ", current_timestamp)"
+        )
+        connection.commit()
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 6,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
+
+    return {"status": "ok"}
+    
 
 
 @app.route("/admin/book/download", methods=['POST'])
@@ -729,7 +953,7 @@ def admin_download_book():
     fileInput = request.form['filename']
     try:
         # download file to bucket
-        filepath = download_bucket_file(fileInput)
+        filepath = bucket.download_bucket_file(fileInput)
         # send file back
         return send_file(filepath)
     except:
@@ -779,7 +1003,7 @@ def admin_book_upload():
         file.save(os.path.join("temp/file_upload", filename))
 
         try:
-            upload_bucket_file('temp/file_upload/' + filename, filename)
+            bucket.upload_bucket_file('temp/file_upload/' + filename, filename)
             return {
                 "status": "ok",
                 "message": "file uploaded"
@@ -801,17 +1025,47 @@ def admin_book_upload():
 
 
 @app.route("/admin/book/grant", methods=['POST'])
-def admin_grant_user_book_access():
-    return {
-        "...": "..."
-    }
+def admin_add_book_to_study():
+    
+    # validate that user can access data
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
 
+    # get parameters
+    book_name = (request.form.get('book_name')).lower().strip()
+    book_url = (request.form.get('book_url')).lower().strip()
+    book_description = (request.form.get('book_description')).lower().strip()
+    study_id = (request.form.get('study_id'))
+    # book_id and created_on handled by trigger
 
-@app.route("/admin/page/edit", methods=['POST'])
-def admin_page_edit():
-    return {
-        "...": "..."
-    }
+    # connect to database
+    cursor = connection.cursor()
+
+    # insert query
+    try:
+        cursor.execute("INSERT into BOOK (book_name, url, description, study_id) VALUES ('" 
+            + book_name + "', '" 
+            + book_url + "', '" 
+            + book_description + "', "
+            + study_id
+            + ")"
+            )
+
+        # commit to database
+        connection.commit()
+
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
 
 
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
@@ -879,6 +1133,94 @@ def admin_page_handler():
         "fail_no": 5,
         "message": "The only supported operations for this endpoint are GET, POST, PUT, and DELETE"
     }, 400, {"Content-Type": "application/json"}
+
+
+@app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
+def admin_page_handler():
+    """
+    This endpoint will only handle quiz questions.
+    """
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=1
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg']) 
+
+    #check to make sure you have a book_id
+    try:
+        assert 'book_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
+    try:
+        book_id = int(request.form['book_id'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "book_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+ 
+    if request.method == 'POST': # Post = adding a page
+        return "POST"
+
+    elif request.method == 'GET': # Get = get (retrieve pages)
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(
+                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION "+\
+                "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID "+\
+                "INNER JOIN ANSWER ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID "+\
+                "WHERE BOOK_ID=" + request.form["book_id"] 
+            )
+            label_results_from(cursor)
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+        
+        # fetching all the questions and storing them in questions array
+        questions=[]
+
+        while True:
+            result = cursor.fetchone() 
+            if result is None: 
+                break
+            questions.append(result)
+        if len(questions) == 0:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "No book_id matches what was passed."
+            }, 400, {"Content-Type": "application/json"}
+        return {
+            "status": "ok",
+            "questions": questions
+        }
+
+    elif request.method == 'PUT': # Put = updating a page
+        return "PUT"
+
+    elif request.method == 'DELETE': # DELETE = delete a page 
+        return "DELETE"
+
+    else: 
+        return "Invalid Operation"
 
 
 @app.route("/admin/download/user", methods=['POST'])
