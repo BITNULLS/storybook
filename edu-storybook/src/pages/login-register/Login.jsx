@@ -43,12 +43,14 @@ export default class Login extends React.Component {
                 <label for="password">Password:</label>
                 <input id= "password" type="password" formControlName="password" class="form-control"></input>
               </div>
-
+              
+              <form onSubmit={e => e.preventDefault()}>
               <div class="form-group">
                 <Link to="/StorySelection">
                   <button id="button_signIn" class="btn btn-primary" onClick={() => ajaxCall()}>Sign In</button >
                 </Link>
               </div>
+              </form>
 
           </div >
 
@@ -73,24 +75,19 @@ function ajaxCall() {
     let inputPass = document.getElementById("password").value
     console.log(inputUser);
     console.log(inputPass);
+
     $.ajax({
       type: 'POST',
       url: "http://localhost:5000/Login",
       contentType: "application/x-www-form-urlencoded",
-      dataType: "html",
-
+      dataType: "json",
       data: {inputUser, inputPass},
-
       complete: function(data){
-        console.log('hit success');
+        console.log("Made it into the complete");
         new Login(data);
       },
-      error: function(result) {
-        console.log("hit fail");
-        alert('Error within AJAX call, problem with posting');
+      error: function() {
+        console.log("Could not complete AJAX call");
       }, 
-      
-      
   });
-
 }
