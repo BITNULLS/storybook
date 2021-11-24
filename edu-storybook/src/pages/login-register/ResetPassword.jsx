@@ -37,7 +37,7 @@ export default class ResetPassword extends React.Component{
                   <label for="new_pass">New Password:</label>
                   <input type="text" formControlName="new_pass" class="form-control"></input>
 
-              <!-- TODO: take reset_key from url, like "url.com/.../reset#key=A93CDG043..." and automatically populate the reset_key field -->
+              {/*} TODO: take reset_key from url, like "url.com/.../reset#key=A93CDG043..." and automatically populate the reset_key field */}
                   <label for="reset_key"> </label>
                   <input type="text" formControlName="reset_key" class="form-control"></input>
 

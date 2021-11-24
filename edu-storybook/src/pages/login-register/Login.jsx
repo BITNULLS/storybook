@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import { Link } from "react-router-dom";
 import Tooltip from "react-bootstrap/Tooltip";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import $ from 'jquery';
 
 /** This is the Login Page
  *  This is an example of a class for React
@@ -16,11 +17,10 @@ export default class Login extends React.Component {
 
         <div class="card pl-1 pr-2">
           <div class="card-body">
-            <form>
 
               <div class="form-group mb-4">
                 <label for="username">Username:</label>
-                <input type="text" formControlName="username" class="form-control"></input>
+                <input id="username" type="text" formControlName="username" class="form-control"></input>
               </div>
               <div class="form-group mb-4">
                 <OverlayTrigger
@@ -41,14 +41,14 @@ export default class Login extends React.Component {
                   </a>
                 </OverlayTrigger>
                 <label for="password">Password:</label>
-                <input type="password" formControlName="password" class="form-control"></input>
+                <input id= "password" type="password" formControlName="password" class="form-control"></input>
               </div>
 
               <div class="form-group">
-                <button class="btn btn-primary">Sign In</button >
+                <Link to="/StorySelection">
+                  <button id="button_signIn" class="btn btn-primary" onClick={() => ajaxCall()}>Sign In</button >
+                </Link>
               </div>
-
-            </form>
 
           </div >
 
@@ -64,4 +64,33 @@ export default class Login extends React.Component {
     );
     
   }
+}
+
+
+function ajaxCall() {
+    console.log("hit");
+    let inputUser = document.getElementById("username").value;
+    let inputPass = document.getElementById("password").value
+    console.log(inputUser);
+    console.log(inputPass);
+    $.ajax({
+      type: 'POST',
+      url: "http://localhost:5000/Login",
+      contentType: "application/x-www-form-urlencoded",
+      dataType: "html",
+
+      data: {inputUser, inputPass},
+
+      complete: function(data){
+        console.log('hit success');
+        new Login(data);
+      },
+      error: function(result) {
+        console.log("hit fail");
+        alert('Error within AJAX call, problem with posting');
+      }, 
+      
+      
+  });
+
 }
