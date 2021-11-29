@@ -353,7 +353,7 @@ When testing with postman, the inputs will be input in "form-data" as text input
 
 `GET /admin/get/user/`
 
-Allows admin user to get a list of the next 50 users based on date created.
+Allows admin user to get a list of the next 50 users based on date the user was created.
 
 ### Inputs
 
@@ -369,9 +369,8 @@ On Success,
 }
 ```
 
-When testing with postman, the inputs will be input in "form-data" as text inputs. Enter the same exact input variables as above into the key column. Then, supply inputs to the value column.
+Returns a list of users in JSON format. 
 
 1. Failure if an offset was not provided
 2. Failure if offset is not an integer
 3. Failure when connecting to database
-4. Failure when returning to client

@@ -1522,30 +1522,13 @@ def admin_download_users():
             "message": "Error when accessing database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
+
+    users = cursor.fetchall()
     
-    # assign variable data to cursor.fetchall()
-    #data = #json.dumps(cursor.fetchall())
-    data2 = cursor.fetchone()
-    print(((data2)))
-    data3 = tuple(data2)
-    #res = dict.fromkeys(data2)
-    #print(res)
-    #it = iter(data)
-    #res_dct = dict(zip(it, it))
-    #print(res_dct)2
-    #https://stackoverflow.com/questions/13081532/return-json-response-from-flask-view    
-    try:
-       return{
-            #(json.dumps((data), indent = 4))'
-            
+    return {
+            "status": "ok",
+            "users": users
         }
-    except cx_Oracle.Error as e:
-        return {
-            "status": "fail",
-            "fail_no": 4,
-            "message": "Error when accessing database.",
-            "database_message": str(e)
-        }, 400, {"Content-Type": "application/json"}
     
 
 
