@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import { Link } from "react-router-dom";
 import Tooltip from "react-bootstrap/Tooltip";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import $ from 'jquery';
 
 /** This is the Login Page
  *  This is an example of a class for React
@@ -16,11 +17,10 @@ export default class Login extends React.Component {
 
         <div class="card pl-1 pr-2">
           <div class="card-body">
-            <form>
 
               <div class="form-group mb-4">
-                <label for="username">Username:</label>
-                <input type="text" formControlName="username" class="form-control"></input>
+                <label for="email">E-mail:</label>
+                <input id="email" type="text" formControlName="email" class="form-control"></input>
               </div>
               <div class="form-group mb-4">
                 <OverlayTrigger
@@ -41,14 +41,37 @@ export default class Login extends React.Component {
                   </a>
                 </OverlayTrigger>
                 <label for="password">Password:</label>
-                <input type="password" formControlName="password" class="form-control"></input>
+                <input id= "password" type="password" formControlName="password" class="form-control"></input>
               </div>
-
+              
+              <form onSubmit={e => e.preventDefault()}>
               <div class="form-group">
-                <button class="btn btn-primary">Sign In</button >
+                <Link to="/StorySelection">
+                  <button id="button_signIn" class="btn btn-primary" onClick={
+                    function sendLoginRequest() {
+                      let email = $('#email').val()
+                      let password = $('#password').val()
+            
+                      $.ajax({
+                        type: "POST",
+                        url: "http://localhost:5000/login",
+                        contentType: "application/x-www-form-urlencoded",
+                        dataType: "json",
+                        data: {email, password},
+                        success: function(data){
+                          new Login(data)
+                          this.iat = data["iat"]
+                          alert("Login Successful!" )
+                        },
+                        error: function() {
+                          alert("Either email or password is incorrect. Please try again. ")
+                        }, 
+                    });
+                  }
+                  }>Sign In</button >
+                </Link>
               </div>
-
-            </form>
+              </form>
 
           </div >
 
