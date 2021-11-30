@@ -82,7 +82,7 @@ function ajaxCall() {
       contentType: "application/x-www-form-urlencoded",
       dataType: "json",
       data: {inputUser, inputPass},
-      complete: function(data){
+      success: function(data){
         console.log("Made it into the complete");
         new Login(data);
       },
