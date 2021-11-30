@@ -391,11 +391,20 @@ On Success,
 ```
 {
     "status": "ok"
-    "users" : [list of the next 50 users based on the offset]
+    "users" : [
+        {
+            "EMAIL" : ...
+            "STUDY_ID": ...
+            "USER_ID": ...
+        }, ...
+    ]
 }
 ```
-
-Returns a list of users in JSON format. 
+User objects have 3 attributes:
+ - `EMAIL`: string with @ for login attached to user 
+ - `STUDY_ID`: Int of study
+ - `USER_ID` : string given whe user created
+Returns a list of next 50 users in JSON format. 
 
 1. Failure if an offset was not provided
 2. Failure if offset is not an integer
