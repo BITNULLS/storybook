@@ -833,16 +833,13 @@ def admin_page_handler():
             assert 'question_in' in request.form
             assert 'page_prev_in' in request.form
             assert 'page_next_in' in request.form
-            assert 'answer_1_in' in request.form
-            assert 'answer_2_in' in request.form
-            assert 'answer_3_in' in request.form
-            assert 'answer_4_in' in request.form
+            assert 'answers_in' in request.form
 
         except AssertionError:
             return {
                 "status": "fail",
                 "fail_no": 1,
-                "message": "book_id_in, school_id_in, question_in, page_prev_in, page_next_in, answer_1_in, answer_2_in, answer_3_in, or answer_4_in not provided"
+                "message": "book_id_in, school_id_in, question_in, page_prev_in, page_next_in, or answers_in not provided"
             }, 400, {"Content-Type": "application/json"}
 
         # sanitize inputs: check ints
