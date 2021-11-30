@@ -47,7 +47,28 @@ export default class Login extends React.Component {
               <form onSubmit={e => e.preventDefault()}>
               <div class="form-group">
                 <Link to="/StorySelection">
-                  <button id="button_signIn" class="btn btn-primary" onClick={() => sendLoginRequest()}>Sign In</button >
+                  <button id="button_signIn" class="btn btn-primary" onClick={
+                    function sendLoginRequest() {
+                      let email = $('#email').val()
+                      let password = $('#password').val()
+            
+                      $.ajax({
+                        type: "POST",
+                        url: "http://localhost:5000/login",
+                        contentType: "application/x-www-form-urlencoded",
+                        dataType: "json",
+                        data: {email, password},
+                        success: function(data){
+                          new Login(data)
+                          this.iat = data["iat"]
+                          alert("Login Successful!" )
+                        },
+                        error: function() {
+                          alert("Either email or password is incorrect. Please try again. ")
+                        }, 
+                    });
+                  }
+                  }>Sign In</button >
                 </Link>
               </div>
               </form>
@@ -66,24 +87,4 @@ export default class Login extends React.Component {
     );
     
   }
-}
-
-function sendLoginRequest() {
-    let email = $('#email').val()
-    let password = $('#password').val()
-
-    $.ajax({
-      type: "POST",
-      url: "http://localhost:5000/login",
-      contentType: "application/x-www-form-urlencoded",
-      dataType: "json",
-      data: {email, password},
-      success: function(data){
-        new Login(data)
-        alert("Login Successful!")
-      },
-      error: function() {
-        alert("Either email or password is incorrect. Please try again. ")
-      }, 
-  });
 }
