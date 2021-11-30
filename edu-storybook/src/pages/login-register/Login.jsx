@@ -19,8 +19,8 @@ export default class Login extends React.Component {
           <div class="card-body">
 
               <div class="form-group mb-4">
-                <label for="username">Username:</label>
-                <input id="username" type="text" formControlName="username" class="form-control"></input>
+                <label for="email">E-mail:</label>
+                <input id="email" type="text" formControlName="email" class="form-control"></input>
               </div>
               <div class="form-group mb-4">
                 <OverlayTrigger
@@ -68,23 +68,22 @@ export default class Login extends React.Component {
   }
 }
 
-
 function ajaxCall() {
     console.log("hit");
-    let inputUser = document.getElementById("username").value;
-    let inputPass = document.getElementById("password").value
-    console.log(inputUser);
-    console.log(inputPass);
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value
+    console.log(email);
+    console.log(password);
 
     $.ajax({
-      type: 'POST',
-      url: "http://localhost:5000/Login",
+      type: "POST",
+      url: "http://localhost:5000/login",
       contentType: "application/x-www-form-urlencoded",
       dataType: "json",
-      data: {inputUser, inputPass},
+      data: {email, password},
       success: function(data){
         console.log("Made it into the complete");
-        new Login(data);
+        new Login(data)
       },
       error: function() {
         console.log("Could not complete AJAX call");
