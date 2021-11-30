@@ -1,3 +1,5 @@
+from json.decoder import JSONDecoder
+from edu_storybook import bucket, sensitive
 from flask import Flask
 from flask import request
 from flask import Response
@@ -17,8 +19,6 @@ import jwt
 import os
 import time
 import smtplib
-import ssl
-import oci
 import datetime
 import csv
 import hashlib
@@ -37,45 +37,19 @@ re_alphanumeric = re.compile(r"[a-zA-Z0-9]")
 re_alphanumeric2 = re.compile(r"[a-zA-Z0-9]{2,}")
 re_alphanumeric8 = re.compile(r"[a-zA-Z0-9]{8,}")
 re_hex36dash = re.compile(r"[a-fA-F0-9]{36,38}")
-re_hex36 = re.compile(r"[a-f0-9-]{36,}") # for uuid.uuid4
-re_hex32 = re.compile(r"[A-F0-9]{32,}") # for Oracle guid()
+re_hex36 = re.compile(r"[a-f0-9-]{36,}")  # for uuid.uuid4
+re_hex32 = re.compile(r"[A-F0-9]{32,}")  # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 re_timestamp = re.compile(r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
 
 # server settings to load in
-config = None
-
-with open('data/config.json') as jsonfile:
-    config = json.load(jsonfile)
-assert config is not None, 'Could not find data/config.json file; Did you download it?'
-
-for folder in config['sensitives']['folders']:
-    folder_act = config['sensitives']['folders'][folder]
-    assert os.path.isdir(
-        folder_act), 'Missing a sensitive data folder: ' + folder_act
-for file in config['sensitives']['files']:
-    file_act = config['sensitives']['files'][file]
-    assert os.path.isfile(
-        file_act), 'Missing a sensitive data file: ' + file_act
+config = sensitive.config
 
 # domain
-domain_name = None
-
-with open(config['sensitives']['files']['domain']) as txtfile:
-    for line in txtfile.readlines():
-        domain_name = str(line)
-        break
-assert domain_name is not None and domain_name != '', config['sensitives'][
-    'files']['domain_name'] + ' is empty; It should not be empty'
+domain_name = sensitive.domain_name
 
 # json web tokens key
-jwt_key = None
-with open(config['sensitives']['files']['jwt_key']) as txtfile:
-    for line in txtfile.readlines():
-        jwt_key = str(line)
-        break
-assert jwt_key is not None and jwt_key != '', config['sensitives'][
-    'files']['jwt_key'] + ' is empty; It should not be empty'
+jwt_key = sensitive.jwt_key
 
 # database connection
 print('Connecting to database...', end=' ')
@@ -89,11 +63,7 @@ assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives']
 
 cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
 
-oracle_config = None
-
-with open(config['sensitives']['files']['oracle_key']) as jsonfile:
-    oracle_config = json.load(jsonfile)
-assert oracle_config is not None, 'Oracle Key json was empty for some reason'
+oracle_config = sensitive.oracle_config
 
 connection = cx_Oracle.connect(
     oracle_config['username'],
@@ -104,31 +74,6 @@ print('connected')
 
 conn_lock = Lock()
 
-# email login
-with open('data/email.password') as email_config:
-    email_login = json.load(email_config)
-    email_password = email_login['password']
-
-try:
-    smtp = 'smtp.gmail.com'
-    port = 587
-    context = ssl.create_default_context()
-    server = smtplib.SMTP(smtp, port)
-    server.starttls(context=context)
-    server.login('edustorybooks@gmail.com', email_password)
-except Exception as e:
-    print("Email Server Error")
-    print(e)
-
-# Bucket Uploader/Downloader setup
-with open('data/oracle_bucket.json') as bucket_details:
-    bucket = json.load(bucket_details)
-
-assert bucket is not None, 'oracle_bucket.json file was empty'
-
-bucket_config = bucket['config']
-
-oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
 
 # ============================== helper functions ==============================
 
@@ -205,9 +150,9 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
 
     # Email Command
     try:
-        server = smtplib.SMTP(smtp, port)
-        server.starttls(context=context)
-        server.login('edustorybooks@gmail.com', email_password)
+        server = smtplib.SMTP(sensitive.smtp, sensitive.port)
+        server.starttls(context=sensitive.context)
+        server.login('edustorybooks@gmail.com', sensitive.email_password)
         server.sendmail("edustorybooks@gmail.com", user_email, email_text)
     except:
         print("Exception in Email Process")
@@ -219,64 +164,6 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         del subject_line
         del body_lines
         del email_text
-        
-def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
-    """ 
-    Uploads local file to cloud bucket
-    :param local_file_path: path to local file to upload
-    :param cloud_file_name: Name for file in cloud
-    :return: the http status code of the upload response
-    """
-    with open(local_file_path, 'rb') as fh:
-        return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
-    
-def download_bucket_file(filename: str) -> str:
-    """ 
-    Downloads files from cloud bucket
-    :param filename: The name of the file to download
-    :return: the local path of the downloaded file, None if there is an error
-    """
-    if not os.path.isdir('bucket_files'):
-        os.mkdir('bucket_files')
-
-    try:
-        obj = oracle_cloud_client.get_object(bucket['namespace'], bucket['name'], filename)
-        if filename[filename.rfind('/')+1:] != -1:
-            filename = filename[filename.rfind('/')+1:]
-        new_file = 'bucket_files/' + filename
-        with open(new_file, 'wb') as f:
-            for chunk in obj.data.raw.stream(1024*1024, decode_content=False):
-                f.write(chunk)
-            f.close()
-        return new_file
-    except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
-        return None
-        
-def delete_bucket_file(filename: str) -> bool:
-    """
-    Deletes a given file in Chum-Bucket
-    :param filename: Filename of file to delete in Chum-Bucket
-    :return: Boolean depending on if the file was deleted or not.
-    """
-    try:
-        oracle_cloud_client.delete_object(bucket['namespace'], bucket['name'], filename)
-        return True
-    except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
-        return False
-
-def list_bucket_files() -> list[str]:
-    """
-    Prints each object in the bucket on a separate line. Used for testing/checking.
-    :return: List of filenames, if bucket is empty returns None
-    """
-    files = oracle_cloud_client.list_objects(bucket['namespace'], bucket['name'])
-    file_names = []
-    get_name = lambda f: f.name
-    for file in files.data.objects:
-        file_names.append(get_name(file))
-    return file_names
 
 
 def validate_login(auth: str, permission=0):
@@ -537,10 +424,11 @@ def login():
         # secure=True,
         # httponly=True
     )
-    
+
     try:
         cursor.execute(
-            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" + str(user_id) + "'"
+            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" +
+            str(user_id) + "'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -606,10 +494,10 @@ def register():
         }
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    if re_email.match( request.form['email'] ) is None or \
-        re_alphanumeric8.match( request.form['password'] ) is None or \
-        re_alphanumeric2.match( request.form['first_name'] ) is None or \
-        re_alphanumeric2.match( request.form['last_name'] ) is None:
+    if re_email.match(request.form['email']) is None or \
+            re_alphanumeric8.match(request.form['password']) is None or \
+            re_alphanumeric2.match(request.form['first_name']) is None or \
+            re_alphanumeric2.match(request.form['last_name']) is None:
         return {
             "status": "fail",
             "fail_no": 2,
@@ -618,8 +506,8 @@ def register():
 
     # all good, now query database
     email = (request.form['email']).lower().strip()
-    first_name = (request.form['first_name']).lower().strip()
-    last_name = (request.form['last_name']).lower().strip()
+    first_name = (request.form['first_name']).strip()
+    last_name = (request.form['last_name']).strip()
     school_id = (request.form['school_id']).lower().strip()
     study_id = (request.form['study_id']).lower().strip()
 
@@ -635,8 +523,8 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-    
-    result = cursor.fetchone() 
+
+    result = cursor.fetchone()
     if result is not None:
         return {
             "status": "fail",
@@ -644,17 +532,18 @@ def register():
             "message": "Email is Already Registered."
         }
 
-    hashed = bcrypt.hashpw(request.form['password'].encode('utf8'), bcrypt.gensalt())
+    hashed = bcrypt.hashpw(
+        request.form['password'].encode('utf8'), bcrypt.gensalt())
 
     try:
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
-            + email + "', '" 
-            + first_name + "', '" 
-            + last_name + "', " 
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('"
+            + email + "', '"
+            + first_name + "', '"
+            + last_name + "', "
             + "0 , "
-            + school_id + ", " 
-            + study_id + ", '" 
+            + school_id + ", "
+            + study_id + ", '"
             + hashed.decode('utf8')
             + "')"
         )
@@ -665,11 +554,14 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+    
+    send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
+        'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + 
+        '\n\nThanks for registering an account with Edu Storybooks! :)')
 
     return {
         "status": "ok"
     }
-    
 
 
 # input email & check if email exists 
@@ -1062,7 +954,7 @@ def admin_download_book():
     fileInput = request.form['filename']
     try:
         # download file to bucket
-        filepath = download_bucket_file(fileInput)
+        filepath = bucket.download_bucket_file(fileInput)
         # send file back
         return send_file(filepath)
     except:
@@ -1112,7 +1004,7 @@ def admin_book_upload():
         file.save(os.path.join("temp/file_upload", filename))
 
         try:
-            upload_bucket_file('temp/file_upload/' + filename, filename)
+            bucket.upload_bucket_file('temp/file_upload/' + filename, filename)
             return {
                 "status": "ok",
                 "message": "file uploaded"
@@ -1176,9 +1068,72 @@ def admin_add_book_to_study():
             "database_message": str(e)
         }
 
+
+@app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
+def admin_page_handler():
+    """
+    This endpoint handles quiz questions and answers
+    """
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    if request.method == 'POST':
+        return 'DELETE'
+
+    elif request.method == 'PUT':
+
+        return 'PUT'
+
+    elif request.method == 'GET':
+
+        return 'GET'
+
+    elif request.method == 'DELETE':  # DELETE = delete a page
+
+        try:
+            question_id_in = int(request.form['question_id_in'])
+
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "question_id_in failed a sanitize check. The posted field should be an integer."
+            }, 400, {"Content-Type": "application/json"}
+
+        cursor = connection.cursor()
+
+        try:
+            cursor.callproc('delete_question_answer_proc', [
+                            request.form['question_id_in']])
+
+            connection.commit()
+
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }
+
+        return {
+            "status": "ok"
+        }
+
     return {
-        "status": "ok"
-    }
+        "status": "fail",
+        "fail_no": 5,
+        "message": "The only supported operations for this endpoint are GET, POST, PUT, and DELETE"
+    }, 400, {"Content-Type": "application/json"}
 
 
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
@@ -1455,6 +1410,80 @@ def admin_download_action_data():
             "message": "Error when sending csv file.",
             "flask_message": str(e)
         }
+
+
+# take in input param ofset that will be the limit of 50 ofset of 50 and then be happy. 
+@app.route("/admin/get/user", methods=['GET'])
+def admin_download_users():
+    """
+    Exports user data to a json
+
+    - Connects to database
+    - Computes a select query to get user data
+    - return USER_ID, USERNAME (full), STUDY that they currently belong to. 
+        Important: Sort by join date, or login date, or something. We want fresh users first.
+    - Allow an admin to retrieve a JSON list of all of the users. 
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
+        Make offset an input parameter (int).
+    """
+    
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    #check to make sure you have a offset
+    try:
+        assert 'offset' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "offset was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure offset is int
+    try:
+        offset = int(request.form['offset'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "offset failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+        
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT USER_ID, EMAIL, STUDY_ID FROM USER_PROFILE ORDER BY CREATED_ON DESC OFFSET "+ request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    users = cursor.fetchall()
+    
+    return {
+            "status": "ok",
+            "users": users
+        }
+    
 
 
 if __name__ == "__main__":

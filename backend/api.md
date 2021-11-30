@@ -13,6 +13,7 @@ Table of Contents:
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
+ - [`admin/page/`](#admin/page)
  - [`/admin/book/grant/`](#admin/book/grant)
  - [`quiz/submit`](#quiz/submit)
 
@@ -321,6 +322,31 @@ Failure may occur because of,
 
 14. File could not be downloaded
 
+## admin/page/
+
+`DELETE /admin/page/`
+
+Allows admin user to delete questions and answers given a question id
+
+### Inputs 
+
+ - `question_id_in`: number id for a question
+
+### Returns 
+
+```
+{
+    "status": "ok"
+}
+```
+
+When testing with postman, the input question id is set in teh request Body form-data. The key should be "question_id_in" and be of type text.
+
+Failure may occur because of,
+
+2. question_id_in is not of type int.
+5. Request type is not GET, PUT, POST, or DELETE.
+
 ## /admin/book/grant/
 
 `POST /admin/book/grant/`
@@ -347,4 +373,40 @@ On Success,
 When testing with postman, the inputs will be input in "form-data" as text inputs. Enter the same exact input variables as above into the key column. Then, supply inputs to the value column.
 
 4. Failure may occur if the input study_id does not exist in the table STUDY since the parent key will not be found.
+
+## /admin/get/user/
+
+`GET /admin/get/user/`
+
+Allows admin user to get a list of the next 50 users based on date the user was created.
+
+### Inputs
+
+ - `offset`: Int to offset by (multiple of 50).
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "ok"
+    "users" : [
+        {
+            "EMAIL" : ...
+            "STUDY_ID": ...
+            "USER_ID": ...
+        }, ...
+    ]
+}
+```
+User objects have 3 attributes:
+ - `EMAIL`: string with @ for login attached to user 
+ - `STUDY_ID`: Int of study
+ - `USER_ID` : string given whe user created
+Returns a list of next 50 users in JSON format. 
+
+1. Failure if an offset was not provided
+2. Failure if offset is not an integer
+3. Failure when connecting to database
 
