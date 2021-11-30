@@ -1,5 +1,5 @@
 import tempfile
-import bucket
+from edu_storybook import bucket
 import os
 from zipfile import ZipFile
 import json
@@ -13,11 +13,11 @@ with tempfile.TemporaryDirectory() as temp_dir:
     assert config is not None, 'Could not find data/config.json file.'
     # TODO: Relocate in future when every part of server.py is in the module
 
-    wallet = bucket.download_bucket_file("Wallet_EDUStorybook.zip", temp_dir)
-    domain = bucket.download_bucket_file("domain.txt", temp_dir)
-    email = bucket.download_bucket_file("email.password", temp_dir)
-    jwt = bucket.download_bucket_file("jwt.key", temp_dir)
-    oracle_key = bucket.download_bucket_file("oracle_key.json", temp_dir)
+    wallet = bucket.download_bucket_file("Wallet_EDUStorybook.zip", temp_dir, bucket.temp_client)
+    domain = bucket.download_bucket_file("domain.txt", temp_dir, bucket.temp_client)
+    email = bucket.download_bucket_file("email.password", temp_dir, bucket.temp_client)
+    jwt = bucket.download_bucket_file("jwt.key", temp_dir, bucket.temp_client)
+    oracle_key = bucket.download_bucket_file("oracle_key.json", temp_dir, bucket.temp_client)
 
     # Unzip Wallet
     if not os.path.isdir("data/Wallet_EDUStorybook"):
@@ -66,3 +66,5 @@ with tempfile.TemporaryDirectory() as temp_dir:
         oracle_config = json.load(jsonfile)
     os.remove(oracle_key)
     assert oracle_config is not None, 'Oracle Key json was empty for some reason'
+
+del bucket.temp_client

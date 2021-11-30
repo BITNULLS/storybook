@@ -1,7 +1,11 @@
 run:
 	export FLASK_APP=server.py
 	export FLASK_ENV=development
-	flask run 
+	flask run
+windows-run:
+	$Env:FLASK_APP = "server.py"
+	$Env:FLASK_ENV = "development"
+	python -m flask run
 setup:
 	rm -r temp/
 	mkdir temp/

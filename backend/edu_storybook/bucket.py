@@ -7,7 +7,7 @@ from tempfile import TemporaryDirectory
 with tempfile.TemporaryDirectory() as temp_dir:
     # Sen_Files Downloader setup - Only used to download project configuration files
     #Chum-Bucket Downloader will be set up after config files have been downloaded
-    with open(temp_dir + '/StorybookFiles.json') as sb_files:
+    with open('data/StorybookFiles.json') as sb_files:
         bucket = json.load(sb_files)
 
     assert bucket is not None, 'StorybookFiles.json file was empty'
@@ -27,7 +27,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
             return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
 
 
-    def download_bucket_file(filename: str, folder = 'temp') -> str:
+    def download_bucket_file(filename: str, folder = '  temp', client = oracle_cloud_client) -> str:
         """
         Downloads files from cloud bucket
         :param filename: The name of the file to download
@@ -84,7 +84,9 @@ with tempfile.TemporaryDirectory() as temp_dir:
     with open(oracle_bucket) as bucket_details:
         bucket = json.load(bucket_details)
     assert bucket is not None, 'oracle_bucket.json file was empty'
+    bucket['config']['key_file'] = temp_dir + '/' + bucket['config']['key_file']
     bucket_config = bucket['config']
+    temp_client = oracle_cloud_client
     oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
     os.remove(chum_pem)
     os.remove(oracle_bucket)
