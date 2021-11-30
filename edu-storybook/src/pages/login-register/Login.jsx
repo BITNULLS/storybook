@@ -84,9 +84,11 @@ function ajaxCall() {
       success: function(data){
         console.log("Made it into the complete");
         new Login(data)
+        alert("Login Successful!")
       },
       error: function() {
         console.log("Could not complete AJAX call");
+        alert("Either email or password is incorrect. Please try again. ")
       }, 
   });
 }
