@@ -1,3 +1,4 @@
+from json.decoder import JSONDecoder
 from edu_storybook import bucket, sensitive
 from flask import Flask
 from flask import request
@@ -1409,6 +1410,80 @@ def admin_download_action_data():
             "message": "Error when sending csv file.",
             "flask_message": str(e)
         }
+
+
+# take in input param ofset that will be the limit of 50 ofset of 50 and then be happy. 
+@app.route("/admin/get/user", methods=['GET'])
+def admin_download_users():
+    """
+    Exports user data to a json
+
+    - Connects to database
+    - Computes a select query to get user data
+    - return USER_ID, USERNAME (full), STUDY that they currently belong to. 
+        Important: Sort by join date, or login date, or something. We want fresh users first.
+    - Allow an admin to retrieve a JSON list of all of the users. 
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
+        Make offset an input parameter (int).
+    """
+    
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    #check to make sure you have a offset
+    try:
+        assert 'offset' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "offset was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure offset is int
+    try:
+        offset = int(request.form['offset'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "offset failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+        
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT USER_ID, EMAIL, STUDY_ID FROM USER_PROFILE ORDER BY CREATED_ON DESC OFFSET "+ request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    users = cursor.fetchall()
+    
+    return {
+            "status": "ok",
+            "users": users
+        }
+    
 
 
 if __name__ == "__main__":
