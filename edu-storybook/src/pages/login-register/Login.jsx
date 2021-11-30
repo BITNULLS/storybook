@@ -47,7 +47,7 @@ export default class Login extends React.Component {
               <form onSubmit={e => e.preventDefault()}>
               <div class="form-group">
                 <Link to="/StorySelection">
-                  <button id="button_signIn" class="btn btn-primary" onClick={() => ajaxCall()}>Sign In</button >
+                  <button id="button_signIn" class="btn btn-primary" onClick={() => sendLoginRequest()}>Sign In</button >
                 </Link>
               </div>
               </form>
@@ -68,12 +68,9 @@ export default class Login extends React.Component {
   }
 }
 
-function ajaxCall() {
-    console.log("hit");
-    let email = document.getElementById("email").value;
-    let password = document.getElementById("password").value
-    console.log(email);
-    console.log(password);
+function sendLoginRequest() {
+    let email = $('#email').val()
+    let password = $('#password').val()
 
     $.ajax({
       type: "POST",
@@ -82,12 +79,10 @@ function ajaxCall() {
       dataType: "json",
       data: {email, password},
       success: function(data){
-        console.log("Made it into the complete");
         new Login(data)
         alert("Login Successful!")
       },
       error: function() {
-        console.log("Could not complete AJAX call");
         alert("Either email or password is incorrect. Please try again. ")
       }, 
   });
