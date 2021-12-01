@@ -5,11 +5,17 @@ conditions and returns.
 
 Table of Contents:
  - [Meta Notes](#meta_notes)
- - [`login/`](#login)
+ - [`book`](#book)
+ - [`login`](#login)
+ - [`password/forgot/`](#password/forgot)
+ - [`password/reset/`](#password/reset)
  - [`admin/download/user/`](#admin/download/user)
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
+ - [`admin/page/`](#admin/page)
+ - [`/admin/book/grant/`](#admin/book/grant)
+ - [`quiz/submit`](#quiz/submit)
 
 ## Meta Notes
 
@@ -51,6 +57,24 @@ When users are authenticated by the `POST /login` endpoint, they are given a JSO
 }
 ```
 
+## Book
+`POST \book`
+
+This retrieves all books that the user has access to.
+
+### Inputs
+None
+
+### Returns
+On success,
+```
+{
+    "status": "ok"
+}
+```
+
+It has a data object which contains all the book_id's to the books the user has access to.
+
 ## Login
 
 `POST /login`
@@ -86,6 +110,99 @@ But this can fail because of,
  5. Password incorrect
  6. Error when updating the database
 
+
+## Password Forgot
+
+`POST /password/forgot/`
+
+This lets a user reset a password.
+
+### Inputs 
+
+- `email`: user email
+
+### Returns
+
+On success, returns 
+
+```
+ return {
+        "status": "ok"
+    }
+```
+
+if an email is a match, then sends a link to the password/reset endpoint. If not, returns "status": "fail" for the following conditions:
+
+1. Email was not provided.
+2. Email failed sanitization check of more than 8 characters &/or alphanumeric.
+3. Error when querying database.
+4. No email matches what was passed.
+5. Error when querying database.
+
+
+## Password Reset
+
+`POST /password/reset/`
+
+This lets a user change their password.
+
+### Inputs 
+
+- `new_pass`: new password
+- `confirm_pass`: confirm password
+- `reset_key`: 512 random byte string
+
+### Returns
+
+On success, returns 
+
+```
+ return {
+        "status": "ok"
+    }
+```
+
+resets the password in database. If not, returns "status": "fail" for the following conditions:
+
+1. Either password was not provided.
+2. Either one or both passwords failed sanitization check of more than 8
+    characters &/or alphanumeric.
+3. Both passwords do not match.
+4. Error when querying database.
+5. No reset_key matches what was passed.
+6. Error when querying database.
+7. Error when querying database.
+
+## storyboard/action/
+
+`POST /storyboard/action`
+
+This saves a user action. 
+
+### Inputs 
+
+- `detail_description`: Description of action.
+- `book_id`: A book number.
+- `action_id`: A user action.
+- `action_start`: A epoch time of when action started. (In format YYYY-MM-DD HH:MM:SS)
+- `action_stop`: A epoch time of when action stopped. (In format YYYY-MM-DD HH:MM:SS)
+
+### Returns
+
+On success, returns
+
+```
+{
+    "status": "ok"
+}
+```
+
+But this can fail because of,
+ 1. `book_id`, `detail_description`, `action_key_id`, `action_start`, and `action_stop` is not provided
+ 2. `book_id` or `action_key_id` is not clean
+ 3. `action_start`,`action_stop`, or `detail_description` is not clean
+ 4.  Error when uploading file
+
 ## admin/download/user/
 
 `POST /admin/download/user`
@@ -118,6 +235,33 @@ On success, returns a CSV file.
 
 The user must be properly authenticated as an admin user. To be authenticated, they must first login in with their email and password to establish a cookie. See [`login/`](#login) above. 
 
+## quiz/submit
+
+`POST /quiz/submit`
+
+Inserts a user's quiz answer into the user_response table.
+
+### Inputs 
+
+ - `answer_id` - ID of the answer to the given question
+ - `question_id` - ID of the question being answered
+
+### Returns
+
+On success,
+
+```
+{
+    "status": "ok"
+}
+```
+
+But this can fail because of,
+
+ 4. Either the `answer_id` or `question_id` is not provided
+ 5. `answer_id` or `question_id` is not clean (invalid characters)
+ 6. No `answer_id` or `question_id` matches found
+
 ## admin/book/upload/
 
 `POST /admin/book/upload/`
@@ -134,8 +278,8 @@ On Success,
 
 ```
 {
-    "message": "file uploaded",
-    "status": "success"
+    "status": "ok",
+    "message": "file uploaded"
 }
 ```
 
@@ -167,7 +311,7 @@ On Success,
 
 ```
 {
-    "status": "success",
+    "status": "ok",
     "message": "file downloaded"
 }
 ```
@@ -175,4 +319,94 @@ On Success,
 When testing with postman, the input filename is set in the request Body form-data. The key should be called "file" and should be of type Text. Then, enter the exact filename of the file to be downloaded as the value.
 
 Failure may occur because of,
+
 14. File could not be downloaded
+
+## admin/page/
+
+`DELETE /admin/page/`
+
+Allows admin user to delete questions and answers given a question id
+
+### Inputs 
+
+ - `question_id_in`: number id for a question
+
+### Returns 
+
+```
+{
+    "status": "ok"
+}
+```
+
+When testing with postman, the input question id is set in teh request Body form-data. The key should be "question_id_in" and be of type text.
+
+Failure may occur because of,
+
+2. question_id_in is not of type int.
+5. Request type is not GET, PUT, POST, or DELETE.
+
+## /admin/book/grant/
+
+`POST /admin/book/grant/`
+
+Allows admin user to upload a book that is associated with a study id.
+
+### Inputs
+
+ - `book_name`: Text of full name of book.
+ - `book_url`: Text of full url for book.
+ - `book_description`: Text of full description for book.
+ - `study_id`: Number id for the study that the book belongs to
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "ok"
+}
+```
+
+When testing with postman, the inputs will be input in "form-data" as text inputs. Enter the same exact input variables as above into the key column. Then, supply inputs to the value column.
+
+4. Failure may occur if the input study_id does not exist in the table STUDY since the parent key will not be found.
+
+## /admin/get/user/
+
+`GET /admin/get/user/`
+
+Allows admin user to get a list of the next 50 users based on date the user was created.
+
+### Inputs
+
+ - `offset`: Int to offset by (multiple of 50).
+
+### Returns
+
+On Success, 
+
+```
+{
+    "status": "ok"
+    "users" : [
+        {
+            "EMAIL" : ...
+            "STUDY_ID": ...
+            "USER_ID": ...
+        }, ...
+    ]
+}
+```
+User objects have 3 attributes:
+ - `EMAIL`: string with @ for login attached to user 
+ - `STUDY_ID`: Int of study
+ - `USER_ID` : string given whe user created
+Returns a list of next 50 users in JSON format. 
+
+1. Failure if an offset was not provided
+2. Failure if offset is not an integer
+3. Failure when connecting to database
+
