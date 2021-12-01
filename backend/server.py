@@ -782,7 +782,7 @@ def admin_book_upload():
         os.remove("temp/file_upload/" + filename)
 
         # remove .pdf extension from filename
-        filename = filename.strip(".pdf")
+        filename = filename.rstrip(".pdf")
 
         # make folder to store images
         os.makedirs("temp/file_upload/" + filename + "_images")
