@@ -5,7 +5,7 @@ from zipfile import ZipFile
 
 # Sen_Files Downloader setup - Only used to download project configuration files
 #Chum-Bucket Downloader will be set up after config files have been downloaded
-with open('../data/StorybookFiles.json') as sb_files:
+with open('data/StorybookFiles.json') as sb_files:
     bucket = json.load(sb_files)
 
 assert bucket is not None, 'StorybookFiles.json file was empty'
@@ -25,7 +25,7 @@ def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
         return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, local_file_path).status
 
 
-def download_bucket_file(filename: str, folder = '../temp') -> str:
+def download_bucket_file(filename: str, folder = 'temp') -> str:
     """
     Downloads files from cloud bucket
     :param filename: The name of the file to download
@@ -74,9 +74,15 @@ def list_bucket_files() -> list[str]:
         file_names.append(get_name(file))
     return file_names
 
+wallet = download_bucket_file("Wallet_EDUStorybook.zip", 'data')
+domain = download_bucket_file("domain.txt", 'data')
+email = download_bucket_file("email.password", 'data')
+jwt = download_bucket_file("jwt.key", 'data')
+oracle_key = download_bucket_file("oracle_key.json", 'data')
+
 # Download Bucket Configuration Files
-chum_pem = download_bucket_file("Chum-Bucket.pem", '../data')
-oracle_bucket = download_bucket_file("oracle_bucket.json", '../data')
+chum_pem = download_bucket_file("Chum-Bucket.pem", 'data')
+oracle_bucket = download_bucket_file("oracle_bucket.json", 'data')
 
 # Chum-Bucket Uploader/Downloader setup
 with open(oracle_bucket) as bucket_details:

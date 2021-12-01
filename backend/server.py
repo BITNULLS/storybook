@@ -62,12 +62,12 @@ assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives']
 
 cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
 
-oracle_config = sensitive.oracle_config
+oracle_configs = sensitive.oracle_config
 
 connection = cx_Oracle.connect(
-    oracle_config['username'],
-    oracle_config['password'],
-    oracle_config['connect_string']
+    oracle_configs['username'],
+    oracle_configs['password'],
+    oracle_configs['connect_string']
 )
 print('connected')
 
@@ -1066,73 +1066,6 @@ def admin_add_book_to_study():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-
-
-@app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
-def admin_page_handler():
-    """
-    This endpoint handles quiz questions and answers
-    """
-    auth = request.cookies.get('Authorization')
-    vl = validate_login(
-        auth,
-        permission=1
-    )
-    if vl != True:
-        return vl
-
-    if 'Bearer ' in auth:
-        auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-
-    if request.method == 'POST':
-        return 'DELETE'
-
-    elif request.method == 'PUT':
-
-        return 'PUT'
-
-    elif request.method == 'GET':
-
-        return 'GET'
-
-    elif request.method == 'DELETE':  # DELETE = delete a page
-
-        try:
-            question_id_in = int(request.form['question_id_in'])
-
-        except ValueError:
-            return {
-                "status": "fail",
-                "fail_no": 2,
-                "message": "question_id_in failed a sanitize check. The posted field should be an integer."
-            }, 400, {"Content-Type": "application/json"}
-
-        cursor = connection.cursor()
-
-        try:
-            cursor.callproc('delete_question_answer_proc', [
-                            request.form['question_id_in']])
-
-            connection.commit()
-
-        except cx_Oracle.Error as e:
-            return {
-                "status": "fail",
-                "fail_no": 4,
-                "message": "Error when querying database.",
-                "database_message": str(e)
-            }
-
-        return {
-            "status": "ok"
-        }
-
-    return {
-        "status": "fail",
-        "fail_no": 5,
-        "message": "The only supported operations for this endpoint are GET, POST, PUT, and DELETE"
-    }, 400, {"Content-Type": "application/json"}
 
 
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
