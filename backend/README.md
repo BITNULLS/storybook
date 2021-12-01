@@ -52,6 +52,8 @@ Requirements/Steps to use the Chum-Bucket:
  
 To upload, the function `upload_bucket_file` is used. It is located in `edu_storybook/bucket.py`.
 
+To upload files, you will need "poppler". Review https://pdf2image.readthedocs.io/en/latest/installation.html to see how you can download poppler on your machine. MacOS can simply use "brew install poppler". Windows will have to download the package first (but this is in the link).
+
  - The function takes 2 parameter:
    - `local_file_path`: string of the local path of file to upload 
    - `cloud_file_name`: string of the new name of file in Chum-Bucket
