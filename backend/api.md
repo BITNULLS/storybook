@@ -192,10 +192,7 @@ Allows admin user to upload a question and answers.
 - `book_id_in` : book id that questions belong to
 - `page_prev_in` : previous page before question
 - `page_next_in` : next page after question
-- `answer_1_in` : first possible answer for question
-- `answer_2_in` : second possible answer for question
-- `answer_3_in` : third possible answer for question
-- `answer_4_in` : fourth possible answer for question
+- `answers_in` : all answers, separated by comma
 
 ### Returns 
 
@@ -206,7 +203,7 @@ On Success,
 }
 ```
 
-When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text.
+When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text. 'answers_in' must be a string of comma separated answers. For example, if the three answers are red, green and purple, 'answers_in' should be input as "red,green,purple"
 
 Failure may occur because of,
 
