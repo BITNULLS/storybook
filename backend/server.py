@@ -869,10 +869,7 @@ def admin_page_handler():
                     request.form['book_id_in'],\
                     request.form['page_prev_in'],\
                     request.form['page_next_in'],\
-                    request.form['answer_1_in'],\
-                    request.form['answer_2_in'],\
-                    request.form['answer_3_in'],\
-                    request.form['answer_4_in']])
+                    request.form['answers_in']])
                 
             # commit changes to db
             connection.commit()
