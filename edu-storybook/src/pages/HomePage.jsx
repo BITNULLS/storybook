@@ -27,7 +27,7 @@ export default class HomePage extends React.Component {
         </ol>
         <div class="carousel-inner" role="listbox">
           <div class="carousel-item active" data-interval="10000">
-            <img class="d-block w-100 mx-auto" src= {process.env.PUBLIC_URL +'/images/titlePage.png'}
+            <img class="d-block w-100 mx-auto" src= {process.env.PUBLIC_URL +'/images/TitlePage.png'}
             alt="First Slide"/>
           </div>   
           <div class="carousel-item">
