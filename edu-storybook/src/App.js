@@ -15,10 +15,9 @@ import EditBook from "./pages/admin/EditBook"
 import { BrowserRouter, Route, NavLink, Switch, Link } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
 function App() {
  // const [loggedIn, setLoggedIn] = useState(localStorage.getItem("token"));
-
+  
   return (
     <BrowserRouter>
     

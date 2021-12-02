@@ -1,3 +1,4 @@
+from json.decoder import JSONDecoder
 from edu_storybook import bucket, sensitive
 from flask import Flask
 from flask import request
@@ -23,6 +24,8 @@ import csv
 import hashlib
 import sys
 from datetime import date
+from pdf2image import convert_from_path
+from threading import Lock
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
@@ -62,12 +65,12 @@ assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives']
 
 cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
 
-oracle_config = sensitive.oracle_config
+oracle_configs = sensitive.oracle_config
 
 connection = cx_Oracle.connect(
-    oracle_config['username'],
-    oracle_config['password'],
-    oracle_config['connect_string']
+    oracle_configs['username'],
+    oracle_configs['password'],
+    oracle_configs['connect_string']
 )
 print('connected')
 
@@ -390,10 +393,12 @@ def login():
     session_id = str(uuid.uuid4())  # generate a unique token for a user
 
     try:
+        conn_lock.acquire()
         cursor.execute(
             "update USER_SESSION set session_id='" + session_id +
             "', active=1 where user_id='" + str(user_id) + "'"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -401,6 +406,8 @@ def login():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
 
     iat = int(time.time())
 
@@ -425,10 +432,12 @@ def login():
     )
 
     try:
+        conn_lock.acquire()
         cursor.execute(
             "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" +
             str(user_id) + "'"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -436,6 +445,8 @@ def login():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
 
     return res
 
@@ -457,10 +468,12 @@ def logout():
 
     cursor = connection.cursor()
     try:
+        conn_lock.acquire()
         cursor.execute(
             "update USER_SESSION set active=0 where user_id='" +
             token['sub'] + "'"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -468,6 +481,8 @@ def logout():
             "message": "Error when updating database.",
             "database_message": str(e)
         }
+    finally:
+        conn_lock.release()
 
     res = make_response({
         "status": "ok"
@@ -535,6 +550,7 @@ def register():
         request.form['password'].encode('utf8'), bcrypt.gensalt())
 
     try:
+        conn_lock.acquire()
         cursor.execute(
             "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('"
             + email + "', '"
@@ -546,6 +562,7 @@ def register():
             + hashed.decode('utf8')
             + "')"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -553,6 +570,8 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+    finally:
+        conn_lock.release()
     
     send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
         'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + 
@@ -621,9 +640,10 @@ def password_forgot():
     req_date = (now.strftime("%Y/%m/%d"))
     
     try: # it does not insert with Oracle db? (but works in SQLDeveloper)
+        conn_lock.acquire()
         cursor.execute(
             "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "','" + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'))")
-
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -631,7 +651,8 @@ def password_forgot():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    connection.commit() 
+    finally:
+        conn_lock.release()
     
     key = 'edustorybook.com/Password/Reset#key=' + rand_str
     
@@ -701,8 +722,9 @@ def password_reset():
         }, 400, {"Content-Type": "application/json"}   
                
     try:
+        conn_lock.acquire()
         cursor.execute("UPDATE USER_PROFILE set PASSWORD ='" + hashed.decode('utf8') + "' WHERE user_id ='" + result[0] + "'")
-
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -710,11 +732,13 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    connection.commit()
+    finally:
+        conn_lock.release()
 
-    try: 
+    try:
+        conn_lock.acquire()
         cursor.execute("DELETE FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
-
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -722,7 +746,8 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    connection.commit()
+    finally:
+        conn_lock.release()
 
     return {
         "status": "ok"
@@ -1002,11 +1027,34 @@ def admin_book_upload():
         # save file to local /temp/file_upload folder
         file.save(os.path.join("temp/file_upload", filename))
 
+        # convert pdf to images
+        book_pngs = convert_from_path("temp/file_upload/" + filename, 500)
+
+        # remove pdf from temp/file_upload. we don't need it anymore
+        os.remove("temp/file_upload/" + filename)
+
+        # remove .pdf extension from filename
+        filename = filename.rstrip(".pdf")
+
+        # make folder to store images
+        os.makedirs("temp/file_upload/" + filename + "_images")
+
         try:
-            bucket.upload_bucket_file('temp/file_upload/' + filename, filename)
+            # iterate through length of book 
+            for i in range(len(book_pngs)):
+                # Save pages as images in the pdf
+                book_pngs[i].save('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', 'PNG')
+                # upload images to a folder in bucket
+                bucket.upload_bucket_file('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', filename + "_images/" + filename + "_" + str(i+1) +'.png')
+                # remove img file
+                os.remove('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png')
+
+            # remove temp dir
+            os.rmdir("temp/file_upload/" + filename + "_images")
+
             return {
                 "status": "ok",
-                "message": "file uploaded"
+                "message": "file(s) uploaded"
             }
 
         except Exception as e:
@@ -1048,6 +1096,7 @@ def admin_add_book_to_study():
 
     # insert query
     try:
+        conn_lock.acquire()
         cursor.execute("INSERT into BOOK (book_name, url, description, study_id) VALUES ('" 
             + book_name + "', '" 
             + book_url + "', '" 
@@ -1055,7 +1104,6 @@ def admin_add_book_to_study():
             + study_id
             + ")"
             )
-
         # commit to database
         connection.commit()
 
@@ -1066,73 +1114,8 @@ def admin_add_book_to_study():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-
-
-@app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
-def admin_page_handler():
-    """
-    This endpoint handles quiz questions and answers
-    """
-    auth = request.cookies.get('Authorization')
-    vl = validate_login(
-        auth,
-        permission=1
-    )
-    if vl != True:
-        return vl
-
-    if 'Bearer ' in auth:
-        auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-
-    if request.method == 'POST':
-        return 'DELETE'
-
-    elif request.method == 'PUT':
-
-        return 'PUT'
-
-    elif request.method == 'GET':
-
-        return 'GET'
-
-    elif request.method == 'DELETE':  # DELETE = delete a page
-
-        try:
-            question_id_in = int(request.form['question_id_in'])
-
-        except ValueError:
-            return {
-                "status": "fail",
-                "fail_no": 2,
-                "message": "question_id_in failed a sanitize check. The posted field should be an integer."
-            }, 400, {"Content-Type": "application/json"}
-
-        cursor = connection.cursor()
-
-        try:
-            cursor.callproc('delete_question_answer_proc', [
-                            request.form['question_id_in']])
-
-            connection.commit()
-
-        except cx_Oracle.Error as e:
-            return {
-                "status": "fail",
-                "fail_no": 4,
-                "message": "Error when querying database.",
-                "database_message": str(e)
-            }
-
-        return {
-            "status": "ok"
-        }
-
-    return {
-        "status": "fail",
-        "fail_no": 5,
-        "message": "The only supported operations for this endpoint are GET, POST, PUT, and DELETE"
-    }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
 
 
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
@@ -1409,6 +1392,80 @@ def admin_download_action_data():
             "message": "Error when sending csv file.",
             "flask_message": str(e)
         }
+
+
+# take in input param ofset that will be the limit of 50 ofset of 50 and then be happy. 
+@app.route("/admin/get/user", methods=['GET'])
+def admin_download_users():
+    """
+    Exports user data to a json
+
+    - Connects to database
+    - Computes a select query to get user data
+    - return USER_ID, USERNAME (full), STUDY that they currently belong to. 
+        Important: Sort by join date, or login date, or something. We want fresh users first.
+    - Allow an admin to retrieve a JSON list of all of the users. 
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
+        Make offset an input parameter (int).
+    """
+    
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    #check to make sure you have a offset
+    try:
+        assert 'offset' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "offset was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure offset is int
+    try:
+        offset = int(request.form['offset'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "offset failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+        
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT USER_ID, EMAIL, STUDY_ID FROM USER_PROFILE ORDER BY CREATED_ON DESC OFFSET "+ request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    users = cursor.fetchall()
+    
+    return {
+            "status": "ok",
+            "users": users
+        }
+    
 
 
 if __name__ == "__main__":
