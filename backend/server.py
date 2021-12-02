@@ -24,12 +24,14 @@ import csv
 import hashlib
 import sys
 from datetime import date
+from flask_cors import CORS
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
 # ==================================== setup ===================================
 
 app = Flask(__name__)
+CORS(app) 
 
 # regexes
 # they're faster compiled, and they can be used throughout
@@ -538,10 +540,12 @@ def login():
         # httponly=True
     )
     
-    try:
+    try:  
+        conn_lock.acquire()
         cursor.execute(
             "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" + str(user_id) + "'"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -549,6 +553,8 @@ def login():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
 
     return res
 
@@ -597,7 +603,6 @@ def register():
         assert 'first_name' in request.form
         assert 'last_name' in request.form
         assert 'school_id' in request.form
-        assert 'study_id' in request.form
     except AssertionError:
         return {
             "status": "fail",
@@ -621,7 +626,6 @@ def register():
     first_name = (request.form['first_name']).lower().strip()
     last_name = (request.form['last_name']).lower().strip()
     school_id = (request.form['school_id']).lower().strip()
-    study_id = (request.form['study_id']).lower().strip()
 
     cursor = connection.cursor()
     try:
@@ -647,6 +651,7 @@ def register():
     hashed = bcrypt.hashpw(request.form['password'].encode('utf8'), bcrypt.gensalt())
 
     try:
+        conn_lock.acquire()
         cursor.execute(
             "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('" 
             + email + "', '" 
@@ -654,10 +659,11 @@ def register():
             + last_name + "', " 
             + "0 , "
             + school_id + ", " 
-            + study_id + ", '" 
+            + 'null' + ", '" 
             + hashed.decode('utf8')
             + "')"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -665,6 +671,8 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+    finally:
+        conn_lock.release()
 
     return {
         "status": "ok"

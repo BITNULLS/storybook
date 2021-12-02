@@ -42,7 +42,7 @@ export default class Register extends React.Component {
 
                   <div class="col-12 col-sm-6">
                     <div class="form-group mb-4">
-                      <label for="school_id">Study's Admin:</label>
+                      <label for="school_id">School ID:</label>
                       <input id="school_id" type="text" formControlName="school_id" class="form-control"></input>
                     </div>
                   </div>
