@@ -25,6 +25,7 @@ import hashlib
 import sys
 from datetime import date
 from pdf2image import convert_from_path
+from threading import Lock
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
@@ -537,6 +538,7 @@ def register():
         request.form['password'].encode('utf8'), bcrypt.gensalt())
 
     try:
+        conn_lock.acquire()
         cursor.execute(
             "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('"
             + email + "', '"
@@ -548,6 +550,7 @@ def register():
             + hashed.decode('utf8')
             + "')"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -555,6 +558,8 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+    finally:
+        conn_lock.release()
     
     send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
         'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + 
