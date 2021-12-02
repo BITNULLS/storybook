@@ -393,10 +393,12 @@ def login():
     session_id = str(uuid.uuid4())  # generate a unique token for a user
 
     try:
+        conn_lock.acquire()
         cursor.execute(
             "update USER_SESSION set session_id='" + session_id +
             "', active=1 where user_id='" + str(user_id) + "'"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -404,6 +406,8 @@ def login():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
 
     iat = int(time.time())
 
@@ -428,10 +432,12 @@ def login():
     )
 
     try:
+        conn_lock.acquire()
         cursor.execute(
             "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" +
             str(user_id) + "'"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -439,6 +445,8 @@ def login():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
 
     return res
 
@@ -460,10 +468,12 @@ def logout():
 
     cursor = connection.cursor()
     try:
+        conn_lock.acquire()
         cursor.execute(
             "update USER_SESSION set active=0 where user_id='" +
             token['sub'] + "'"
         )
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -471,6 +481,8 @@ def logout():
             "message": "Error when updating database.",
             "database_message": str(e)
         }
+    finally:
+        conn_lock.release()
 
     res = make_response({
         "status": "ok"
@@ -628,9 +640,10 @@ def password_forgot():
     req_date = (now.strftime("%Y/%m/%d"))
     
     try: # it does not insert with Oracle db? (but works in SQLDeveloper)
+        conn_lock.acquire()
         cursor.execute(
             "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "','" + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'))")
-
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -638,7 +651,8 @@ def password_forgot():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    connection.commit() 
+    finally:
+        conn_lock.release()
     
     key = 'edustorybook.com/Password/Reset#key=' + rand_str
     
@@ -708,8 +722,9 @@ def password_reset():
         }, 400, {"Content-Type": "application/json"}   
                
     try:
+        conn_lock.acquire()
         cursor.execute("UPDATE USER_PROFILE set PASSWORD ='" + hashed.decode('utf8') + "' WHERE user_id ='" + result[0] + "'")
-
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -717,11 +732,13 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    connection.commit()
+    finally:
+        conn_lock.release()
 
-    try: 
+    try:
+        conn_lock.acquire()
         cursor.execute("DELETE FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
-
+        connection.commit()
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -729,7 +746,8 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    connection.commit()
+    finally:
+        conn_lock.release()
 
     return {
         "status": "ok"
@@ -1078,6 +1096,7 @@ def admin_add_book_to_study():
 
     # insert query
     try:
+        conn_lock.acquire()
         cursor.execute("INSERT into BOOK (book_name, url, description, study_id) VALUES ('" 
             + book_name + "', '" 
             + book_url + "', '" 
@@ -1085,7 +1104,6 @@ def admin_add_book_to_study():
             + study_id
             + ")"
             )
-
         # commit to database
         connection.commit()
 
@@ -1096,6 +1114,8 @@ def admin_add_book_to_study():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+    finally:
+        conn_lock.release()
 
 
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
