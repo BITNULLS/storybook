@@ -833,7 +833,6 @@ def storyboard_get_page():
     # check if this is in write format ; then we have to fix it and ammend it with page number
     fileInput = cursor.fetchone()[0]; 
     fileInput = fileInput + '/' + fileInput + '_' + str(page_number) + '.png'
-    print(fileInput)
     
     try:
         send_file(bucket.download_bucket_file(fileInput))
