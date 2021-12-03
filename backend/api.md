@@ -451,16 +451,15 @@ On Success,
 
 ```
 {
-    "status": "ok"
     "schools" : [
         {
-            "SCHOOL_NAME" : ...
+            "SchoolName" ...
         }, ...
     ]
 }
 ```
-User objects have 1 attributes:
- - `SCHOOL_NAME`: string of name of school in database 
+Where:
+ - `SchoolName`: string that is name of school in database 
  
 Returns a list of next 50 schools in JSON format. 
 

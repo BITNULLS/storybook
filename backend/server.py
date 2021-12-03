@@ -1529,25 +1529,12 @@ def admin_get_users():
             "users": users
         }
     
-@app.route("/admin/get/schools", methods=['GET'])   
-def admin_get_schools():
+@app.route("/schools", methods=['GET'])   
+def get_schools():
     '''
     Return a list of schools in the same style/format/convention that admin_get_users() returns a list of users.
     '''
-    # validate that user has rights to access books
-    auth = request.cookies.get('Authorization')
-    vl = validate_login(
-        auth,
-        permission=0
-    )
-    if vl != True:
-        return vl
-
-    if 'Bearer ' in auth:
-        auth = auth.replace('Bearer ', '', 1)
-
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-
+    
     #check to make sure you have a offset
     try:
         assert 'offset' in request.form
@@ -1575,7 +1562,6 @@ def admin_get_schools():
         cursor.execute(
             "SELECT SCHOOL_NAME FROM SCHOOL ORDER BY SCHOOL_ID OFFSET "+ request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
         )
-        label_results_from(cursor)
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
@@ -1587,8 +1573,7 @@ def admin_get_schools():
     schools = cursor.fetchall()
     
     return {
-            "status": "ok",
-            "schools": schools
+            "schools": list(map(lambda x: x[0], schools))
         }
 
 
