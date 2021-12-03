@@ -21,16 +21,15 @@ import $ from 'jquery';
                 
 
 
-                <div id="file-content" onSubmit={e => e.preventDefault()}>
-                  <input id="file" type="file" accept="pdf/*" hidden="true" />
-                    <label for="file">
+              <div id="file-content" onSubmit={e => e.preventDefault()}>
+                  <input id="file" type="file" accept="pdf/*" />
+                    <label htmlFor="file">
                       <span
                         id="file-upload-btn" 
                         class="btn btn-primary"
-                        style = {{minWidth: 180, margin: 10}}>Upload New Book
+                        style = {{minWidth: 180, margin: 10}}>Upload New Book Original
                       </span>
                     </label>
-                    
                 </div>
 
                 
@@ -40,29 +39,32 @@ import $ from 'jquery';
 
 
                 <div class="form-group" onSubmit={e => e.preventDefault()}>
-                <Link to="/EditBook">
-                  <button id="load_file" class="btn btn-primary" onClick={
+                
+                  <button id="load_file" onClick={
                     function sendFileRequest() {
-                      let file = $('#file_upload').val()
+                      let file = $('#file').val()
                       console.log(file)
-            
+                      console.log("before ajax")
                       $.ajax({
                         type: "POST",
                         url: "http://localhost:5000/admin/book/upload",
                         contentType: "application/x-www-form-urlencoded",
-                        dataType: "json",
+                        dataType: 'File',
                         data: {file},
                         success: function(data){
+                          console.log("inside success")
                           new AdminViewPage(data)
+                          console.log("after book has uploaded through backend")
                           alert("Successfully uploaded new book!" )
                         },
                         error: function() {
+                          console.log("did not upload properly")
                           alert("Unable to upload new book. Please try again. ")
                         }, 
                     });
                   }
-                  }>loading thingy</button >
-                </Link>
+                  }>Upload Book</button >
+                
               </div>
 
                 
