@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import $ from 'jquery';
 
 /**
  * 
@@ -18,16 +19,62 @@ import { Link } from "react-router-dom";
             <div class="card-body">
               <form>
                 
-                <div>
-                  <input id="file-upload" type="file" accept="pdf/*" hidden="true"/>
-                    <label for="file-upload">
+
+
+                <div id="file-content" onSubmit={e => e.preventDefault()}>
+                  <input id="file" type="file" accept="pdf/*" hidden="true" />
+                    <label for="file">
                       <span
                         id="file-upload-btn" 
                         class="btn btn-primary"
                         style = {{minWidth: 180, margin: 10}}>Upload New Book
                       </span>
                     </label>
+                    
                 </div>
+
+                
+
+
+
+
+
+                <div class="form-group" onSubmit={e => e.preventDefault()}>
+                <Link to="/EditBook">
+                  <button id="load_file" class="btn btn-primary" onClick={
+                    function sendFileRequest() {
+                      let file = $('#file_upload').val()
+                      console.log(file)
+            
+                      $.ajax({
+                        type: "POST",
+                        url: "http://localhost:5000/admin/book/upload",
+                        contentType: "application/x-www-form-urlencoded",
+                        dataType: "json",
+                        data: {file},
+                        success: function(data){
+                          new AdminViewPage(data)
+                          alert("Successfully uploaded new book!" )
+                        },
+                        error: function() {
+                          alert("Unable to upload new book. Please try again. ")
+                        }, 
+                    });
+                  }
+                  }>loading thingy</button >
+                </Link>
+              </div>
+
+                
+
+
+
+                
+
+
+
+
+
                     
                 <div class="form-group">             
                   <Link to="/EditBook">
