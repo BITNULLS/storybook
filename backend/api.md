@@ -173,6 +173,31 @@ resets the password in database. If not, returns "status": "fail" for the follow
 6. Error when querying database.
 7. Error when querying database.
 
+## Get Storyboard Page
+`POST /storyboard/page`
+
+### Inputs
+
+- `book_id`: a book number
+- `page_number`: a next or prev page (have to do math in front end)
+
+### Returns 
+
+On success, returns
+
+```
+{
+    "status": "ok"
+}
+```
+and sends file path
+
+But this can fail because of,
+ 1. `book_id`and/or `page_number` is not provided
+ 2. `book_id` or `page_number` is not clean
+ 3.  Error when connecting to database
+ 4.  No image found in that location in the bucket
+
 ## storyboard/action/
 
 `POST /storyboard/action`

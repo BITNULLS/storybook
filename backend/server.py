@@ -801,9 +801,73 @@ def get_users_books():
 
 @app.route("/storyboard/page", methods=['POST'])
 def storyboard_get_page():
-    return {
-        "...": "..."
-    }
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login( 
+        auth, 
+        permission=0
+    )
+    if vl != True:
+        return vl 
+    
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms= config['jwt_alg']) 
+
+    # check that all expected inputs are received
+    try:
+        assert 'book_id' in request.form 
+        assert 'page_number' in request.form     
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Either the book_id or page_number was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure book_id, page_number are ints
+    try: 
+        book_id = int(request.form["book_id"])
+        page_number = int(request.form["page_number"])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id or page_number failed a sanitize check. The POSTed fields should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+ 
+
+    # goes into database and gets the bucket folder. 
+    # goes into bucket and then says I want this image from this folder.
+    cursor = connection.cursor()  
+ 
+    try:
+        # get folder that holds that book's images 
+        cursor.execute ("SELECT folder FROM BOOK where book_id =" + request.form["book_id"] )
+    except cx_Oracle.Error as e:
+        return { "status": "fail",
+            "fail_no": 3,
+            "message": "Error when updating database action",
+            "database_message": str(e)
+        } , 400, {"Content-Type": "application/json"}
+
+    # check if this is in write format ; then we have to fix it and ammend it with page number
+    fileInput = cursor.fetchone()[0]; 
+    fileInput = fileInput + '/' + fileInput + '_' + str(page_number) + '.png'
+    
+    try:
+        send_file(bucket.download_bucket_file(fileInput))
+    except:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "could not get image"
+        }, 400, {"Content-Type": "application/json"}
+    
+    return{
+        "status": "ok"
+    } 
 
 
 @app.route("/storyboard/action", methods=['POST'])
