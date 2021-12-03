@@ -1037,20 +1037,20 @@ def admin_book_upload():
         filename = filename.rstrip(".pdf")
 
         # make folder to store images
-        os.makedirs("temp/file_upload/" + filename + "_images")
+        os.makedirs("temp/file_upload/" + filename)
 
         try:
             # iterate through length of book 
             for i in range(len(book_pngs)):
                 # Save pages as images in the pdf
-                book_pngs[i].save('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', 'PNG')
+                book_pngs[i].save('temp/file_upload/'+ filename + "/" + filename + "_" + str(i+1) +'.png', 'PNG')
                 # upload images to a folder in bucket
-                upload_bucket_file('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', filename + "_images/" + filename + "_" + str(i+1) +'.png')
+                upload_bucket_file('temp/file_upload/'+ filename + "/" + filename + "_" + str(i+1) +'.png', filename + "/" + filename + "_" + str(i+1) +'.png')
                 # remove img file
-                os.remove('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png')
+                os.remove('temp/file_upload/'+ filename + "/" + filename + "_" + str(i+1) +'.png')
 
             # remove temp dir
-            os.rmdir("temp/file_upload/" + filename + "_images")
+            os.rmdir("temp/file_upload/" + filename)
 
             return {
                 "status": "ok",
