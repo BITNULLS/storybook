@@ -174,7 +174,7 @@ resets the password in database. If not, returns "status": "fail" for the follow
 7. Error when querying database.
 
 ## Get Storyboard Page
-`POST /storyboard.page`
+`POST /storyboard/page`
 
 ### Inputs
 
@@ -190,6 +190,7 @@ On success, returns
     "status": "ok"
 }
 ```
+and sends file path
 
 But this can fail because of,
  1. `book_id`and/or `page_number` is not provided
