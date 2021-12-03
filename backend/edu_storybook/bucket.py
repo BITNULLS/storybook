@@ -1,3 +1,4 @@
+import tempfile
 import oci
 import json
 import os
@@ -74,21 +75,25 @@ def list_bucket_files() -> list[str]:
         file_names.append(get_name(file))
     return file_names
 
-wallet = download_bucket_file("Wallet_EDUStorybook.zip", 'data')
-domain = download_bucket_file("domain.txt", 'data')
-email = download_bucket_file("email.password", 'data')
-jwt = download_bucket_file("jwt.key", 'data')
-oracle_key = download_bucket_file("oracle_key.json", 'data')
+temp_dir = tempfile.TemporaryDirectory()
+temp_dir_name = temp_dir.name
+
+wallet = download_bucket_file("Wallet_EDUStorybook.zip", temp_dir_name)
+domain = download_bucket_file("domain.txt", temp_dir_name)
+email = download_bucket_file("email.password", temp_dir_name)
+jwt = download_bucket_file("jwt.key", temp_dir_name)
+oracle_key = download_bucket_file("oracle_key.json", temp_dir_name)
 
 # Download Bucket Configuration Files
-chum_pem = download_bucket_file("Chum-Bucket.pem", 'data')
-oracle_bucket = download_bucket_file("oracle_bucket.json", 'data')
+chum_pem = download_bucket_file("Chum-Bucket.pem", temp_dir_name)
+oracle_bucket = download_bucket_file("tester_oracle_bucket.json", temp_dir_name)
 
 # Chum-Bucket Uploader/Downloader setup
 with open(oracle_bucket) as bucket_details:
     bucket = json.load(bucket_details)
 assert bucket is not None, 'oracle_bucket.json file was empty'
 bucket_config = bucket['config']
+bucket_config['key_file'] = temp_dir_name + '/' +bucket_config['key_file']
 oracle_cloud_client = oci.object_storage.ObjectStorageClient(bucket_config)
 os.remove(chum_pem)
 os.remove(oracle_bucket)

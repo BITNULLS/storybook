@@ -58,3 +58,5 @@ with open(bucket.oracle_key) as jsonfile:
     oracle_config = json.load(jsonfile)
 os.remove(bucket.oracle_key)
 assert oracle_config is not None, 'Oracle Key json was empty for some reason'
+
+bucket.temp_dir.cleanup()
