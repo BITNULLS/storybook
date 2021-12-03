@@ -4,3 +4,4 @@ bcrypt
 cryptography
 oci
 pyjwt
+flask_cors

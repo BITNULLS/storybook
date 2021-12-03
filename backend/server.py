@@ -24,6 +24,7 @@ import csv
 import hashlib
 import sys
 from datetime import date
+from flask_cors import CORS
 from pdf2image import convert_from_path
 from threading import Lock
 
@@ -32,6 +33,7 @@ ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 # ==================================== setup ===================================
 
 app = Flask(__name__)
+CORS(app) 
 
 # regexes
 # they're faster compiled, and they can be used throughout
@@ -499,7 +501,6 @@ def register():
         assert 'first_name' in request.form
         assert 'last_name' in request.form
         assert 'school_id' in request.form
-        assert 'study_id' in request.form
     except AssertionError:
         return {
             "status": "fail",
@@ -523,7 +524,6 @@ def register():
     first_name = (request.form['first_name']).strip()
     last_name = (request.form['last_name']).strip()
     school_id = (request.form['school_id']).lower().strip()
-    study_id = (request.form['study_id']).lower().strip()
 
     cursor = connection.cursor()
     try:
@@ -557,8 +557,8 @@ def register():
             + first_name + "', '"
             + last_name + "', "
             + "0 , "
-            + school_id + ", "
-            + study_id + ", '"
+            + school_id + ", " 
+            + 'null' + ", '" 
             + hashed.decode('utf8')
             + "')"
         )
@@ -572,11 +572,10 @@ def register():
         }
     finally:
         conn_lock.release()
-    
-    send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
-        'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + 
-        '\n\nThanks for registering an account with Edu Storybooks! :)')
 
+        send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com', 
+            'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' + 
+            '\n\nThanks for registering an account with Edu Storybooks! :)')
     return {
         "status": "ok"
     }
