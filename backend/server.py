@@ -1459,7 +1459,7 @@ def admin_download_action_data():
 
 # take in input param ofset that will be the limit of 50 ofset of 50 and then be happy. 
 @app.route("/admin/get/user", methods=['GET'])
-def admin_download_users():
+def admin_get_users():
     """
     Exports user data to a json
 
@@ -1529,6 +1529,67 @@ def admin_download_users():
             "users": users
         }
     
+@app.route("/admin/get/schools", methods=['GET'])   
+def admin_get_schools():
+    '''
+    Return a list of schools in the same style/format/convention that admin_get_users() returns a list of users.
+    '''
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    #check to make sure you have a offset
+    try:
+        assert 'offset' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "offset was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure offset is int
+    try:
+        offset = int(request.form['offset'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "offset failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+        
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT SCHOOL_NAME FROM SCHOOL ORDER BY SCHOOL_ID OFFSET "+ request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    schools = cursor.fetchall()
+    
+    return {
+            "status": "ok",
+            "schools": schools
+        }
 
 
 if __name__ == "__main__":
