@@ -435,3 +435,34 @@ Returns a list of next 50 users in JSON format.
 2. Failure if offset is not an integer
 3. Failure when connecting to database
 
+## /admin/get/schools/
+
+`GET /admin/get/schools`
+
+Allows user to get a list of the next 50 schools based on alphebetical order of the school names.
+
+### Inputs
+
+ - `offset`: Int to offset by (multiple of 50).
+
+### Returns
+
+On Success, 
+
+```
+{
+    "schools" : [
+        "schoolA",
+        "schoolB",
+        ...
+    ]
+}
+```
+Where:
+ - `SchoolName`: string that is name of school in database 
+ 
+Returns a list of next 50 schools in JSON format. 
+
+1. Failure if an offset was not provided
+2. Failure if offset is not an integer
+3. Failure when connecting to database
