@@ -192,7 +192,7 @@ Allows admin user to upload a question and answers.
 - `book_id_in` : book id that questions belong to
 - `page_prev_in` : previous page before question
 - `page_next_in` : next page after question
-- `answers_in` : all answers, separated by comma
+- `answers_in` : all answers, separated by {space}{tilde}{back tick}{tilde}{space} (that is `` ~`~ ``).
 
 ### Returns 
 
