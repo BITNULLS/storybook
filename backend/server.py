@@ -26,12 +26,14 @@ import sys
 from datetime import date
 from pdf2image import convert_from_path
 from threading import Lock
+from flask_cors import CORS
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
 # ==================================== setup ===================================
 
 app = Flask(__name__)
+CORS(app) 
 
 # regexes
 # they're faster compiled, and they can be used throughout
@@ -121,8 +123,9 @@ def issue_auth_token(res, token):
     res.set_cookie(
         "Authorization",
         "Bearer " + new_token,
-        max_age=config["login_duration"]  # ,
-        # domain=domain_name,
+        max_age=config["login_duration"]  ,
+        domain="localhost",
+        samesite="Lax"
         # secure=True,
         # httponly=True
     )
@@ -187,11 +190,9 @@ def validate_login(auth: str, permission=0):
     """
     # TODO: later maybe track Origin header?
     try:
-        assert type(
-            auth) is not None, 'You need to pass a valid auth param to validate_login()'
+        assert type(auth) is not None, 'You need to pass a valid auth param to validate_login()'
         #assert type(origin) is not None, 'You need to pass a valid origin param to validate_login()'
-        assert type(
-            permission) is not None, 'You need to pass a valid permission param to validate_login()'
+        assert type(permission) is not None, 'You need to pass a valid permission param to validate_login()'
     except AssertionError:
         return {
             "status": "fail",

@@ -34,46 +34,6 @@ import $ from 'jquery';
 
                 
                 
-                <div action="http://localhost:5000/admin/book/upload">
-                  <label for="file">Select a file:</label>
-                  <input type="file" id="file" name="file" hidden="true"/><br></br>
-                  <input type="submit" onClick={
-                    function uploadingBook(e) {
-                      e.preventDefault();
-                      let file = $('#file').val()
-                      console.log(file)
-                      console.log("in new uploading")
-                      if (file != 0) {
-                        try {
-
-                          $.post("http://localhost:5000/admin/book/upload", 
-                            {data: file}, 
-                            function(data, status, xhr) {
-                              console.log("inside function in post")
-                              console.log(data)
-                              console.log("here")
-                              new AdminViewPage(file)
-                              alert("Successfully uploaded book: " + file)
-                              console.log("after uploading function")
-                            }, 'pdf');
-
-                          console.log("before admin view page function")
-                          new AdminViewPage(file)
-                          console.log("after posting function")
-                        }
-                        catch {
-                          alert("Unable to upload " + file + " Please try again.")
-                          console.log("uploading did not work, error caught")
-                        }
-                      } else {
-                        alert("Unable to upload " + file + " Please try again.")
-                      }
-                    }
-                  }/>
-                </div>
-               
-                
-
 
 
                 { <div class="form-group" onSubmit={e => e.preventDefault()}>
@@ -89,13 +49,13 @@ import $ from 'jquery';
                       $.ajax({
                         url: "http://localhost:5000/admin/book/upload",
                         type: "POST",
-                        dataType: 'pdf',
+                        dataType: 'json',
                         data: {file},
-                        processData: false,
+                        //processData: false,
                         contentType: "application/x-www-form-urlencoded",
                         success: function(data){
                           console.log("inside success")
-                          new AdminViewPage(data)
+                          
                           console.log("after book has uploaded through backend")
                           alert("Successfully uploaded new book!" )
                         },
@@ -103,6 +63,7 @@ import $ from 'jquery';
                           console.log("did not upload properly")
                           alert("Unable to upload new book. Please try again. ")
                         }, 
+                        cache: false
                     });
                   }
                   }>Upload Book</button >
