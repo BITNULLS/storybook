@@ -13,8 +13,8 @@ Table of Contents:
  - [`admin/download/action/`](#admin/download/action)
  - [`admin/book/upload/`](#admin/book/upload)
  - [`admin/book/download/`](#admin/book/download)
- - [`admin/page/`](#admin/page)
- - [`/admin/book/grant/`](#admin/book/grant)
+ - [`admin/page`](#/admin/page)
+ - [`admin/book/grant/`](#/admin/book/grant)
  - [`quiz/submit`](#quiz/submit)
 
 ## Meta Notes
@@ -347,9 +347,37 @@ Failure may occur because of,
 
 14. File could not be downloaded
 
-## admin/page/
+## /admin/page
 
-`DELETE /admin/page/`
+`POST /admin/page`
+
+Allows admin user to upload a question and answers.
+
+### Inputs
+
+- `question_in` : full text question
+- `school_id_in` : school id that questions belong to
+- `book_id_in` : book id that questions belong to
+- `page_prev_in` : previous page before question
+- `page_next_in` : next page after question
+- `answers_in` : all answers, separated by {space}{tilde}{back tick}{tilde}{space} (that is `` ~`~ ``).
+
+### Returns 
+
+On Success, 
+```
+{
+    "status": "ok:
+}
+```
+
+When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text. 'answers_in' must be a string of comma separated answers. For example, if the three answers are red, green and purple, 'answers_in' should be input as "red,green,purple"
+
+Failure may occur because of,
+
+2. school_id, book_id_in, page_prev_in, or page_next_in are not integers
+
+`DELETE /admin/page`
 
 Allows admin user to delete questions and answers given a question id
 
@@ -372,9 +400,9 @@ Failure may occur because of,
 2. question_id_in is not of type int.
 5. Request type is not GET, PUT, POST, or DELETE.
 
-## /admin/book/grant/
+## /admin/book/grant
 
-`POST /admin/book/grant/`
+`POST /admin/book/grant`
 
 Allows admin user to upload a book that is associated with a study id.
 
