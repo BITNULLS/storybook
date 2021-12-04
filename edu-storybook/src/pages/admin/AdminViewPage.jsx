@@ -22,35 +22,77 @@ import $ from 'jquery';
 
 
               <div id="file-content" onSubmit={e => e.preventDefault()}>
-                  <input id="file" type="file" accept="pdf/*" />
+                  <input id="file" type="file" accept="pdf/*" hidden="true" />
                     <label htmlFor="file">
                       <span
                         id="file-upload-btn" 
                         class="btn btn-primary"
-                        style = {{minWidth: 180, margin: 10}}>Upload New Book Original
+                        style = {{minWidth: 180, margin: 10}}>Upload New Book
                       </span>
                     </label>
                 </div>
 
                 
+                
+                <div action="http://localhost:5000/admin/book/upload">
+                  <label for="file">Select a file:</label>
+                  <input type="file" id="file" name="file" hidden="true"/><br></br>
+                  <input type="submit" onClick={
+                    function uploadingBook(e) {
+                      e.preventDefault();
+                      let file = $('#file').val()
+                      console.log(file)
+                      console.log("in new uploading")
+                      if (file != 0) {
+                        try {
+
+                          $.post("http://localhost:5000/admin/book/upload", 
+                            {data: file}, 
+                            function(data, status, xhr) {
+                              console.log("inside function in post")
+                              console.log(data)
+                              console.log("here")
+                              new AdminViewPage(file)
+                              alert("Successfully uploaded book: " + file)
+                              console.log("after uploading function")
+                            }, 'pdf');
+
+                          console.log("before admin view page function")
+                          new AdminViewPage(file)
+                          console.log("after posting function")
+                        }
+                        catch {
+                          alert("Unable to upload " + file + " Please try again.")
+                          console.log("uploading did not work, error caught")
+                        }
+                      } else {
+                        alert("Unable to upload " + file + " Please try again.")
+                      }
+                    }
+                  }/>
+                </div>
+               
+                
 
 
 
-
-
-                <div class="form-group" onSubmit={e => e.preventDefault()}>
+                { <div class="form-group" onSubmit={e => e.preventDefault()}>
                 
                   <button id="load_file" onClick={
                     function sendFileRequest() {
                       let file = $('#file').val()
                       console.log(file)
                       console.log("before ajax")
+
+                      
+
                       $.ajax({
-                        type: "POST",
                         url: "http://localhost:5000/admin/book/upload",
-                        contentType: "application/x-www-form-urlencoded",
-                        dataType: 'File',
+                        type: "POST",
+                        dataType: 'pdf',
                         data: {file},
+                        processData: false,
+                        contentType: "application/x-www-form-urlencoded",
                         success: function(data){
                           console.log("inside success")
                           new AdminViewPage(data)
@@ -65,7 +107,7 @@ import $ from 'jquery';
                   }
                   }>Upload Book</button >
                 
-              </div>
+              </div> }
 
                 
 
