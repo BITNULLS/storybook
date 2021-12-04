@@ -1078,12 +1078,11 @@ def admin_book_upload():
     # check that study_id and page_count are ints
     try:
         study_id = int(request.form['study_id'])
-        page_count = int(request.form.get('page_count'))
     except ValueError:
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "study_id or page_count failed a sanitize check. The POSTed field should be an integer."
+            "message": "study_id failed a sanitize check. The POSTed field should be an integer."
         }, 400, {"Content-Type": "application/json"}
 
     # check if the post request has the file part
@@ -1160,8 +1159,8 @@ def admin_book_upload():
                            + book_name + "', '"
                            + book_description + "', '"
                            + str(study_id) + "', '"
-                           + filename + "', '"
-                           + str(page_count) + "')")
+                           + filename + "', "
+                           + str(len(book_pngs)) + ")")
             # commit to database
             connection.commit()
 
