@@ -452,9 +452,9 @@ On Success,
 ```
 {
     "schools" : [
-        {
-            "SchoolName" ...
-        }, ...
+        "schoolA",
+        "schoolB",
+        ...
     ]
 }
 ```
