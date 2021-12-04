@@ -7,15 +7,15 @@ Table of Contents:
  - [Meta Notes](#meta_notes)
  - [`book`](#book)
  - [`login`](#login)
- - [`password/forgot/`](#password/forgot)
- - [`password/reset/`](#password/reset)
- - [`admin/download/user/`](#admin/download/user)
- - [`admin/download/action/`](#admin/download/action)
- - [`admin/book/upload/`](#admin/book/upload)
- - [`admin/book/download/`](#admin/book/download)
- - [`admin/page`](#/admin/page)
- - [`admin/book/grant/`](#/admin/book/grant)
- - [`quiz/submit`](#quiz/submit)
+ - [`password/forgot/`](#password-forgot)
+ - [`password/reset/`](#password-reset)
+ - [`admin/download/user/`](#admin-download-user)
+ - [`admin/download/action/`](#admin-download-action)
+ - [`admin/book/upload/`](#admin-book-upload)
+ - [`admin/book/download/`](#admin-book-download)
+ - [`admin/page/`](#admin-page)
+ - [`/admin/book/grant/`](#admin-book-grant)
+ - [`quiz/submit`](#quiz-submit)
 
 ## Meta Notes
 
@@ -295,7 +295,12 @@ Allows admin user to upload file to bucket
 
 ### Inputs
 
- - `file`: A file.
+This form data must specifically be in the type of `multipart/form-data`.
+
+ - `book_name`: The name of the book to be stored in the database.
+ - `book_description`: The description of the book to be displayed in the dashboard.
+ - `study_id`: The study the book will belong to.
+ - `file`: The book file itself, e.g. `<input type=file name=file>`.
 
 ### Returns
 
