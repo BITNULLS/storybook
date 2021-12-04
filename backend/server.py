@@ -1234,7 +1234,7 @@ def admin_add_book_to_study():
 @app.route("/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
 def admin_page_handler():
     """
-    This endpoint will only handle quiz questions.
+    This endpoint handles quiz questions and answers
     """
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -1248,31 +1248,88 @@ def admin_page_handler():
         auth = auth.replace('Bearer ', '', 1)
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
-    # check to make sure you have a book_id
-    try:
-        assert 'book_id' in request.form
-    except AssertionError:
-        return {
-            "status": "fail",
-            "fail_no": 1,
-            "message": "book_id was not provided."
-        }, 400, {"Content-Type": "application/json"}
+    if request.method == 'POST':
+        # check to make sure you have a book_id
+        try:
+            assert 'book_id_in' in request.form
+            assert 'school_id_in' in request.form
+            assert 'question_in' in request.form
+            assert 'page_prev_in' in request.form
+            assert 'page_next_in' in request.form
+            assert 'answers_in' in request.form
 
-    # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    try:
-        book_id = int(request.form['book_id'])
-    except ValueError:
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "book_id failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
+        except AssertionError:
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "book_id_in, school_id_in, question_in, page_prev_in, page_next_in, or answers_in not provided"
+            }, 400, {"Content-Type": "application/json"}
 
-    if request.method == 'POST':  # Post = adding a page
-        return "POST"
+        # sanitize inputs: check ints
+        try:
+            
+            book_id_in = int(request.form['book_id_in'])
+            school_id_in = int(request.form['school_id_in'])
+            page_prev_in = int(request.form['page_prev_in'])
+            page_next_in = int(request.form['page_next_in'])
+
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "book_id_in, school_id_in, page_prev_in, or  page_next_in failed a sanitize check. The posted fields should be integers."
+            }, 400, {"Content-Type": "application/json"}
+
+        # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
+        # regex is not very efficient method here for sql injection check
+
+        cursor = connection.cursor()
+
+        try:
+            cursor.callproc("insert_question_proc",\
+                [request.form['question_in'],\
+                    request.form['school_id_in'],\
+                    request.form['book_id_in'],\
+                    request.form['page_prev_in'],\
+                    request.form['page_next_in'],\
+                    request.form['answers_in']])
+                
+            # commit changes to db
+            connection.commit()
+
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database. line 889",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+        return {
+          "status": "ok"
+        }
 
     elif request.method == 'GET':  # Get = get (retrieve pages)
         cursor = connection.cursor()
+        
+        # check to make sure you have a book_id
+        try:
+            assert 'book_id' in request.form
+        except AssertionError:
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "book_id was not provided."
+            }, 400, {"Content-Type": "application/json"}
+
+        try:
+            book_id = int(request.form['book_id'])
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "book_id failed a sanitize check. The POSTed field should be an integer."
+            }, 400, {"Content-Type": "application/json"}
 
         try:
             cursor.execute(
@@ -1282,6 +1339,7 @@ def admin_page_handler():
                 "WHERE BOOK_ID=" + request.form["book_id"]
             )
             label_results_from(cursor)
+
         except cx_Oracle.Error as e:
             return {
                 "status": "fail",
@@ -1313,7 +1371,35 @@ def admin_page_handler():
         return "PUT"
 
     elif request.method == 'DELETE':  # DELETE = delete a page
-        return "DELETE"
+        try:
+            question_id_in = int(request.form['question_id_in'])
+
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "question_id_in failed a sanitize check. The posted field should be an integer."
+            }, 400, {"Content-Type": "application/json"}
+
+        cursor = connection.cursor()
+
+        try:
+            cursor.callproc('delete_question_answer_proc', [
+                            request.form['question_id_in']])
+
+            connection.commit()
+
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }
+
+        return {
+            "status": "ok"
+        }
 
     else:
         return "Invalid Operation"
