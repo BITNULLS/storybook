@@ -1367,8 +1367,53 @@ def admin_page_handler():
             "questions": questions
         }
 
-    elif request.method == 'PUT':  # Put = updating a page
-        return "PUT"
+    elif request.method == 'PUT':
+        # check correct inputs
+        try:
+            assert 'question_id_in' in request.form
+            assert 'question_in' in request.form
+            assert 'answers_in' in request.form
+
+        except AssertionError:
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "question_id_in, question_in, or answers_in not provided"
+            }, 400, {"Content-Type": "application/json"}
+
+        # check that question id is an int
+        try:
+            question_id = int(request.form['question_id_in'])
+
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "book_id failed a sanitize check. The POSTed field should be an integer."
+            }, 400, {"Content-Type": "application/json"}
+
+        # try query calling procedure "edit_question_proc"
+        cursor = connection.cursor()
+        try:
+            cursor.callproc("edit_question_proc",\
+                [request.form['question_id_in'],\
+                    request.form['question_in'],\
+                    request.form['answers_in']])
+                
+            # commit changes to db
+            connection.commit()
+
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database. line 889",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+        return {
+          "status": "ok"
+        }
 
     elif request.method == 'DELETE':  # DELETE = delete a page
         try:
