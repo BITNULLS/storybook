@@ -352,7 +352,7 @@ Failure may occur because of,
 
 14. File could not be downloaded
 
-## /admin/page
+## admin-page
 
 `POST /admin/page`
 
@@ -376,11 +376,37 @@ On Success,
 }
 ```
 
-When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text. 'answers_in' must be a string of comma separated answers. For example, if the three answers are red, green and purple, 'answers_in' should be input as "red,green,purple"
+When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text. 'answers_in' must be a string of delimited answers. For example, if the three answers are red, green and purple, 'answers_in' should be input as ``red ~`~ green ~`~ purple ~`~ ``.
 
 Failure may occur because of,
 
 2. school_id, book_id_in, page_prev_in, or page_next_in are not integers
+
+`PUT /admin/page`
+
+Allows user to edit questions and answers
+
+### Inputs
+
+- `question_id_in` : question id that is being edited
+- `question_in` : full text question
+- `answers_in` : all answers and their ids. The format of this string is as follows {answer_id}++{answer}{space}{tilde}{back tick}{tilde}{space}{answer_id}++{answer}.... and so on (that is ``10++answer1 text ~`~ 11++answer2 text ~`~ 11++answer3 text``). This allows there to be an arbitrary number of answers to be edited. This delimiters here are obnoxious, but they are important for distinguishing delimiter versus real user text.
+
+When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text. 'answers_in' must be a string of properly delimited answers. For example, if the three answers are red, green and purple with ids 1, 2, and 3, 'answers_in' should be input as ``1++red ~`~ 2++green ~`~ 3++purple ~`~ ``.
+
+Failure may occur because of,
+
+1. not all inputs are provided
+2. question_id is not an integer
+
+### Returns 
+
+On Success, 
+```
+{
+    "status": "ok:
+}
+```
 
 `DELETE /admin/page`
 

@@ -1286,6 +1286,7 @@ def admin_page_handler():
         cursor = connection.cursor()
 
         try:
+            conn_lock.acquire()
             cursor.callproc("insert_question_proc",\
                 [request.form['question_in'],\
                     request.form['school_id_in'],\
@@ -1304,6 +1305,9 @@ def admin_page_handler():
                 "message": "Error when querying database. line 889",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
+        
+        finally:
+            conn_lock.release()
 
         return {
           "status": "ok"
@@ -1332,6 +1336,7 @@ def admin_page_handler():
             }, 400, {"Content-Type": "application/json"}
 
         try:
+            conn_lock.acquire()
             cursor.execute(
                 "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION " +
                 "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID " +
@@ -1347,6 +1352,9 @@ def admin_page_handler():
                 "message": "Error when querying database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
+        finally:
+            conn_lock.release()
+        
 
         # fetching all the questions and storing them in questions array
         questions = []
@@ -1389,12 +1397,13 @@ def admin_page_handler():
             return {
                 "status": "fail",
                 "fail_no": 2,
-                "message": "book_id failed a sanitize check. The POSTed field should be an integer."
+                "message": "question_id failed a sanitize check. The POSTed field should be an integer."
             }, 400, {"Content-Type": "application/json"}
 
         # try query calling procedure "edit_question_proc"
         cursor = connection.cursor()
         try:
+            conn_lock.acquire()
             cursor.callproc("edit_question_proc",\
                 [request.form['question_id_in'],\
                     request.form['question_in'],\
@@ -1410,6 +1419,9 @@ def admin_page_handler():
                 "message": "Error when querying database. line 889",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
+
+        finally:
+            conn_lock.release()
 
         return {
           "status": "ok"
