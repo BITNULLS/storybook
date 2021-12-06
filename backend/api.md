@@ -111,6 +111,36 @@ But this can fail because of,
  6. Error when updating the database
 
 
+## Register
+
+`POST /register`
+
+This allows a new user to create an account.
+
+### Inputs
+
+- `email`: user's email
+- `password`: password to be used
+- `first_name`: user's first name
+- `last_name`: user's last name
+- `school_id`: user's study they are participating in
+
+### Returns
+
+On success, returns
+
+```
+ return {
+        "status": "ok"
+    }
+```
+
+emails the new user with a confirmation email. If not, returns "status": "fail" for the following conditions:
+
+1. Email, password, first name, last name, or school study was not provided.
+2. Email failed sanitization check of more than 8 characters &/or alphanumeric.
+3. Error when querying database.
+
 ## Password Forgot
 
 `POST /password/forgot/`
