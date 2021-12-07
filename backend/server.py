@@ -1026,32 +1026,34 @@ def admin_book_upload():
         filename = str(uuid.uuid4()) + "_" + file.filename
 
         # save file to local /temp/file_upload folder
-        file.save(os.path.join("temp/file_upload", filename))
+        filePath = os.path.join("temp/", filename)
+        filePath = filePath.replace('\\', '/')
+        file.save(filePath)
 
         # convert pdf to images
-        book_pngs = convert_from_path("temp/file_upload/" + filename, 500)
+        book_pngs = convert_from_path("temp/" + filename, 500)
 
         # remove pdf from temp/file_upload. we don't need it anymore
-        os.remove("temp/file_upload/" + filename)
+        os.remove("temp/" + filename)
 
         # remove .pdf extension from filename
         filename = filename.rstrip(".pdf")
 
         # make folder to store images
-        os.makedirs("temp/file_upload/" + filename + "_images")
+        os.makedirs("temp/" + filename + "_images")
 
         try:
             # iterate through length of book 
             for i in range(len(book_pngs)):
                 # Save pages as images in the pdf
-                book_pngs[i].save('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', 'PNG')
+                book_pngs[i].save('temp/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', 'PNG')
                 # upload images to a folder in bucket
-                upload_bucket_file('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', filename + "_images/" + filename + "_" + str(i+1) +'.png')
+                bucket.upload_bucket_file('temp/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', filename + "_images/" + filename + "_" + str(i+1) +'.png')
                 # remove img file
-                os.remove('temp/file_upload/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png')
+                os.remove('temp/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png')
 
             # remove temp dir
-            os.rmdir("temp/file_upload/" + filename + "_images")
+            os.rmdir("temp/" + filename + "_images")
 
             return {
                 "status": "ok",
