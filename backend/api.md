@@ -140,6 +140,8 @@ emails the new user with a confirmation email. If not, returns "status": "fail" 
 1. Email, password, first name, last name, or school study was not provided.
 2. Email failed sanitization check of more than 8 characters &/or alphanumeric.
 3. Error when querying database.
+4. Email is already registered to an account.
+5. Error when querying into database.
 
 ## Password Forgot
 
