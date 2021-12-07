@@ -1,4 +1,3 @@
-import tempfile
 import oci
 import json
 import os
@@ -75,7 +74,7 @@ def list_bucket_files() -> list[str]:
         file_names.append(get_name(file))
     return file_names
 
-temp_dir = tempfile.TemporaryDirectory()
+temp_dir = TemporaryDirectory()
 temp_dir_name = temp_dir.name
 
 wallet = download_bucket_file("Wallet_EDUStorybook.zip", temp_dir_name)

@@ -4,7 +4,6 @@ from zipfile import ZipFile
 import json
 import smtplib
 import ssl
-from tempfile import TemporaryDirectory
 
 with open('data/config.json') as jsonfile:
     config = json.load(jsonfile)
