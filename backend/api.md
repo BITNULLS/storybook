@@ -7,15 +7,15 @@ Table of Contents:
  - [Meta Notes](#meta_notes)
  - [`book`](#book)
  - [`login`](#login)
- - [`password/forgot/`](#password/forgot)
- - [`password/reset/`](#password/reset)
- - [`admin/download/user/`](#admin/download/user)
- - [`admin/download/action/`](#admin/download/action)
- - [`admin/book/upload/`](#admin/book/upload)
- - [`admin/book/download/`](#admin/book/download)
- - [`admin/page/`](#admin/page)
- - [`/admin/book/grant/`](#admin/book/grant)
- - [`quiz/submit`](#quiz/submit)
+ - [`password/forgot/`](#password-forgot)
+ - [`password/reset/`](#password-reset)
+ - [`admin/download/user/`](#admin-download-user)
+ - [`admin/download/action/`](#admin-download-action)
+ - [`admin/book/upload/`](#admin-book-upload)
+ - [`admin/book/download/`](#admin-book-download)
+ - [`admin/page/`](#admin-page)
+ - [`/admin/book/grant/`](#admin-book-grant)
+ - [`quiz/submit`](#quiz-submit)
 
 ## Meta Notes
 
@@ -173,6 +173,31 @@ resets the password in database. If not, returns "status": "fail" for the follow
 6. Error when querying database.
 7. Error when querying database.
 
+## Get Storyboard Page
+`POST /storyboard/page`
+
+### Inputs
+
+- `book_id`: a book number
+- `page_number`: a next or prev page (have to do math in front end)
+
+### Returns 
+
+On success, returns
+
+```
+{
+    "status": "ok"
+}
+```
+and sends file path
+
+But this can fail because of,
+ 1. `book_id`and/or `page_number` is not provided
+ 2. `book_id` or `page_number` is not clean
+ 3.  Error when connecting to database
+ 4.  No image found in that location in the bucket
+
 ## storyboard/action/
 
 `POST /storyboard/action`
@@ -270,7 +295,12 @@ Allows admin user to upload file to bucket
 
 ### Inputs
 
- - `file`: A file.
+This form data must specifically be in the type of `multipart/form-data`.
+
+ - `book_name`: The name of the book to be stored in the database.
+ - `book_description`: The description of the book to be displayed in the dashboard.
+ - `study_id`: The study the book will belong to.
+ - `file`: The book file itself, e.g. `<input type=file name=file>`.
 
 ### Returns
 
@@ -322,9 +352,63 @@ Failure may occur because of,
 
 14. File could not be downloaded
 
-## admin/page/
+## admin-page
 
-`DELETE /admin/page/`
+`POST /admin/page`
+
+Allows admin user to upload a question and answers.
+
+### Inputs
+
+- `question_in` : full text question
+- `school_id_in` : school id that questions belong to
+- `book_id_in` : book id that questions belong to
+- `page_prev_in` : previous page before question
+- `page_next_in` : next page after question
+- `answers_in` : all answers, separated by {space}{tilde}{back tick}{tilde}{space} (that is `` ~`~ ``).
+
+### Returns 
+
+On Success, 
+```
+{
+    "status": "ok:
+}
+```
+
+When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text. 'answers_in' must be a string of delimited answers. For example, if the three answers are red, green and purple, 'answers_in' should be input as ``red ~`~ green ~`~ purple ~`~ ``.
+
+Failure may occur because of,
+
+2. school_id, book_id_in, page_prev_in, or page_next_in are not integers
+
+`PUT /admin/page`
+
+Allows user to edit questions and answers
+
+### Inputs
+
+- `question_id_in` : question id that is being edited
+- `question_in` : full text question
+- `answers_in` : all answers and their ids. The format of this string is as follows {answer_id}++{answer}{space}{tilde}{back tick}{tilde}{space}{answer_id}++{answer}.... and so on (that is ``10++answer1 text ~`~ 11++answer2 text ~`~ 11++answer3 text``). This allows there to be an arbitrary number of answers to be edited. This delimiters here are obnoxious, but they are important for distinguishing delimiter versus real user text.
+
+When testing on postman, the inputs should be set in the request body form-data exactly keys as defined as above. They should be of type text. 'answers_in' must be a string of properly delimited answers. For example, if the three answers are red, green and purple with ids 1, 2, and 3, 'answers_in' should be input as ``1++red ~`~ 2++green ~`~ 3++purple ~`~ ``.
+
+Failure may occur because of,
+
+1. not all inputs are provided
+2. question_id is not an integer
+
+### Returns 
+
+On Success, 
+```
+{
+    "status": "ok:
+}
+```
+
+`DELETE /admin/page`
 
 Allows admin user to delete questions and answers given a question id
 
@@ -347,9 +431,9 @@ Failure may occur because of,
 2. question_id_in is not of type int.
 5. Request type is not GET, PUT, POST, or DELETE.
 
-## /admin/book/grant/
+## /admin/book/grant
 
-`POST /admin/book/grant/`
+`POST /admin/book/grant`
 
 Allows admin user to upload a book that is associated with a study id.
 
@@ -410,3 +494,34 @@ Returns a list of next 50 users in JSON format.
 2. Failure if offset is not an integer
 3. Failure when connecting to database
 
+## /admin/get/schools/
+
+`GET /admin/get/schools`
+
+Allows user to get a list of the next 50 schools based on alphebetical order of the school names.
+
+### Inputs
+
+ - `offset`: Int to offset by (multiple of 50).
+
+### Returns
+
+On Success, 
+
+```
+{
+    "schools" : [
+        "schoolA",
+        "schoolB",
+        ...
+    ]
+}
+```
+Where:
+ - `SchoolName`: string that is name of school in database 
+ 
+Returns a list of next 50 schools in JSON format. 
+
+1. Failure if an offset was not provided
+2. Failure if offset is not an integer
+3. Failure when connecting to database
