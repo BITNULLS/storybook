@@ -1,5 +1,6 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import $ from 'jquery';
 
 /**
  * 
@@ -17,20 +18,41 @@ export default class ForgotPassword extends React.Component {
         <div class="col">
           <h1 class="text-center mb-5">Forgot Your Password? </h1>
           <h4 class="text-center mb-5"> Don't worry! We will send you an email to update your password. </h4>
-  
-              <form>
-                <div class="form-group mb-4">
-                  <label for="username">Username:</label>
-                  <input type="text" formControlName="username" class="form-control"></input>
-                </div>
-                <div class="form-group mb-4">
-                  <label for="password">Email Address:</label>
-                  <input type="password" formControlName="password" class="form-control"></input>
-                </div>
-                <div class="text-center form-group">
-                  <button class="btn btn-primary">Send Email</button >
-                </div>
-              </form>
+
+          <form>
+            <div class="form-group mb-4">
+              <label for="email">Email Address:</label>
+              <input id="email" type="email" formControlName="email" class="form-control"></input>
+            </div>
+            <div class="text-center form-group">
+              <button id="submit-button" class="btn btn-primary" onClick={
+
+                function sendEmailAddress() {
+                  let email = $("#email").val();
+                  console.log(email);
+
+                  $.ajax({
+                    type: "POST",
+                    url: "/password/forgot",
+                    contentType: "application/x-www-form-urlencoded",
+                    dataType: "json",
+                    async: false,
+                    data: { email },
+
+                    success: function (data) {
+                      alert("Forgot Password Successful!")
+                      new ForgotPassword(data)
+                      this.iat = data["iat"]
+                    },
+
+                    error: function () {
+                      alert("Email is incorrect. Please try again.")
+                    },
+                  });
+                }
+              } >Send Email</button >
+            </div>
+          </form>
 
           <div class="text-center mt-5">
             <Link to="/Login" class="btn btn-link">Back to Sign In</Link>
