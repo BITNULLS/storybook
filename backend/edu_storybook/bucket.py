@@ -85,7 +85,7 @@ oracle_key = download_bucket_file("oracle_key.json", temp_dir_name)
 
 # Download Bucket Configuration Files
 chum_pem = download_bucket_file("Chum-Bucket.pem", temp_dir_name)
-oracle_bucket = download_bucket_file("tester_oracle_bucket.json", temp_dir_name)
+oracle_bucket = download_bucket_file("tfolder_oracle_bucket.json", temp_dir_name)
 
 # Chum-Bucket Uploader/Downloader setup
 with open(oracle_bucket) as bucket_details:
