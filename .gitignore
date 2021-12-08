@@ -16,6 +16,8 @@ Wallet_EDUStorybook.zip
 # Oracle Cloud Details
 Chum-Bucket.pem
 oracle_bucket.json
+StorybookFiles.json
+StorybookFiles.pem
 
 # Other Sensitives
 backend/data/domain.txt
