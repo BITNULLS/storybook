@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import $ from 'jquery';
 
 /**
  * 
@@ -16,19 +17,23 @@ import { Link } from "react-router-dom";
 
           <div class="card pl-1 pr-1">
             <div class="card-body">
-              <form>
-                
-                <div>
-                  <input id="file-upload" type="file" accept="pdf/*" hidden="true"/>
-                    <label for="file-upload">
-                      <span
+
+              <form action="/admin/book/upload" method="POST" enctype="multipart/form-data">
+                <div id="file-content" onSubmit={e => e.preventDefault()}>
+                  <input id="file" type="file" accept="pdf/*" name="file" />
+                    <label htmlFor="file">
+                      <input
                         id="file-upload-btn" 
                         class="btn btn-primary"
-                        style = {{minWidth: 180, margin: 10}}>Upload New Book
-                      </span>
+                        type="submit" 
+                        value="Upload Book"
+                        style = {{minWidth: 180, margin: 10}}/>
                     </label>
                 </div>
-                    
+              </form>
+
+              <form>
+                
                 <div class="form-group">             
                   <Link to="/EditBook">
                     <button class="btn btn-primary"
@@ -44,7 +49,7 @@ import { Link } from "react-router-dom";
                 </div>
 
                 <div class="form-group">
-                  <button class="btn btn-primary"
+                  <button class="btn btn-primary" 
                     style = {{minWidth: 180, margin: 10}}>Download Data
                   </button >
                 </div>

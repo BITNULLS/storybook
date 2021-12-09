@@ -27,13 +27,14 @@ from datetime import date
 from flask_cors import CORS
 from pdf2image import convert_from_path
 from threading import Lock
+from flask_cors import CORS
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
 # ==================================== setup ===================================
 
 app = Flask(__name__)
-CORS(app)
+CORS(app) 
 
 # regexes
 # they're faster compiled, and they can be used throughout
@@ -124,8 +125,9 @@ def issue_auth_token(res, token):
     res.set_cookie(
         "Authorization",
         "Bearer " + new_token,
-        max_age=config["login_duration"]  # ,
-        # domain=domain_name,
+        max_age=config["login_duration"]  ,
+        domain="localhost",
+        samesite="Lax"
         # secure=True,
         # httponly=True
     )
@@ -190,11 +192,9 @@ def validate_login(auth: str, permission=0):
     """
     # TODO: later maybe track Origin header?
     try:
-        assert type(
-            auth) is not None, 'You need to pass a valid auth param to validate_login()'
+        assert type(auth) is not None, 'You need to pass a valid auth param to validate_login()'
         #assert type(origin) is not None, 'You need to pass a valid origin param to validate_login()'
-        assert type(
-            permission) is not None, 'You need to pass a valid permission param to validate_login()'
+        assert type(permission) is not None, 'You need to pass a valid permission param to validate_login()'
     except AssertionError:
         return {
             "status": "fail",
@@ -1109,36 +1109,41 @@ def admin_book_upload():
         filename = str(uuid.uuid4()) + "_" + file.filename
 
         # save file to local /temp/file_upload folder
-        file.save(os.path.join("temp/file_upload", filename))
+        filePath = os.path.join("temp/", filename)
+        filePath = filePath.replace('\\', '/')
+        file.save(filePath)
 
         # convert pdf to images
-        book_pngs = convert_from_path("temp/file_upload/" + filename, 500)
+        book_pngs = convert_from_path("temp/" + filename, 500)
 
         # remove pdf from temp/file_upload. we don't need it anymore
-        os.remove("temp/file_upload/" + filename)
+        os.remove("temp/" + filename)
 
         # remove .pdf extension from filename
         filename = filename.rstrip(".pdf")
 
         # make folder to store images
-        os.makedirs("temp/file_upload/" + filename)
+        os.makedirs("temp/" + filename + "_images")
 
         # 1) insert files into bucket
         try:
             # iterate through length of book
             for i in range(len(book_pngs)):
                 # Save pages as images in the pdf
-                book_pngs[i].save('temp/file_upload/' + filename +
-                                  "/" + filename + "_" + str(i+1) + '.png', 'PNG')
+
+                book_pngs[i].save('temp/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', 'PNG')
                 # upload images to a folder in bucket
-                bucket.upload_bucket_file('temp/file_upload/' + filename + "/" + filename + "_" + str(
-                    i+1) + '.png', filename + "/" + filename + "_" + str(i+1) + '.png')
+                bucket.upload_bucket_file('temp/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png', filename + "_images/" + filename + "_" + str(i+1) +'.png')
                 # remove img file
-                os.remove('temp/file_upload/' + filename + "/" +
-                          filename + "_" + str(i+1) + '.png')
+                os.remove('temp/'+ filename + "_images/" + filename + "_" + str(i+1) +'.png')
 
             # remove temp dir
-            os.rmdir("temp/file_upload/" + filename)
+            os.rmdir("temp/" + filename + "_images")
+
+            return {
+                "status": "ok",
+                "message": "file(s) uploaded"
+            }
 
         except Exception as e:
             return {
