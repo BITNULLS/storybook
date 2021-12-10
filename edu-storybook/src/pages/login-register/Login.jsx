@@ -54,7 +54,7 @@ export default class Login extends React.Component {
             
                       $.ajax({
                         type: "POST",
-                        url: "http://localhost:5000/login",
+                        url: "/login",
                         contentType: "application/x-www-form-urlencoded",
                         dataType: "json",
                         data: {email, password},
