@@ -173,8 +173,26 @@ resets the password in database. If not, returns "status": "fail" for the follow
 6. Error when querying database.
 7. Error when querying database.
 
+## Get Storyboard Page Count
+`Get /storyboard/pagecount/<int:book_id_in>`
+
+### Inputs
+
+- `book_id_in`: a book number
+
+### Returns 
+
+On success, returns 
+```
+    "pagecount": int
+```
+
+But this can fail because of,
+ 2. `book_id` is not clean
+ 3.  Error when connecting to database
+
 ## Get Storyboard Page
-`POST /storyboard/page`
+`Get /storyboard/page/<int:book_id_in>/<int:page_number_in>`
 
 ### Inputs
 
@@ -183,17 +201,10 @@ resets the password in database. If not, returns "status": "fail" for the follow
 
 ### Returns 
 
-On success, returns
+On success, returns a png
 
-```
-{
-    "status": "ok"
-}
-```
-and sends file path
 
 But this can fail because of,
- 1. `book_id`and/or `page_number` is not provided
  2. `book_id` or `page_number` is not clean
  3.  Error when connecting to database
  4.  No image found in that location in the bucket
