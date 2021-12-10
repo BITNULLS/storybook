@@ -22,6 +22,8 @@ StorybookFiles.pem
 # Other Sensitives
 backend/data/domain.txt
 backend/data/jwt.key
+backend/data/StorybookFiles.json
+backend/data/StorybookFiles.pem
 
 # file uploads
 backend/bucket_files

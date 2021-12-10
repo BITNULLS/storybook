@@ -805,9 +805,58 @@ def get_users_books():
         "status": "ok"
     }
 
+@app.route("/storyboard/pagecount/<int:book_id_in>", methods=['GET'])
+def storyboard_get_pagecount(book_id_in):
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
 
-@app.route("/storyboard/page", methods=['POST'])
-def storyboard_get_page():
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    
+    # sanitize inputs: make sure book_id, page_number are ints
+    try:
+        book_id = int( book_id_in)
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id failed a sanitize check. The POSTed fields should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # goes into database and gets the bucket folder.
+    # goes into bucket and then says I want this image from this folder.
+    cursor = connection.cursor()
+
+    try:
+        # get folder that holds that book's images
+        cursor.execute(
+            "SELECT page_count FROM BOOK where book_id =" + str(book_id) )
+    except cx_Oracle.Error as e:
+        return {"status": "fail",
+                "fail_no": 3,
+                "message": "Error when updating database action",
+                "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+
+    pagecount = cursor.fetchone()
+    return {
+        "pagecount": pagecount[0]
+    } 
+    
+    
+
+
+
+@app.route("/storyboard/page/<int:book_id_in>/<int:page_number_in>", methods=['GET'])
+def storyboard_get_page(book_id_in, page_number_in):
     # make sure user is authenticated
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -822,21 +871,10 @@ def storyboard_get_page():
 
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
-    # check that all expected inputs are received
-    try:
-        assert 'book_id' in request.form
-        assert 'page_number' in request.form
-    except AssertionError:
-        return {
-            "status": "fail",
-            "fail_no": 1,
-            "message": "Either the book_id or page_number was not provided."
-        }, 400, {"Content-Type": "application/json"}
-
     # sanitize inputs: make sure book_id, page_number are ints
     try:
-        book_id = int(request.form["book_id"])
-        page_number = int(request.form["page_number"])
+        book_id = int( book_id_in)
+        page_number = int(page_number_in)
     except ValueError:
         return {
             "status": "fail",
@@ -851,7 +889,7 @@ def storyboard_get_page():
     try:
         # get folder that holds that book's images
         cursor.execute(
-            "SELECT folder FROM BOOK where book_id =" + request.form["book_id"])
+            "SELECT folder FROM BOOK where book_id =" + str(book_id))
     except cx_Oracle.Error as e:
         return {"status": "fail",
                 "fail_no": 3,
@@ -864,7 +902,7 @@ def storyboard_get_page():
     fileInput = fileInput + '/' + fileInput + '_' + str(page_number) + '.png'
 
     try:
-        send_file(bucket.download_bucket_file(fileInput))
+        return send_file(bucket.download_bucket_file(fileInput))
     except:
         return {
             "status": "fail",
@@ -872,9 +910,6 @@ def storyboard_get_page():
             "message": "could not get image"
         }, 400, {"Content-Type": "application/json"}
 
-    return{
-        "status": "ok"
-    }
 
 
 @app.route("/storyboard/action", methods=['POST'])
