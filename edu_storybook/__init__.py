@@ -1,3 +1,7 @@
+"""
+This script contains constants that all of the routes need.
+"""
+
 from string import Template
 
 def load_template(filepath):
@@ -10,7 +14,7 @@ def load_template(filepath):
     return t
 
 # import all templates
-templates = {
+TEMPLATES = {
     "admin": {
         "edit_book": load_template("../templates/admin/edit_book.html"),
         "view_page": load_template("../templates/admin/view_page.html")

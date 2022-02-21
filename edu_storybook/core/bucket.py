@@ -4,7 +4,7 @@ import os
 from tempfile import TemporaryDirectory
 
 # Sen_Files Downloader setup - Only used to download project configuration files
-#Chum-Bucket Downloader will be set up after config files have been downloaded
+# Chum-Bucket Downloader will be set up after config files have been downloaded
 with open('data/StorybookFiles.json') as sb_files:
     bucket = json.load(sb_files)
 

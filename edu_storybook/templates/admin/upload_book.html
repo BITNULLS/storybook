@@ -7,7 +7,7 @@
         <div class="card-body">
 
           <form action="/admin/book/upload" method="POST" enctype="multipart/form-data">
-            <div id="file-content" onSubmit={e => e.preventDefault()}>
+            <div id="file-content">
               <input id="file" type="file" accept="pdf/*" name="file" />
                 <label htmlFor="file">
                   <input
@@ -23,11 +23,11 @@
           <form>
 
             <div class="form-group">             
-              <Link to="/EditBook">
+              <a href="/EditBook">
                 <button class="btn btn-primary"
                   style = {{minWidth: 180, margin: 10}}>Edit Book
                 </button >
-              </Link>
+              </a>
             </div>
 
             <div class="form-group">

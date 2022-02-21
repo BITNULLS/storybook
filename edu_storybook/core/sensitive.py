@@ -5,7 +5,9 @@ import json
 import smtplib
 import ssl
 
-with open('data/config.json') as jsonfile:
+config_prefix = "../config/"
+
+with open(config_prefix + 'config.json') as jsonfile:
     config = json.load(jsonfile)
 assert config is not None, 'Could not find data/config.json file.'
 # TODO: Relocate in future when every part of server.py is in the module

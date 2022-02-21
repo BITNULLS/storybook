@@ -5,6 +5,7 @@ Routes:
     /storyboard/action
 """
 
+from pydoc import pager
 from flask import request
 from flask import Blueprint
 
@@ -223,3 +224,17 @@ def storyboard_save_user_action():
     return {
         "status": "ok"
     }
+
+@storyboard.route("/")
+def gen_storyboard_page():
+    info = get_login_info()
+
+    viewer = TEMPLATES["storyboard"]["viewer"].substitute(
+        username = info["username"]
+    )
+    page = TEMPLATES["_base"].substitute(
+        title = "EduStorybook Homepage",
+        description = "A motivational storybook that helps students learn.",
+        body = viewer
+    )
+    return page

@@ -51,36 +51,7 @@
           <input id = "confirm_pass" type="password" formControlName="confirm_pass" class="form-control"></input>
         </div>
         <div class="text-center form-group">
-          <button class="btn btn-primary" onClick={
-
-            function updatePassword() {
-
-              let new_pass = $("#new_pass").val();
-              let confirm_pass = $("#confirm_pass").val();
-              let reset_key = $("#reset_key").val();
-
-              console.log(new_pass, confirm_pass, reset_key);
-
-              $.ajax({
-                type: "POST",
-                url: "/password/reset",
-                contentType: "application/x-www-form-urlencoded",
-                dataType: "json",
-                async: false,
-                data: { new_pass, confirm_pass, reset_key },
-
-                success: function (data) {
-                  new ResetPassword(data)
-                  this.iat = data["iat"]
-                  alert("Reset Password Successful!")
-                },
-
-                error: function () {
-                  alert("Passwords do not match. Please try again.")
-                },
-              });
-            }
-          }>Confirm</button >
+          <button class="btn btn-primary">Confirm</button >
         </div>
       </form>
 

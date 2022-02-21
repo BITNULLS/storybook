@@ -10,37 +10,12 @@
           <input id="email" type="email" formControlName="email" class="form-control"></input>
         </div>
         <div class="text-center form-group">
-          <button id="submit-button" class="btn btn-primary" onClick={
-
-            function sendEmailAddress() {
-              let email = $("#email").val();
-              console.log(email);
-
-              $.ajax({
-                type: "POST",
-                url: "/password/forgot",
-                contentType: "application/x-www-form-urlencoded",
-                dataType: "json",
-                async: false,
-                data: { email },
-
-                success: function (data) {
-                  alert("Forgot Password Successful!")
-                  new ForgotPassword(data)
-                  this.iat = data["iat"]
-                },
-
-                error: function () {
-                  alert("Email is incorrect. Please try again.")
-                },
-              });
-            }
-          } >Send Email</button >
+          <button id="submit-button" class="btn btn-primary">Send Email</button >
         </div>
       </form>
 
       <div class="text-center mt-5">
-        <Link to="/Login" class="btn btn-link">Back to Sign In</Link>
+        <a href="/Login" class="btn btn-link">Back to Sign In</a>
       </div>
     </div >
     <div class="col-12 col-md-4 col-sm-3"></div>
