@@ -1843,7 +1843,8 @@ def get_studies():
 
     try:
         cursor.execute(
-            "Select STUDY_ID, STUDY_NAME, SCHOOL_ID from STUDY order by study_id offset "+ 
+            "SELECT STUDY.STUDY_ID, STUDY.STUDY_NAME, SCHOOL.SCHOOL_NAME " +
+            "FROM STUDY INNER JOIN SCHOOL ON study.school_id = school.school_id ORDER BY study_id OFFSET "+ 
             request.form["offset"] +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
