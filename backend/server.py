@@ -1017,7 +1017,7 @@ def quiz_submit_answer():
     except AssertionError:
         return {
             "status": "fail",
-            "fail_no": 4,
+            "fail_no": 1,
             "message": "Either the answer_id or the question_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
@@ -1027,10 +1027,10 @@ def quiz_submit_answer():
     except ValueError:
         return {
             "status": "fail",
-            "fail_no": 5,
+            "fail_no": 2,
             "message": "Either the answer_id or the question_id contained invalid characters."
         }, 400, {"Content-Type": "application/json"}
-
+    '''
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -1043,8 +1043,9 @@ def quiz_submit_answer():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-
+    '''
     cursor = connection.cursor()
+    '''
     try:
         conn_lock.acquire()
         cursor.execute(
@@ -1056,14 +1057,47 @@ def quiz_submit_answer():
     except cx_Oracle.Error as e:
         return {
             "status": "fail",
-            "fail_no": 6,
+            "fail_no": 3,
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
     finally:
         conn_lock.release()
+        '''
+    try:
+       conn_lock.acquire()
+       cursor.execute(
+           "SELECT correct FROM answer WHERE answer_id= " + str(answer_id) + " and question_id= " + str(question_id)
+       )
+       connection.commit()
+    except cx_Oracle.Error as e:
+       return {
+           "status": "fail",
+           "fail_no": 4,
+           "message": "Error when updating database.",
+           "database_message": str(e)
+       }, 400, {"Content-Type": "application/json"}
+    finally:
+       conn_lock.release()
 
-    return {"status": "ok"}
+    result = cursor.fetchone()
+
+    if result[0] == 1:
+       return {
+           "status": "ok",
+           "correct": "true"
+       }
+    elif result[0] == 0:
+       return {
+           "status": "ok",
+           "correct": "false"
+       }
+    return {
+           "status": "fail",
+           "fail_no": 7,
+           "message": "No choice matches what was passed."
+       }, 400, {"Content-Type": "application/json"}
+    
 
 
 @app.route("/admin/book/download", methods=['POST'])
