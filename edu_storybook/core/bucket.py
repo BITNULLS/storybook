@@ -15,6 +15,7 @@ import json
 import os
 from .helper import fix_filepath
 from tempfile import TemporaryDirectory
+from typing import List
 
 # Sen_Files Downloader setup - Only used to download project configuration files
 # Chum-Bucket Downloader will be set up after config files have been downloaded
@@ -79,7 +80,7 @@ def delete_bucket_file(filename: str) -> bool:
         print("The object '" + filename + "' does not exist in bucket.")
         return False
 
-def list_bucket_files() -> list[str]:
+def list_bucket_files() -> List[str]:
     """
     Prints each object in the bucket on a separate line. Used for testing/checking.
     :return: List of filenames, if bucket is empty returns None

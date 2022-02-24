@@ -3,19 +3,19 @@ sensitive.py
     Downloads, loads in, and then deletes all sensitive data files.
 """
 
-from core.bucket import bucket
+from .bucket import bucket
 import os
 from zipfile import ZipFile
 import json
 import smtplib
 import ssl
-from config import config
+from .config import config
 
 # Unzip Wallet
-if not os.path.isdir("data/Wallet_EDUStorybook"):
-    os.mkdir("data/Wallet_EDUStorybook")
+if not os.path.isdir('data/Wallet_EDUStorybook'):
+    os.mkdir('data/Wallet_EDUStorybook')
 with ZipFile(bucket.wallet, 'r') as zip_ref:
-    zip_ref.extractall("data/Wallet_EDUStorybook")
+    zip_ref.extractall('data/Wallet_EDUStorybook')
 os.remove(bucket.wallet)
 
 # Get Domain Name
@@ -27,7 +27,6 @@ with open(bucket.domain) as txtfile:
 os.remove(bucket.domain)
 assert domain_name is not None and domain_name != '', config['sensitives'][
     'files']['domain_name'] + ' is empty; It should not be empty'
-
 
 # email login
 with open(bucket.email) as email_config:

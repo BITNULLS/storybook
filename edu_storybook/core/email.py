@@ -1,6 +1,6 @@
 """
 email.py
-Initialization and interface for email functions.
+    Initialization and interface for email functions.
 """
 
 from .config import config
