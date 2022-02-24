@@ -900,12 +900,8 @@ def storyboard_get_page(book_id_in, page_number_in):
 
     # check if this is in write format ; then we have to fix it and ammend it with page number
     fileInput = cursor.fetchone()[0]
-    # print(type(fileInput))
-    # print(fileInput)
     fileInput = fileInput + '/' + fileInput + '_' + str(page_number) + '.png'
-    # print(fileInput)
     
-    # cursor = connection.cursor()
     try:
         # get quiz questions and answers and more information about those
         cursor.execute(
@@ -925,9 +921,7 @@ def storyboard_get_page(book_id_in, page_number_in):
         }, 400, {"Content-Type": "application/json"}
         
     quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
-    # print(type(quizQuestions))
-    # print(quizQuestions)
-    
+     
     # check if current page has any quiz question (this assumes only a single question would be there in a page)
     # Future concern: What if there are back-to-back questions on a single page?
     # append options of that question onto a list
