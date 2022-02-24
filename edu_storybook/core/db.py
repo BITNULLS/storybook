@@ -2,10 +2,10 @@
 db.py
     Initializes the database connection.
 """
-from config import config
+from .config import config
 from threading import Lock
 import cx_Oracle
-import sensitive
+from . import sensitive
 
 print('Connecting to database...', end=' ')
 oracle_lib_dir = None

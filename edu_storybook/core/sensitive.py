@@ -3,7 +3,8 @@ sensitive.py
     Downloads, loads in, and then deletes all sensitive data files.
 """
 
-from .bucket import bucket
+from .helper import fix_filepath
+from . import bucket
 import os
 from zipfile import ZipFile
 import json
@@ -12,10 +13,12 @@ import ssl
 from .config import config
 
 # Unzip Wallet
-if not os.path.isdir('data/Wallet_EDUStorybook'):
-    os.mkdir('data/Wallet_EDUStorybook')
+wallet_zip_path = fix_filepath(__file__, 'data/Wallet_EDUStorybook')
+
+if not os.path.isdir(wallet_zip_path):
+    os.mkdir(wallet_zip_path)
 with ZipFile(bucket.wallet, 'r') as zip_ref:
-    zip_ref.extractall('data/Wallet_EDUStorybook')
+    zip_ref.extractall(wallet_zip_path)
 os.remove(bucket.wallet)
 
 # Get Domain Name
