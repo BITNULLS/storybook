@@ -1,5 +1,18 @@
+"""
+helper.py
+    Helper functions not distinctly part of auth, bucket, db, or other "parts"
+    of our app.
+
+Functions:
+    allowed_file(...)
+    label_results_from(...)
+    send_email(...)
+"""
+
 import cx_Oracle
 import smtplib
+import core.sensitive as sensitive
+import os
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
@@ -12,6 +25,33 @@ def allowed_file(filename):
     """
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def fix_filepath(filepath: str, file: str) -> str:
+    """
+    When referencing a file from a Python file that is not the original start of
+    the Python program, a filepath must be corrected from the current file's
+    __file__ path, as to start using the current Python file as a based for
+    relative file referencing.
+
+    Example:
+        a.py
+        module_b/
+            __init__.py
+            c.py
+            config.txt
+        
+        If a.py imports module_b.c, and if c.py imports c.config as 
+        "./config.txt", it will fail since the Python interpreter pathing is
+        relative to the start script, a.py.
+    
+    You would call this function as
+        fix_filepath(__file__, 'relative/file/path.txt')
+    
+    :param filepath: The current file context, __file__.
+    :param file: Relative file to reference.
+    """
+    return os.path.join(os.path.dirname(os.path.abspath(filepath)), file)
 
 
 def label_results_from(cursor: cx_Oracle.Cursor):
@@ -35,45 +75,3 @@ def label_results_from(cursor: cx_Oracle.Cursor):
     columns = [col[0] for col in cursor.description]
     cursor.rowfactory = lambda *args: dict(zip(columns, args))
     return cursor
-
-
-def send_email(user_name: str, user_email: str, admin_name: str, admin_email: str, subject: str, body: str) -> bool:
-    """
-    Creates and sends an email to a user
-    :param user_name: The name of the user
-    :param to_email: The email of the user
-    :param admin_name: Admin of user's study
-    :param admin_email: Admin's email
-    :param subject: Subject of the email
-    :param body: Body of the email; where actual text is placed
-    :return: Boolean on whether or not the email was sent.
-    """
-    if config['production'] == False:
-        return True
-
-    # Write Email
-    to_line = "To: " + user_name + " <" + user_email + ">\n"
-    from_line = "From: EDU Storybooks <edustorybooks@gmail.com>\n"
-    reply_to_line = "Reply-To: " + admin_name + " <" + admin_email + ">\n"
-    subject_line = "Subject: " + subject + "\n\n"
-    body_lines = body
-    email_text = to_line + from_line + reply_to_line + subject_line + body_lines
-
-    # Email Command
-    try:
-        server = smtplib.SMTP(sensitive.smtp, sensitive.port)
-        server.starttls(context=sensitive.context)
-        server.login('edustorybooks@gmail.com', sensitive.email_password)
-        server.sendmail("edustorybooks@gmail.com", user_email, email_text)
-    except:
-        print("Exception in Email Process")
-        return False
-    finally:
-        del to_line
-        del from_line
-        del reply_to_line
-        del subject_line
-        del body_lines
-        del email_text
-
-

@@ -1,4 +1,6 @@
 """
+login.py
+    
 Routes:
     /login
 """
@@ -8,7 +10,7 @@ from flask import Blueprint
 
 login = Blueprint('login', __name__)
 
-@login.route("/")
-def ind():
+@login.route("/login/")
+def gen_login():
     return "e"
 

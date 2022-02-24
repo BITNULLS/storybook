@@ -1,7 +1,7 @@
-flask
-cx-Oracle
-bcrypt
-cryptography
-oci
-pyjwt
-flask_cors
+flask           # Server framework
+cx-Oracle       # Interface for Oracle Database
+bcrypt          # For verifying user passwords
+cryptography    # For generating secure keys
+oci             # Interface for Oracle Cloud Infrastrcture Object Storage (buckets)
+pyjwt           # For making JWT cookies to authorize users
+flask_cors      # CORS access policy for Flask (to allow requests from anywhere)

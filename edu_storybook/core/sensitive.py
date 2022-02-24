@@ -1,16 +1,15 @@
-from edu_storybook import bucket
+"""
+sensitive.py
+    Downloads, loads in, and then deletes all sensitive data files.
+"""
+
+from core.bucket import bucket
 import os
 from zipfile import ZipFile
 import json
 import smtplib
 import ssl
-
-config_prefix = "../config/"
-
-with open(config_prefix + 'config.json') as jsonfile:
-    config = json.load(jsonfile)
-assert config is not None, 'Could not find data/config.json file.'
-# TODO: Relocate in future when every part of server.py is in the module
+from config import config
 
 # Unzip Wallet
 if not os.path.isdir("data/Wallet_EDUStorybook"):

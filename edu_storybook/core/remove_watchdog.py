@@ -1,7 +1,18 @@
+"""
+remove_watchdog.py
+    Simple script for managing the removal of temporary files in a separate 
+    process.
+
+Functions:
+    remove_watchdog(...)
+    future_del_temp(...) - The function you use to mark a file for deletion.
+"""
+
 import os
 import time 
 import sys
 from multiprocessing import Process, Queue
+from config import config
 
 def remove_watchdog(remove_queue):
     """

@@ -1,4 +1,7 @@
 """
+auth.py
+    ...
+
 Functions:
     login()
     logout()
@@ -8,6 +11,15 @@ Functions:
 import jwt
 import time
 import bcrypt
+import uuid
+import cx_Oracle
+from flask import make_response
+
+from core.sensitive import jwt_key
+from config import config
+from db import connection, conn_lock
+from helper import label_results_from, send_email
+from reg_exps import *
 
 
 def issue_auth_token(res, token):

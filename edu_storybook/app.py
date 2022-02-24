@@ -1,19 +1,21 @@
 """
 app.py
-Main launch point for our web server.
+    Main launch point for our web server.
 """
 from flask import Flask
-from edu_storybook import admin
-from edu_storybook import index
-from edu_storybook import login
-from edu_storybook import password
-from edu_storybook import register
-from edu_storybook import story_selection
-from edu_storybook import storyboard
+import api
+import admin
+import index
+import login
+import password
+import register
+import story_selection
+import storyboard
 
 
 app = Flask(__name__, static_url_path="/static/", static_folder="static")
 
+app.register_blueprint(api.api)
 app.register_blueprint(admin.admin)
 app.register_blueprint(index.homepage)
 app.register_blueprint(login.login)

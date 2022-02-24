@@ -1,16 +1,33 @@
+"""
+bucket.py
+    Launches connection to Oracle Bucket, where we store large data files.
+    Provides simple functions for accessing the bucket.
+
+Functions:
+    upload_bucket_file(...)
+    download_bucket_file(...)
+    delete_bucket_file(...)
+    list_bucket_files(...)
+"""
+
 import oci
 import json
 import os
+from .helper import fix_filepath
 from tempfile import TemporaryDirectory
 
 # Sen_Files Downloader setup - Only used to download project configuration files
 # Chum-Bucket Downloader will be set up after config files have been downloaded
-with open('data/StorybookFiles.json') as sb_files:
+
+#print(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/StorybookFiles.json'))
+
+with open(fix_filepath(__file__, 'data/StorybookFiles.json')) as sb_files:
     bucket = json.load(sb_files)
 
 assert bucket is not None, 'StorybookFiles.json file was empty'
 
 sen_config = bucket['config']
+sen_config['key_file'] = fix_filepath(__file__, sen_config['key_file'])
 
 oracle_cloud_client = oci.object_storage.ObjectStorageClient(sen_config)
 
