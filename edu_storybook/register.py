@@ -9,6 +9,8 @@ Routes:
 from flask import request
 from flask import Blueprint
 
+from templates import TEMPLATES
+
 register = Blueprint('register', __name__)
 
 @register.route("/register")

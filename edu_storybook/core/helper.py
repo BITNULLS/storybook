@@ -11,7 +11,7 @@ Functions:
 
 import cx_Oracle
 import smtplib
-import core.sensitive as sensitive
+from . import sensitive as sensitive
 import os
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}

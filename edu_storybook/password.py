@@ -6,7 +6,8 @@ Routes:
 
 from flask import request
 from flask import Blueprint
-import datetime
+
+from templates import TEMPLATES
 
 password = Blueprint('password', __name__)
 

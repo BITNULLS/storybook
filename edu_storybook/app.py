@@ -16,7 +16,7 @@ import storyboard
 app = Flask(__name__, static_url_path="/static/", static_folder="static")
 
 app.register_blueprint(api.api)
-app.register_blueprint(admin.admin)
+#app.register_blueprint(admin.admin)
 app.register_blueprint(index.homepage)
 app.register_blueprint(login.login)
 app.register_blueprint(password.password)
@@ -27,4 +27,4 @@ app.register_blueprint(storyboard.storyboard)
 
 if __name__ == "__main__":
     print(app.url_map)
-    app.run(host="0.0.0.0", port="5000", debug=True)
+    app.run(host="0.0.0.0", port="5001", debug=True)

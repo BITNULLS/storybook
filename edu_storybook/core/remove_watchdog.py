@@ -12,7 +12,7 @@ import os
 import time 
 import sys
 from multiprocessing import Process, Queue
-from config import config
+from .config import config
 
 def remove_watchdog(remove_queue):
     """

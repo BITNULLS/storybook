@@ -11,6 +11,8 @@ from pydoc import pager
 from flask import request
 from flask import Blueprint
 
+from templates import TEMPLATES
+
 storyboard = Blueprint('storyboard', __name__)
 
 @storyboard.route("/storyboard/<int:book_id_in>/<int:page_number_in>")
