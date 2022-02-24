@@ -1,0 +1,25 @@
+name: Ping Database
+on:
+  schedule:
+    - cron: '30 7 * * 0'
+
+env:
+  USERNAME: ${{ secrets.DB_USERNAME }}
+  PASSWORD: ${{ secrets.DB_PASSWORD }}
+
+jobs:
+  build:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Set Up Python
+        run: |
+          python -m pip install selenium --upgrade
+          python -m pip install webdriver-manager --upgrade
+      - uses: actions/checkout@v2
+      - name: Run Ping
+        run: |
+          python docs/DatabasePing.py
