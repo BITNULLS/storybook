@@ -6,6 +6,7 @@ on:
 env:
   USERNAME: ${{ secrets.DB_USERNAME }}
   PASSWORD: ${{ secrets.DB_PASSWORD }}
+  DB_PAGE: ${{ secrets.DB_LINK }}
 
 jobs:
   build:

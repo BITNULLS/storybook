@@ -16,7 +16,7 @@ def httpDatabaseConnection():
     chrome_options.add_argument('--disable-dev-shm-usage')
     browser = webdriver.Chrome(service=ser, chrome_options=chrome_options)
 
-    browser.get("https://adb.us-ashburn-1.oraclecloud.com/console/index.html?tenant_name=OCID1.TENANCY.OC1..AAAAAAAAWNGLVEEX6FWIHHKORSZ2KBH6ZZP3JMN3F55NTYDD3TOK7R4JT7RA&database_name=EDUSTORYBOOK&service_type=ATP")
+    browser.get(os.getenv("DB_PAGE"))
     sleep(3)
 
     username = browser.find_element(By.XPATH, '//*[@id="username"]')
