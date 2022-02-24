@@ -1147,12 +1147,12 @@ def admin_book_upload():
         return vl
 
     # get parameters for adding to book table
-    # book_name = (request.form.get('book_name')).lower().strip()
-    # book_description = (request.form.get('book_description')).lower().strip()
+    book_name = (request.form.get('book_name')).strip()
+    book_description = (request.form.get('book_description')).strip()
     # book_id and created_on handled by trigger
 
     # check that study_id and page_count are ints
-    '''try:
+    try:
         study_id = int(request.form['study_id'])
     except ValueError:
         return {
@@ -1160,7 +1160,7 @@ def admin_book_upload():
             "fail_no": 2,
             "message": "study_id failed a sanitize check. The POSTed field should be an integer."
         }, 400, {"Content-Type": "application/json"}
-'''
+
     # check if the post request has the file part
     if 'file' not in request.files:
         return {
