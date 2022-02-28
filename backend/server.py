@@ -1030,7 +1030,7 @@ def quiz_submit_answer():
             "fail_no": 2,
             "message": "Either the answer_id or the question_id contained invalid characters."
         }, 400, {"Content-Type": "application/json"}
-    '''
+    
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -1041,11 +1041,12 @@ def quiz_submit_answer():
         return vl
 
     if 'Bearer ' in auth:
-        auth = auth.replace('Bearer ', '', 1)
+        auth = auth.replace('Bearer ', '', 1) 
+    
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-    '''
+    
     cursor = connection.cursor()
-    '''
+    
     try:
         conn_lock.acquire()
         cursor.execute(
@@ -1063,12 +1064,14 @@ def quiz_submit_answer():
         }, 400, {"Content-Type": "application/json"}
     finally:
         conn_lock.release()
-        '''
+        
     try:
        conn_lock.acquire()
        cursor.execute(
            "SELECT correct FROM answer WHERE answer_id= " + str(answer_id) + " and question_id= " + str(question_id)
        )
+       label_results_from(cursor)
+       
        connection.commit()
     except cx_Oracle.Error as e:
        return {
@@ -1082,15 +1085,15 @@ def quiz_submit_answer():
 
     result = cursor.fetchone()
 
-    if result[0] == 1:
+    if result['CORRECT']:
        return {
            "status": "ok",
-           "correct": "true"
+           "correct": True
        }
-    elif result[0] == 0:
+    elif ~result['CORRECT']:
        return {
            "status": "ok",
-           "correct": "false"
+           "correct": False
        }
     return {
            "status": "fail",
