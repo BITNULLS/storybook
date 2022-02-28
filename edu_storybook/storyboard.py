@@ -17,4 +17,9 @@ storyboard = Blueprint('storyboard', __name__)
 
 @storyboard.route("/storyboard/<int:book_id_in>/<int:page_number_in>")
 def gen_storyboard_page():
-    return "e"
+    storyboard_page = TEMPLATES['_base'].substitute(
+        title = 'Storyboard Page',
+        description = 'Make an account with our website',
+        body = TEMPLATES['story_selection']['index'].substitute()
+    )
+    return storyboard_page

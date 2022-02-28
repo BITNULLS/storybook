@@ -6,6 +6,12 @@ templates.py
 from string import Template
 import os
 
+
+class EduTemplate(Template):
+    delimiter = '~'
+    idpattern = r'[a-z][_a-z0-9]*'
+
+
 def load_template(filepath):
     """
     Read a file into a string.Template
@@ -14,10 +20,14 @@ def load_template(filepath):
     # TODO ASSERT FILEPATH IS LEGIT FILE
     #assert os.path.isfile(filepath), `Provided template '
     with open(filepath, 'r') as f:
-        t = Template('\n'.join(f.readlines()))
+        t = EduTemplate('\n'.join(f.readlines()))
     return t
 
 # import all templates
+# TODO: I just realized too late that this could be type-safed by having this
+# ... templates dict just be class Templates, with sublcass Admin, then subclass
+# ... off that with BookManage. That way it's autocompleted and type safe.
+# ... This is a future work kind of thing.
 TEMPLATES = {
     "admin": {
         "book_manager": load_template("templates/admin/book_manager.html"),

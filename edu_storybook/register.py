@@ -15,4 +15,9 @@ register = Blueprint('register', __name__)
 
 @register.route("/register")
 def gen_register():
-    return "e"
+    register_page = TEMPLATES["_base"].substitute(
+        title = "Register an Account",
+        description = "Make an account with our website",
+        body = TEMPLATES["register"].substitute()
+    )
+    return register_page

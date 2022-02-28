@@ -48,7 +48,7 @@ def issue_auth_token(res, token):
     )
 
 
-def validate_login(auth: str, permission=0):
+def validate_login(auth: str, permission: int=0):
     """
     Checks if a user has a valid login session, and has the necessary 
     permissions granted.

@@ -2,8 +2,9 @@
 app.py
     Main launch point for our web server.
 """
+
 from flask import Flask
-import api
+from api import main
 import admin
 import index
 import login
@@ -15,14 +16,15 @@ import storyboard
 
 app = Flask(__name__, static_url_path="/static/", static_folder="static")
 
-app.register_blueprint(api.api)
-#app.register_blueprint(admin.admin)
+app.register_blueprint(main.api)
+app.register_blueprint(admin.admin)
 app.register_blueprint(index.homepage)
 app.register_blueprint(login.login)
 app.register_blueprint(password.password)
 app.register_blueprint(register.register)
 app.register_blueprint(story_selection.story_selection)
 app.register_blueprint(storyboard.storyboard)
+
 
 
 if __name__ == "__main__":

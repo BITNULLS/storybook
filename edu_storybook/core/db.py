@@ -21,8 +21,6 @@ cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
 
 oracle_configs = sensitive.oracle_config
 
-print(oracle_configs['connect_string'])
-
 connection = cx_Oracle.connect(
     oracle_configs['username'],
     oracle_configs['password'],

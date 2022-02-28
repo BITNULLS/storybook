@@ -1,7 +1,9 @@
 """
+index.py
+    Generates the homepage of the website.
+
 Routes:
     /
-    /api/
 """
 
 from flask import request
@@ -14,12 +16,9 @@ homepage = Blueprint('homepage', __name__)
 
 @homepage.route("/")
 def gen_index():
-    homepage = TEMPLATES["_base"].substitute(
+    the_homepage = TEMPLATES["_base"].substitute(
         title = "EduStorybook Homepage",
         description = "A motivational storybook that helps students learn.",
         body = TEMPLATES["index"].substitute()
     )
-    #print(homepage)
-    
-    #return 'aaa'
-    return homepage
+    return the_homepage

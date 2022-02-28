@@ -12,7 +12,12 @@ from templates import TEMPLATES
 
 login = Blueprint('login', __name__)
 
-@login.route("/login/")
+@login.route("/login")
 def gen_login():
-    return "e"
+    login_page = TEMPLATES["_base"].substitute(
+        title = "Admin: Book Manager",
+        description = "A motivational storybook that helps students learn.",
+        body = TEMPLATES["login"].substitute()
+    )
+    return login_page
 
