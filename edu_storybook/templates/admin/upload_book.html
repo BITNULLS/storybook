@@ -1,0 +1,50 @@
+<div class="row mt-5">
+    <div class="col-12 col-md-4 col-sm-3"></div>
+    <div class="col">
+      <h1 class="text-center mb-5">Admin View</h1>
+
+      <div class="card pl-1 pr-1">
+        <div class="card-body">
+
+          <form action="/admin/book/upload" method="POST" enctype="multipart/form-data">
+            <div id="file-content">
+              <input id="file" type="file" accept="pdf/*" name="file" />
+                <label htmlFor="file">
+                  <input
+                    id="file-upload-btn" 
+                    class="btn btn-primary"
+                    type="submit" 
+                    value="Upload Book"
+                    style = {{minWidth: 180, margin: 10}}/>
+                </label>
+            </div>
+          </form>
+
+          <form>
+
+            <div class="form-group">             
+              <a href="/EditBook">
+                <button class="btn btn-primary"
+                  style = {{minWidth: 180, margin: 10}}>Edit Book
+                </button >
+              </a>
+            </div>
+
+            <div class="form-group">
+              <button class="btn btn-primary"
+                style = {{minWidth: 180, margin: 10}}>Add Users
+              </button >
+            </div>
+
+            <div class="form-group">
+              <button class="btn btn-primary" 
+                style = {{minWidth: 180, margin: 10}}>Download Data
+              </button >
+            </div>
+
+          </form>
+        </div >
+      </div>
+    </div >
+    <div class="col col-12 col-md-4 col-sm-3"></div>
+</div>

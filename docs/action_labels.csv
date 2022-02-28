@@ -1,14 +1,15 @@
-0,user_book_open
-1,user_book_close
-2,user_click_page
-3,user_click_link
-4,user_mouse_page_exit
-5,user_mouse_page_enter
-6,user_tab_exit
-7,user_tab_enter
-8,user_question_answer
-9,user_question_answer_change
-10,user_turn_page_forward
-11,user_turn_page_backward
-12,user_text_response_enter
-13,user_text_response_exit
+id,tag,description
+0,user_book_open,"User opened the book from the book dashboard."
+1,user_book_close,"User exited the book back to some other page."
+2,user_click_page,"User clicked somewhere on the page (not a link, not forward or backwards, not on a textbox, not ...)."
+3,user_click_link,"User clicked a link."
+4,user_mouse_page_exit,"User's mouse left the webpage."
+5,user_mouse_page_enter,"User's mouse re-entered the webpage."
+6,user_tab_exit,"User switched to another tab."
+7,user_tab_enter,"User switched back to our webpage tab."
+8,user_question_answer,"User answered a question."
+9,user_question_answer_change,"User changed answer on a question."
+10,user_turn_page_forward,"User turned forward a page."
+11,user_turn_page_backward,"User turned backward a page."
+12,user_text_response_enter,"User entered a textbox."
+13,user_text_response_exit,"User exited a textbox."

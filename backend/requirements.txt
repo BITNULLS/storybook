@@ -1,7 +1,0 @@
-flask
-cx-Oracle
-bcrypt
-cryptography
-oci
-pyjwt
-flask_cors

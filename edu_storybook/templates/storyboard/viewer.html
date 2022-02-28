@@ -1,0 +1,30 @@
+<div>
+      
+    <p> {this.story} </p>
+   
+    <div id="homePage" class="carousel slide carousel-fade mx-auto" data-ride="inactive">
+      <ol class="carousel-indicators">
+        <li data-target="#homePage" data-slide-to="0" class="active"></li>
+      </ol>
+      <div class="carousel-inner" role="listbox">
+        <div class="carousel-item active" data-interval="inactive">
+          <img class="img-fluid" src= {process.env.PUBLIC_URL +'/images/titlePage.png'} id="testerPage"
+          alt="First Slide"/>
+        </div>   
+      </div>
+    <a class="carousel-control-prev text-dark" href="#homePage" data-mdb-target="#carouselDarkVariant" role="button" data-slide="prev" onClick={async () => {await this.getImage("prev")}}>
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next text-dark" href="#homePage" data-mdb-target="#carouselDarkVariant" role="button" data-slide="next"  onClick={async () => {await this.getImage("next")}} >
+        <span class="carousel-control-next-icon" aria-hidden="true"  ></span>
+        <span class="sr-only">Next</span>
+    </a>
+    </div>
+
+    <NavDropdown title = "Options">
+      <NavDropdown.Item> <a href="/StoryBoardQuiz">Go to Quiz</a></NavDropdown.Item>
+      <NavDropdown.Item> <a href="/StorySelection">Back to Story Selection</a></NavDropdown.Item>
+    </NavDropdown>
+   
+</div>
