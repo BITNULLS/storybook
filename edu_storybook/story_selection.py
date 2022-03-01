@@ -34,6 +34,8 @@ def gen_books():
     story_selection_page = TEMPLATES["_base"].substitute(
         title = 'Book Selection',
         description = 'Select a book to read',
-        body = TEMPLATES['story_selection']['index'].substitute()
+        body = TEMPLATES['story_selection']['index'].substitute(
+            books=''
+        )
     )
     return story_selection_page
