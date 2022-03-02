@@ -10,6 +10,7 @@ from .helper import fix_filepath
 
 print('Connecting to database...', end=' ')
 oracle_lib_dir = None
+
 with open(fix_filepath(__file__, config['sensitives']['files']['oracle_dir'])) as txtfile:
     for line in txtfile.readlines():
         oracle_lib_dir = str(line)

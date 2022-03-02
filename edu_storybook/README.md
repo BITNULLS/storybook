@@ -15,6 +15,14 @@ This Python module is organized in the following manner:
  - [`story_selection.py`](#storyselectionpy): Only the `/books` endpoint.
  - [`storyboard.py`](#storyboardpy): Several endpoints relating to the storyboard viewer.
 
+## Install
+
+ - ...
+
+## How to Run
+
+ - ...
+
 ## Notes
 
 **Rule of thumb:** All `edu_storybook/*.py` files (except for `app.py`) corresponds to an HTML file in the `templates/` directory, or a directory in the `templates/` directory. For example, `admin.py` corresponds to the `admin/` directory, which contains HTML templates. `index.py` only corresponds to `index.py`.
@@ -23,7 +31,9 @@ This Python module is organized in the following manner:
 
 **Templating Delimiter:** Our template delimeter is `~`. The default `$` of `string.Template` conflicts with JQuery's `$` JavaScript identifier/alias.
 
-**Styling:** Single quote (`'`) strings should be used everywhere possible.
+**Python String Styling:** Single quote (`'`) strings should be used everywhere possible.
+
+**URL Endpoint Styling:** URLs should not have a trailing slash (e.g. `/endpoint/`) unless they contain more endpoints. For example, `/login` is good. Additionally, `/admin/` is okay because it hosts more endpoints, `/admin/edit_book` and others.
 
 **Tabs vs Spaces:** 4 spaces.
 
@@ -35,31 +45,44 @@ The controller of the server. Only launches Flask and calls other initialization
 
 ## admin.py
 
-...
+Routes:
+ - `/admin/`
+ - `/admin/book_manager`
+ - `/admin/edit_book`
+ - `/admin/study_manager`
+ - `/admin/upload_book`
 
 ## index.py
 
-...
+Routes:
+ - `/`
+
+Purpose: ...
 
 ## login.py
 
 Routes: 
- - `login/`
+ - `/login`
 
 Purpose: To allow the user to login to the website. Handles giving JWT session cookie to user.
 
 ## password.py
 
-...
+Routes:
+ - `/password/forgot`
+ - `/password/reset`
 
 ## register.py
 
-...
+Routes:
+ - `/register`
 
 ## story_selection.py
 
-...
+Routes:
+ - `/books`
 
 ## storyboard.py
 
-...
+Routes:
+ - `/storyboard/page/<int:book_id_in>/<int:page_number_in>`

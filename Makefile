@@ -1,11 +1,16 @@
 run:
+	cd edu_storybook
 	export FLASK_APP=edu_storybook/app.py
 	export FLASK_ENV=development
 	flask run
 windows-run:
+	cd edu_storybook
 	$Env:FLASK_APP = "app.py"
 	$Env:FLASK_ENV = "development"
 	python -m flask run
+failsafe-run:
+	cd edu_storybook
+	python3 app.py
 setup:
 	rm -r temp/
 	mkdir temp/
