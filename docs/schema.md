@@ -56,6 +56,7 @@ Table of Contents:
 | ANSWER_ID | Unique number ID to uniquely identify the answer|
 | QUESTION_ID | ID to a question in [`QUESTION`](#QUESTION) that the answer is related to|
 | ANSWER | Full text of answer |
+| CORRECT | Identifies if an answer to a particular QUESTION_ID is correct. 1 if correct. 0 if they are not correct |
 
 <br>
 
@@ -90,6 +91,7 @@ Table of Contents:
 | SCHOOL_ID | ID of school from [`SCHOOL`](#SCHOOL) that the question is related to |
 | BOOK_ID | ID of book from [`BOOK`](#BOOK) that the question is from |
 | QUESTION | Full text of question |
+| QUESTION_TYPE | Identifies if question is multiple-choice or free response. 1 if multiple-choice. 0 if free-response |
 
 <br>
 
