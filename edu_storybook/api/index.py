@@ -176,7 +176,7 @@ def login():
 
     return res
 
-@a_index.route("/api/logout")
+@a_index.route("/api/logout", methods=['POST'])
 def logout(auth):
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
@@ -215,7 +215,7 @@ def logout(auth):
     res.set_cookie('Authorization', '', expires=0)
     return res
 
-@a_index.route("/api/register")
+@a_index.route("/api/register", methods=['POST'])
 def register(email: str, password: str, first_name: str, last_name: str, school_id: int):
     # check that all expected inputs are not empty
     try:
