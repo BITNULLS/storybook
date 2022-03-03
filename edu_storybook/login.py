@@ -20,4 +20,3 @@ def gen_login():
         body = TEMPLATES["login"].substitute()
     )
     return login_page
-
