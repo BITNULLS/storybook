@@ -10,6 +10,7 @@ Routes:
 """
 
 from flask import request
+from flask import redirect
 from flask import make_response
 from flask import Blueprint
 
@@ -54,8 +55,8 @@ def api_index():
         "status": "ok"
     }
 
-@a_index.route("/api/login")
-def login(email: str, password: str):
+@a_index.route("/api/login", methods=['POST'])
+def login():
     # check that all expected inputs are received
     try:
         assert 'email' in request.form
@@ -132,11 +133,15 @@ def login(email: str, password: str):
 
     iat = int(time.time())
 
-    res = make_response({
-        "status": "ok",
-        "message": "Successfully authenticated",
-        "iat": iat
-    })
+    res = None
+    if 'redirect' in request.form:
+        res = make_response(redirect(request.form['redirect']))
+    else:
+        res = make_response({
+            "status": "ok",
+            "message": "Successfully authenticated",
+            "iat": iat
+        })
     token = jwt.encode({
         "iat": iat,
         "session": session_id,
