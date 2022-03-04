@@ -10,6 +10,7 @@ Routes:
 from flask import request
 from flask import make_response
 from flask import Blueprint
+from flask import redirect
 
 import cx_Oracle
 import random
@@ -99,9 +100,13 @@ def password_forgot():
     send_email(user_name, email, 'Edu Storybooks',
                'edustorybooks@gmail.com', 'Password Reset Request', key)
 
-    return {
-        "status": "ok"
-    }
+    res = None
+    if 'redirect' in request.form:
+        res = make_response(redirect(request.form['redirect']))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
 
 
 # new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
@@ -194,7 +199,10 @@ def password_reset():
     finally:
         conn_lock.release()
 
-    return {
-        "status": "ok"
-    }
-
+    res = None
+    if 'redirect' in request.form:
+        res = make_response(redirect(request.form['redirect']))
+    else:
+        res = make_response({
+            "status": "ok"
+        })

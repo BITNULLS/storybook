@@ -16,6 +16,7 @@ from flask import request
 from flask import make_response
 from flask import Blueprint
 from flask import send_file
+from flask import redirect
 
 from pdf2image import convert_from_path
 import os
@@ -187,9 +188,13 @@ def admin_book_upload():
         finally:
             conn_lock.release()
 
-        return {
-            "status": "ok",
-        }
+        res = None
+        if 'redirect' in request.form:
+            res = make_response(redirect(request.form['redirect']))
+        else:
+            res = make_response({
+                "status": "ok"
+            })
 
     return {
         "status": "fail",

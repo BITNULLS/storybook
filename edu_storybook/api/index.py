@@ -209,9 +209,13 @@ def logout(auth):
     finally:
         conn_lock.release()
 
-    res = make_response({
-        "status": "ok"
-    })
+    res = None
+    if 'redirect' in request.form:
+        res = make_response(redirect(request.form['redirect']))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
     res.set_cookie('Authorization', '', expires=0)
     return res
 
@@ -299,6 +303,10 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
         send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com',
                    'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' +
                    '\n\nThanks for registering an account with Edu Storybooks! :)')
-    return {
-        "status": "ok"
-    }
+    res = None
+    if 'redirect' in request.form:
+        res = make_response(redirect(request.form['redirect']))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
