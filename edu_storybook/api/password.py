@@ -21,6 +21,8 @@ import bcrypt
 from core.email import send_email
 from core.db import connection, conn_lock
 from core.reg_exps import *
+from core.helper import sanatize_redirects
+from edu_storybook.core import helper
 
 a_password = Blueprint('a_password', __name__)
 
@@ -102,7 +104,8 @@ def password_forgot():
 
     res = None
     if 'redirect' in request.form:
-        res = make_response(redirect(request.form['redirect']))
+        redirect = helper.sanatize_redirects(request.form['redirect'])
+        res = make_response(redirect(redirect))
     else:
         res = make_response({
             "status": "ok"
@@ -201,7 +204,8 @@ def password_reset():
 
     res = None
     if 'redirect' in request.form:
-        res = make_response(redirect(request.form['redirect']))
+        redirect = helper.sanatize_redirects(request.form['redirect'])
+        res = make_response(redirect(redirect))
     else:
         res = make_response({
             "status": "ok"

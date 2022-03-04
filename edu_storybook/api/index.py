@@ -22,13 +22,14 @@ import time
 
 from core.auth import validate_login, issue_auth_token
 from core.bucket import bucket
-from core.helper import allowed_file, label_results_from
+from core.helper import allowed_file, label_results_from, sanatize_redirects
 from core.email import send_email
 from core.config import config
 from core.db import connection, conn_lock
 from core.sensitive import jwt_key
 from core.remove_watchdog import future_del_temp
 from core.reg_exps import *
+from edu_storybook.core import helper
 
 a_index = Blueprint('a_index', __name__)
 
@@ -135,7 +136,8 @@ def login():
 
     res = None
     if 'redirect' in request.form:
-        res = make_response(redirect(request.form['redirect']))
+        redirect = helper.sanatize_redirects(request.form['redirect'])
+        res = make_response(redirect(redirect))
     else:
         res = make_response({
             "status": "ok",
@@ -211,7 +213,8 @@ def logout(auth):
 
     res = None
     if 'redirect' in request.form:
-        res = make_response(redirect(request.form['redirect']))
+        redirect = helper.sanatize_redirects(request.form['redirect'])
+        res = make_response(redirect(redirect))
     else:
         res = make_response({
             "status": "ok"
@@ -305,7 +308,8 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
                    '\n\nThanks for registering an account with Edu Storybooks! :)')
     res = None
     if 'redirect' in request.form:
-        res = make_response(redirect(request.form['redirect']))
+        redirect = helper.sanatize_redirects(request.form['redirect'])
+        res = make_response(redirect(redirect))
     else:
         res = make_response({
             "status": "ok"
