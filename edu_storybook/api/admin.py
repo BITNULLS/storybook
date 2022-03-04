@@ -34,7 +34,7 @@ import time
 
 from core.auth import validate_login, issue_auth_token
 from core.bucket import bucket
-from core.helper import allowed_file, label_results_from, sanatize_redirects
+from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
 from core.config import config
 from core.db import connection, conn_lock
@@ -192,7 +192,7 @@ def admin_book_upload():
 
         res = None
         if 'redirect' in request.form:
-            redirect = helper.sanatize_redirects(request.form['redirect'])
+            redirect = helper.sanitize_redirects(request.form['redirect'])
             res = make_response(redirect(redirect))
         else:
             res = make_response({

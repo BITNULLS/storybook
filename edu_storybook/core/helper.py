@@ -79,7 +79,7 @@ def label_results_from(cursor: cx_Oracle.Cursor):
     cursor.rowfactory = lambda *args: dict(zip(columns, args))
     return cursor
     
-def sanatize_redirects(redirect_link: str) -> str:
+def sanitize_redirects(redirect_link: str) -> str:
     """
     Determines if a given redirect link is a valid relative or absolute path
 
