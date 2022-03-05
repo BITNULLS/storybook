@@ -10,6 +10,7 @@ Routes:
 from flask import request
 from flask import make_response
 from flask import Blueprint
+from flask import redirect
 
 import cx_Oracle
 import random
@@ -20,6 +21,8 @@ import bcrypt
 from core.email import send_email
 from core.db import connection, conn_lock
 from core.reg_exps import *
+from core.helper import sanitize_redirects
+from edu_storybook.core import helper
 
 a_password = Blueprint('a_password', __name__)
 
@@ -99,9 +102,14 @@ def password_forgot():
     send_email(user_name, email, 'Edu Storybooks',
                'edustorybooks@gmail.com', 'Password Reset Request', key)
 
-    return {
-        "status": "ok"
-    }
+    res = None
+    if 'redirect' in request.form:
+        redirect = helper.sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(redirect))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
 
 
 # new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
@@ -194,7 +202,11 @@ def password_reset():
     finally:
         conn_lock.release()
 
-    return {
-        "status": "ok"
-    }
-
+    res = None
+    if 'redirect' in request.form:
+        redirect = helper.sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(redirect))
+    else:
+        res = make_response({
+            "status": "ok"
+        })

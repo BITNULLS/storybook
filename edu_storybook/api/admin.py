@@ -12,10 +12,12 @@ Routes:
     /api/admin/get/user
 """
 
+from pydoc import Helper
 from flask import request
 from flask import make_response
 from flask import Blueprint
 from flask import send_file
+from flask import redirect
 
 from pdf2image import convert_from_path
 import os
@@ -32,13 +34,14 @@ import time
 
 from core.auth import validate_login, issue_auth_token
 from core.bucket import bucket
-from core.helper import allowed_file, label_results_from
+from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
 from core.config import config
 from core.db import connection, conn_lock
 from core.sensitive import jwt_key
 from core.remove_watchdog import future_del_temp
 from core.reg_exps import *
+from edu_storybook.core import helper
 
 a_admin = Blueprint('a_admin', __name__)
 
@@ -187,9 +190,14 @@ def admin_book_upload():
         finally:
             conn_lock.release()
 
-        return {
-            "status": "ok",
-        }
+        res = None
+        if 'redirect' in request.form:
+            redirect = helper.sanitize_redirects(request.form['redirect'])
+            res = make_response(redirect(redirect))
+        else:
+            res = make_response({
+                "status": "ok"
+            })
 
     return {
         "status": "fail",
