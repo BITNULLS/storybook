@@ -41,7 +41,7 @@ from core.db import connection, conn_lock
 from core.sensitive import jwt_key
 from core.remove_watchdog import future_del_temp
 from core.reg_exps import *
-from edu_storybook.core import helper
+from core.helper import sanitize_redirects
 
 a_admin = Blueprint('a_admin', __name__)
 
@@ -192,7 +192,7 @@ def admin_book_upload():
 
         res = None
         if 'redirect' in request.form:
-            redirect = helper.sanitize_redirects(request.form['redirect'])
+            redirect = sanitize_redirects(request.form['redirect'])
             res = make_response(redirect(redirect))
         else:
             res = make_response({
