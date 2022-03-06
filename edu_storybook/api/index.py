@@ -29,7 +29,6 @@ from core.db import connection, conn_lock
 from core.sensitive import jwt_key
 from core.remove_watchdog import future_del_temp
 from core.reg_exps import *
-from edu_storybook.core import helper
 
 a_index = Blueprint('a_index', __name__)
 
@@ -136,7 +135,7 @@ def login():
 
     res = None
     if 'redirect' in request.form:
-        redirect = helper.sanitize_redirects(request.form['redirect'])
+        redirect = sanitize_redirects(request.form['redirect'])
         res = make_response(redirect(redirect))
     else:
         res = make_response({
@@ -213,7 +212,7 @@ def logout(auth):
 
     res = None
     if 'redirect' in request.form:
-        redirect = helper.sanitize_redirects(request.form['redirect'])
+        redirect = sanitize_redirects(request.form['redirect'])
         res = make_response(redirect(redirect))
     else:
         res = make_response({
@@ -308,7 +307,7 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
                    '\n\nThanks for registering an account with Edu Storybooks! :)')
     res = None
     if 'redirect' in request.form:
-        redirect = helper.sanitize_redirects(request.form['redirect'])
+        redirect = sanitize_redirects(request.form['redirect'])
         res = make_response(redirect(redirect))
     else:
         res = make_response({
