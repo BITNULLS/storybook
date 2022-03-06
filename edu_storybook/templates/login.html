@@ -1,38 +1,50 @@
 <div class="row mt-5">
   <div class="col-12 col-md-4 col-sm-3"></div>
   <div class="col">
+   <!-- ~navbar -->
     <h1 class="text-center mb-5">Login</h1>
 
     <form action="/api/login" method="POST">
       <input type="hidden" name="redirect" value="/books">
+
+
       <div class="card pl-1 pr-2">
-        <div class="card-body">
+        <div class="card-body text-center">
 
           <div class="form-group mb-4">
             <label for="email">E-mail:</label>
             <input id="email" name="email" type="text" formControlName="email" class="form-control">
           </div>
+
           <div class="form-group mb-4">
-            <OverlayTrigger delay={{ hide: 450, show: 300 }} overlay={(props)=> (
-              <Tooltip class="pl-3 bg-info" {...props}>
+
+            <!--       
                 <div align='left'>
                   <p>Must contain at least:</p>
                   <li>8 characters,</li>
                   <li>1 capital letter</li>
                   <li>1 special character (@$_*)</li>
-                </div>
-              </Tooltip>
-              )}
-              placement="top">
-              <a class="p-1 border-info">
-                <i class="bi bi-info-circle"></i>
-              </a>
-            </OverlayTrigger>
-            <label for="password">Password:</label>
-            <input id="password" name="password" type="password" formControlName="password" class="form-control">
-          </div>
+                </div>  -->
 
-          
+            <div id="space1">
+              <label for="password">Password:</label>
+            </div>
+
+            <!--Info icon-->
+            <div id="space2" data-toggle="tooltip" data-placement="top"
+              title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)">
+
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-info-circle-fill" viewBox="0 0 16 16">
+                <path
+                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+              </svg>
+
+            </div>
+
+            <input id="password" name="password" type="password" formControlName="password" class="form-control">
+
+          </div>
 
           <button class="btn btn-primary" type="submit" role="button">Sign In</button>
 
@@ -42,8 +54,8 @@
     </form>
 
     <div class="text-center mt-5">
-      <a class="btn btn-link" href="/Register">Register</a>
-      <a class="btn btn-link" href="ForgotPassword">Forgot Password</a>
+      <a class="btn btn-link" href="/register">Register</a>
+      <a class="btn btn-link" href="/password/forgot">Forgot Password</a>
     </div>
   </div>
   <div class="col-12 col-md-4 col-sm-3"></div>
