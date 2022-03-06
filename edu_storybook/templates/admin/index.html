@@ -6,31 +6,38 @@
    margin-left: 5px !important;
    margin-right: 5px !important;
    margin-bottom: 5px !important;
+   border-style: none;
+   }
+   .col_atts 
+   {
+   margin-left: 20px !important;
+   margin-right: 20px !important;
    }
 </style>
+
 ~navbar
 
- <div class="Index">
-   <h1 class="text-center mb-5">Welcome Admin! </h1>
+<div class="Index">
+   <h1 class="text-center mb-5">Welcome Admin!</h1>
 </div>      
  
  <div class="container">
-   <div class="row justify-content-md-center">
-      <div class="col col-md-2">
-         <div class="text-center mt-5">Books</div>
-         <a href="/admin/upload_book" class="btn btn-primary fs-3 btn-atts" role="button" aria-pressed="true">Upload A New Book</a>
-         <a href="/admin/edit_book" class="btn btn-primary fs-3 btn-atts" role="button" aria-pressed="true">Edit A Book</a>
-         <a href="/admin/book_manager" class="btn btn-primary fs-3 btn-atts" role="button" aria-pressed="true">Book Manager</a>
+   <div class="row justify-content--center">
+      <div class="col text-center col_atts">
+         <h3 class="text-center mt-5">Books</h3>
+         <a href="/admin/upload_book" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Upload A New Book</a>
+         <a href="/admin/edit_book" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Edit A Book</a>
+         <a href="/admin/book_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Book Manager</a>
       </div>
-      <div class="col col-md-2">
-         <div class="text-center mt-5">Studies</div>
-         <a href="/admin/study_manager" class="btn btn-primary fs-3 btn-atts" role="button" aria-pressed="true">Study Manager</a>
-         <a href="/admin/study_manager" class="btn btn-primary fs-3 btn-atts" role="button" aria-pressed="true">Create New Study</a>
+      <div class="col text-center col_atts">
+         <h3 class="text-center mt-5">Studies</h3>
+         <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Study Manager</a>
+         <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Create New Study</a>
       </div>
-      <div class="col col-md-2">
-         <div class="text-center mt-5">Download Data</div>
-         <a href="/admin/study_manager" class="btn btn-primary fs-3 btn-atts" role="button" aria-pressed="true">User Data</a>
-         <a href="/admin/study_manager" class="btn btn-primary fs-3 btn-atts" role="button" aria-pressed="true">Action Data</a>
+      <div class="col text-center col_atts">
+         <h3 class="text-center mt-5">Download Data</h3>
+         <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">User Data</a>
+         <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Action Data</a>
       </div>
    </div>
  </div>
