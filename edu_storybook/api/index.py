@@ -135,8 +135,8 @@ def login():
 
     res = None
     if 'redirect' in request.form:
-        redirect = sanitize_redirects(request.form['redirect'])
-        res = make_response(redirect(redirect))
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
     else:
         res = make_response({
             "status": "ok",
@@ -212,8 +212,8 @@ def logout(auth):
 
     res = None
     if 'redirect' in request.form:
-        redirect = sanitize_redirects(request.form['redirect'])
-        res = make_response(redirect(redirect))
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
     else:
         res = make_response({
             "status": "ok"
@@ -307,8 +307,8 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
                    '\n\nThanks for registering an account with Edu Storybooks! :)')
     res = None
     if 'redirect' in request.form:
-        redirect = sanitize_redirects(request.form['redirect'])
-        res = make_response(redirect(redirect))
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
     else:
         res = make_response({
             "status": "ok"
