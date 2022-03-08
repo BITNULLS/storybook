@@ -19,7 +19,4 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           if [ ! -d "/home/ubuntu/storybook" ]; then git clone https://${{ secrets.VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git; else cd storybook; git restore *; git pull; cd ..; fi
-          cd storybook/edu-storybook/
-          npm install
-          npm run build
           exit

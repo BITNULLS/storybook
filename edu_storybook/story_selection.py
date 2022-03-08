@@ -11,6 +11,8 @@ from flask import Blueprint
 
 from templates import TEMPLATES
 
+from navbar import make_navbar
+
 story_selection = Blueprint('story_selection', __name__)
 
 @story_selection.route('/books')
@@ -31,9 +33,17 @@ def gen_books():
         )
     )
     """
+
+    auth = None
+    if 'Authorization' in request.cookies:
+        auth = request.cookies['Authorization']
+
     story_selection_page = TEMPLATES["_base"].substitute(
         title = 'Book Selection',
         description = 'Select a book to read',
-        body = TEMPLATES['story_selection']['index'].substitute()
+        body = TEMPLATES['story_selection']['index'].substitute(
+            books='',
+            navbar = make_navbar( auth )
+        )
     )
     return story_selection_page
