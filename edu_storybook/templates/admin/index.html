@@ -14,14 +14,76 @@
      margin-right: 20px !important;
    }
 </style>
+ 
+ <!--Modal for Create New Study-->
+ <div class="modal fade" id="createNewStudyModal" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+     <div class="modal-content">
+       <div class="modal-header">
+         <h5 class="modal-title" id="selectBookModalLabel">Create a New Study</h5>
+         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+           <span aria-hidden="true">&times;</span>
+         </button>
+       </div>
+       <div class="modal-body">
+         <form>
+
+            <label for="message-text" class="col-form-label">ID:</label>
+            <div class="input-group mb-3">
+               <input type="text" class="form-control" id="study_id" placeholder="123456" aria-label="123456" aria-describedby="basic-addon2">
+               <div class="input-group-append">
+                  <!--TODO: Actually generate a random code and place in the input area-->
+                 <span class="input-group-text" id="new_id">Randomize</span>
+               </div>
+            </div>
+
+            <label for="message-text" class="col-form-label">Description:</label>
+            <div class="form-group">
+              <textarea class="form-control" id="study_description" placeholder="Lorem ipsum dolor sit amet. Est dolorum labore quo saepe officiis in soluta laborum."></textarea>
+            </div>
+
+            <label for="message-text" class="col-form-label">School:</label>
+            <div class="input-group mb-3">
+               <input type="text" class="form-control" href="#" id="school_id" placeholder="University of Delaware" aria-label="University of Delaware" aria-describedby="basic-addon2">
+               <div class="input-group-append">
+                  <div class="btn-group">
+                     <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                     <div class="dropdown-menu dropdown-menu-right">
+                        <!--TODO: Replace hard coded list for list of schools-->
+                        <!--Placeholder for the list of school-->
+                       <a class="dropdown-item">School 1</a>
+                       <a class="dropdown-item">School 2</a>
+                       <a class="dropdown-item">School 3</a>
+                     </div>
+                   </div>
+               </div>
+            </div>
+          </form>
+
+       </div>
+       <div class="modal-footer">
+         <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Create</button>
+         <!--TODO: make info transfer to backend-->
+       </div>
+     </div>
+   </div>
+ </div>
 
 ~navbar
 
+<!--Creating Space at the top of the page-->
+<div class="row mt-5">
+   <div class="col-12 col-md-4 col-sm-3"></div>
+   <div class="col"></div>
+</div>  
+
+<!--Title of page-->
 <div class="Index">
    <h1 class="text-center mb-5">Welcome Admin!</h1>
-</div>      
- 
- <div class="container">
+</div>
+
+<!--Content-->
+<div class="container">
    <div class="row justify-content--center">
       <div class="col text-center col_atts">
          <h3 class="text-center mt-5">Books</h3>
@@ -32,7 +94,7 @@
       <div class="col text-center col_atts">
          <h3 class="text-center mt-5">Studies</h3>
          <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Study Manager</a>
-         <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Create New Study</a>
+         <a type="button" class="btn btn-primary btn-atts bg-info" data-toggle="modal" data-target="#createNewStudyModal">Create New Study</a>
       </div>
       <div class="col text-center col_atts">
          <h3 class="text-center mt-5">Download Data</h3>
