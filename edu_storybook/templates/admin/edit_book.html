@@ -21,8 +21,36 @@
   <h1 class="text-center mb-5">Edit Book</h1>
 </div>
 
+<script>
+  $(document).ready(function(){
+      $("#selectBookModal").modal('show');
+  });
+</script>
+
+<div class="modal fade" id="selectBookModal" tabindex="-1" role="dialog" aria-labelledby="selectBookModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="selectBookModalLabel">Select a Book to Edit</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        list of Books 
+        have a selection for each
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Select</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Save and Publish buttons-->
 <div class="row justify-content--center">
   <div class="col text-center col_atts">
+    <a type="button" class="btn btn-primary btn-atts bg-info" data-toggle="modal" data-target="#selectBookModal">Change Book</a>
     <a href="/admin/" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Save</a>
     <a href="/admin/" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Publish</a>
   </div>  
