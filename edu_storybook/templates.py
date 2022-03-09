@@ -36,6 +36,11 @@ TEMPLATES = {
         "study_manager": load_template("templates/admin/study_manager.html"),
         "upload_book": load_template("templates/admin/upload_book.html")
     },
+    "navbar": {
+        "logged_admin": load_template("templates/navbar/logged_admin.html"),
+        "logged_out": load_template("templates/navbar/logged_out.html"),
+        "logged_user": load_template("templates/navbar/logged_user.html")
+    },
     "password": {
         "forgot": load_template("templates/password/forgot.html"),
         "reset": load_template("templates/password/reset.html")

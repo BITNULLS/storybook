@@ -13,3 +13,4 @@ re_hex32 = re.compile(r"[A-F0-9]{32,}")   # for Oracle guid()
 re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 re_timestamp = re.compile(
     r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
+re_redirect_link = re.compile(r"^/([\w.]*/?)*")
