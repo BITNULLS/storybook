@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for March 5, 2022
+-- Updated Schema for March 9, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -41,7 +41,7 @@
 --------------------------------------------------------
 
    CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
-   
+
 --------------------------------------------------------
 --  TABLES
 --------------------------------------------------------
@@ -103,6 +103,15 @@
   CREATE TABLE "BOOK_STUDY" 
    (	"BOOK_ID" NUMBER, 
 	"STUDY_ID" NUMBER
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table LAST_PAGE
+--------------------------------------------------------
+
+  CREATE TABLE "LAST_PAGE" 
+   (	"USER_ID" VARCHAR2(36 BYTE) COLLATE "USING_NLS_COMP", 
+	"BOOK_ID" NUMBER, 
+	"LAST_PAGE" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table PASSWORD_RESET
@@ -186,8 +195,8 @@
    (	"USER_ID" VARCHAR2(32 BYTE) COLLATE "USING_NLS_COMP", 
 	"STUDY_ID" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
-   
-   
+
+
 --------------------------------------------------------
 --  INDEXES
 --------------------------------------------------------
@@ -245,8 +254,61 @@
 
   CREATE UNIQUE INDEX "USER_SESSION_INDEX1" ON "USER_SESSION" ("SESSION_ID") 
   ;
-  
-  
+--------------------------------------------------------
+--  DDL for Index ACTION_DETAIL_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "ACTION_DETAIL_PK" ON "ACTION_DETAIL" ("DETAIL_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index ACTION_KEY_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "ACTION_KEY_PK" ON "ACTION_KEY" ("ACTION_KEY_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index ANSWER_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "ANSWER_PK" ON "ANSWER" ("ANSWER_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index BOOK_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "BOOK_PK" ON "BOOK" ("BOOK_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index QUESTION_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "QUESTION_PK" ON "QUESTION" ("QUESTION_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index SCHOOL_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "SCHOOL_PK" ON "SCHOOL" ("SCHOOL_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index STUDY_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "STUDY_PK" ON "STUDY" ("STUDY_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index USER_PROFILE_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "USER_PROFILE_PK" ON "USER_PROFILE" ("USER_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index USER_SESSION_INDEX1
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "USER_SESSION_INDEX1" ON "USER_SESSION" ("SESSION_ID") 
+  ;
+
 --------------------------------------------------------
 --  TRIGGERS
 --------------------------------------------------------
@@ -412,6 +474,168 @@ BEGIN
 END;
 /
 ALTER TRIGGER "USER_PROFILE_CREATED_ON" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger DETAIL_ID_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "DETAIL_ID_TRG" 
+BEFORE INSERT ON ACTION_DETAIL
+FOR EACH ROW 
+BEGIN
+    SELECT DETAILS_SEQ.NEXTVAL INTO :new.DETAIL_ID FROM dual;
+  NULL;
+END;
+/
+ALTER TRIGGER "DETAIL_ID_TRG" DISABLE;
+--------------------------------------------------------
+--  DDL for Trigger ANSWER_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "ANSWER_TRG" 
+BEFORE INSERT ON ANSWER 
+FOR EACH ROW 
+BEGIN
+    SELECT ANSWER_SEQ.NEXTVAL INTO :new.ANSWER_ID FROM dual;
+  NULL;
+END;
+/
+ALTER TRIGGER "ANSWER_TRG" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger BOOK_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "BOOK_TRG" 
+BEFORE INSERT ON BOOK 
+FOR EACH ROW 
+BEGIN
+
+    SELECT BOOK_SEQ.NEXTVAL INTO :new.BOOK_ID FROM dual;
+    :new.CREATED_ON := sysdate();
+    
+  NULL;
+END;
+/
+ALTER TRIGGER "BOOK_TRG" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger PASSWORD_RESET_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "PASSWORD_RESET_TRG" 
+BEFORE INSERT ON PASSWORD_RESET 
+FOR EACH ROW 
+declare
+        t_user_id password_reset.user_id%type;
+        user_exists EXCEPTION;
+        PRAGMA exception_init(user_exists, -20100);
+        id_count number;
+BEGIN
+        select count(*) into id_count from password_reset where user_id = :new.user_id;
+        
+        if id_count > 0 then
+            raise_application_error(-20100, 'User already has entry.');
+        end if;
+        
+        :new.request_date := sysdate;
+   
+END;
+/
+ALTER TRIGGER "PASSWORD_RESET_TRG" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger QUESTION_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "QUESTION_TRG" 
+BEFORE INSERT ON QUESTION 
+FOR EACH ROW 
+BEGIN
+    SELECT QUESTION_SEQ.NEXTVAL INTO :new.QUESTION_ID FROM dual;
+  NULL;
+END;
+/
+ALTER TRIGGER "QUESTION_TRG" DISABLE;
+--------------------------------------------------------
+--  DDL for Trigger SCHOOL_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "SCHOOL_TRG" 
+BEFORE INSERT ON SCHOOL
+FOR EACH ROW
+BEGIN
+    SELECT SCHOOL_SEQ.NEXTVAL INTO :new.SCHOOL_ID FROM dual;
+  NULL;
+END;
+/
+ALTER TRIGGER "SCHOOL_TRG" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger STUDY_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "STUDY_TRG" 
+BEFORE INSERT ON STUDY 
+FOR EACH ROW 
+BEGIN
+    SELECT STUDY_SEQ.NEXTVAL INTO :new.STUDY_ID FROM dual;
+  NULL;
+END;
+/
+ALTER TRIGGER "STUDY_TRG" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger USER_PROFILE_CREATED_ON
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "USER_PROFILE_CREATED_ON" BEFORE
+    INSERT ON user_profile
+    FOR EACH ROW
+BEGIN
+    :new.created_on := sysdate;
+    
+END;
+/
+ALTER TRIGGER "USER_PROFILE_CREATED_ON" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger NEW_USER_SESSION
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "NEW_USER_SESSION" AFTER
+    INSERT ON user_profile
+    FOR EACH ROW
+DECLARE 
+    v_random_session_id raw(32);
+BEGIN
+  -- When a new user is created, it automatically has a new user_session created
+  select sys_guid() into v_random_session_id from dual;
+  v_random_session_id := RAWTOHEX(v_random_session_id);
+
+    IF inserting THEN
+        INSERT INTO user_session (
+            session_id,
+            user_id,
+            last_login,
+            active
+        ) VALUES (
+            v_random_session_id,
+            :new.user_id,
+            sysdate,
+            0
+        );
+
+    END IF;
+END;
+/
+ALTER TRIGGER "NEW_USER_SESSION" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger USER_ID_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "USER_ID_TRG" 
+BEFORE INSERT ON USER_PROFILE 
+FOR EACH ROW 
+BEGIN
+    select sys_guid() into :new.user_id from dual;
+  NULL; 
+END;
+/
+ALTER TRIGGER "USER_ID_TRG" ENABLE;
 
 
 --------------------------------------------------------
@@ -781,6 +1005,13 @@ END check_detail_id_fcn;
 
   ALTER TABLE "BOOK_STUDY" MODIFY ("STUDY_ID" NOT NULL ENABLE);
   ALTER TABLE "BOOK_STUDY" MODIFY ("BOOK_ID" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table LAST_PAGE
+--------------------------------------------------------
+
+  ALTER TABLE "LAST_PAGE" MODIFY ("BOOK_ID" NOT NULL ENABLE);
+  ALTER TABLE "LAST_PAGE" MODIFY ("LAST_PAGE" NOT NULL ENABLE);
+  ALTER TABLE "LAST_PAGE" MODIFY ("USER_ID" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table PASSWORD_RESET
 --------------------------------------------------------
