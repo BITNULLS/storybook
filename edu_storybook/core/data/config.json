@@ -4,6 +4,8 @@
     "_login_duration": "How many seconds can a user login for before needing to sign in again",
     "buffer_size": 65536, 
     "_buffer_size": "The size of file reading buffer",
+    "temp_folder": "temp/",
+    "_temp_folder": "Where temporary files will be stored. Path is relative to app.py",
     "temp_file_expire": 300,
     "_temp_file_expire": "How many seconds minimum to keep a temporary download file on the server",
     "sensitives": {
