@@ -6,11 +6,11 @@
     <h4 class="text-center"> Don't worry! </h4>
     <h6 class="text-center mb-5"> We will send you an email to update your password. </h6>
 
-    <form action="/api/password/forgot", methods="POST">
+    <form action="/api/password/forgot" method="POST">
       <input type="hidden" name="redirect" value="/password/reset">
       <div class="form-group mb-4">
         <label for="email">Email Address:</label>
-        <input id="email" type="email" formControlName="email" class="form-control"></input>
+        <input id="email" type="email" name="email" formControlName="email" class="form-control"></input>
       </div>
       <div class="text-center form-group">
         <button id="submit-button" class="btn btn-primary">Send Email</button>
