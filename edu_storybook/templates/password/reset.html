@@ -3,7 +3,8 @@
   <div class="col-12 col-md-4 col-sm-3"></div>
   <div class="col">
     <h1 class="text-center mb-5"> Reset Password </h1>
-    <form>
+    <form action="/api/password/reset", methods="POST">
+      <input type="hidden" name="redirect" value="/register">
       <div class="form-group mb-4">
        <!-- Tooltip -->
         <label for="new_pass">New Password:</label>

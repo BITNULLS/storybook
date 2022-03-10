@@ -103,8 +103,8 @@ def password_forgot():
 
     res = None
     if 'redirect' in request.form:
-        redirect = sanitize_redirects(request.form['redirect'])
-        res = make_response(redirect(redirect))
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
     else:
         res = make_response({
             "status": "ok"
@@ -203,8 +203,8 @@ def password_reset():
 
     res = None
     if 'redirect' in request.form:
-        redirect = sanitize_redirects(request.form['redirect'])
-        res = make_response(redirect(redirect))
+       user_redirect_url = sanitize_redirects(request.form['redirect'])
+       res = make_response(redirect(user_redirect_url))
     else:
         res = make_response({
             "status": "ok"
