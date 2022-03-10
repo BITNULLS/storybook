@@ -2,9 +2,9 @@
 <div class="row mt-5">
   <div class="col-12 col-md-4 col-sm-3"></div>
   <div class="col">
-    <h1 class="text-center mb-5">Register</h1>
+    <h1 class="text-center mb-5">Register</h1> 
 
-    <div class="card pl-1 pr-2">
+    <div class="card pl-1 pr-2"> 
       <div class="card-body">
         <form>
 
@@ -15,7 +15,6 @@
                 <input id="first_name" type="text" formControlName="first_name" class="form-control"></input>
               </div>
             </div>
-
             <div class="col-12 col-sm-6">
               <div class="form-group mb-4">
                 <label for="last_name">Last Name:</label>
@@ -31,7 +30,6 @@
                 <input id="email" type="text" formControlName="email" class="form-control"></input>
               </div>
             </div>
-
             <div class="col-12 col-sm-6">
               <div class="form-group mb-4">
                 <label for="school_id">School ID:</label>
@@ -41,69 +39,42 @@
           </div>
 
           <div class="row">
-
-
-            <!-- Password -->
             <div class="col-12 col-sm-6">
               <div class="form-group mb-4">
-
-                <!--*** This is the problem-->
-                <div class="row">
-                  <div class="col-md-auto">
-                    <label for="password">Password:</label>
-                  </div>
-
-                 <!-- Tooltip -->
-              <div class="col-md-auto" data-toggle="tooltip" data-placement="top"
-              title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)">
-
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-info-circle-fill" viewBox="0 0 16 16">
-                <path
-                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
-              </svg>
-            </div>
-                <!-- ***Needs to be rescaled -->
+                <label for="password">Password:</label> 
+               
+                <i class="fa-solid fa-circle-info" 
+                title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)"></i>
+                
                 <input id="password" type="text" formControlName="password" class="form-control"></input>
               </div>
             </div>
-
-
-            <!-- Confirm Password -->
             <div class="col-12 col-sm-6">
               <div class="form-group mb-4">
-                
-                <div class="row">
-                  <div class="col-md-auto">
-                    <label for="confirm_password">Confirm Password:</label>
-                  </div>
-
-                <!-- Tooltip -->
-              <div class="col-md-auto" data-toggle="tooltip" data-placement="top"
-                title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                class="bi bi-info-circle-fill" viewBox="0 0 16 16">
-                <path
-                  d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
-              </svg>
-            </div>
-
+                <label for="confirm_password">Confirm Password:</label>
+               
+                <i class="fa-solid fa-circle-info" 
+                title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)"></i>
+               
                 <input id="confirm_password" stype="text" formControlName="confirm_password"
                   class="form-control"></input>
               </div>
-            </div>
+            </div>      
           </div>
 
 
-          <div class="form-group">
+          <!-- Sign in button-->
+          <div class="form-group text-center">
             <a href="/register">
             <button id="button_signUp" type="submit" class="btn btn-primary">Sign In</button>
             </a>
           </div>
         </form>
+
       </div>
     </div>
 
+    <!-- Links to other pages-->
     <div class="text-center mt-5">
       <a href="/login" class="btn btn-link">Login</a>
       <a href="/password/forgot" class="btn btn-link">Forgot Password</a>

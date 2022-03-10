@@ -4,7 +4,6 @@ register.py
 
 Routes:
 
-
     /register
 """
 
