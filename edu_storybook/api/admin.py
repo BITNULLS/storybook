@@ -85,8 +85,8 @@ def admin_book_upload():
         return vl
 
     # get parameters for adding to book table
-    book_name = (request.form.get('book_name')).strip()
-    book_description = (request.form.get('book_description')).strip()
+    book_name = (request.form.get('title')).strip()
+    book_description = (request.form.get('description')).strip()
     # book_id and created_on handled by trigger
 
     # check that study_id and page_count are ints
@@ -123,6 +123,8 @@ def admin_book_upload():
         filename = str(uuid.uuid4()) + "_" + file.filename
 
         # save file to local /temp/file_upload folder
+        if not os.path.isdir('temp'):
+            os.mkdir('temp')
         filePath = os.path.join("temp/", filename)
         filePath = filePath.replace('\\', '/')
         file.save(filePath)
