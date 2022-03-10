@@ -17,16 +17,25 @@
 
 ~navbar
 
+<!--Creating Space at the top of the page-->
+<div class="row mt-5">
+  <div class="col-12 col-md-4 col-sm-3"></div>
+  <div class="col"></div>
+</div> 
+
+<!--Title of page-->
 <div class="Edit_Book">
   <h1 class="text-center mb-5">Edit Book</h1>
 </div>
 
+<!--JS to make modal pop up upon opening window-->
 <script>
   $(document).ready(function(){
       $("#selectBookModal").modal('show');
   });
 </script>
 
+<!--Modal for selecting a book-->
 <div class="modal fade" id="selectBookModal" tabindex="-1" role="dialog" aria-labelledby="selectBookModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -37,8 +46,8 @@
         </button>
       </div>
       <div class="modal-body">
-        list of Books 
-        have a selection for each
+        List of Books,
+        Have a button to select on the right
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Select</button>

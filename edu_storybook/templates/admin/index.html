@@ -8,6 +8,15 @@
      margin-bottom: 5px !important;
      border-style: none;
    }
+   .btn-random
+   {
+     min-width: 100px;
+     max-width: 100px;
+     margin-left: 5px !important;
+     margin-right: 5px !important;
+     margin-bottom: 5px !important;
+     border-style: none;
+   }
    .col_atts 
    {
      margin-left: 20px !important;
@@ -28,12 +37,12 @@
        <div class="modal-body">
          <form>
 
-            <label for="message-text" class="col-form-label">ID:</label>
+            <label for="message-text" class="col-form-label">Study ID:</label>
             <div class="input-group mb-3">
                <input type="text" class="form-control" id="study_id" placeholder="123456" aria-label="123456" aria-describedby="basic-addon2">
                <div class="input-group-append">
                   <!--TODO: Actually generate a random code and place in the input area-->
-                 <span class="input-group-text" id="new_id">Randomize</span>
+                  <button type="button" class="btn btn-primary btn-random bg-info" id="new_id">Randomize</button> 
                </div>
             </div>
 
@@ -46,16 +55,12 @@
             <div class="input-group mb-3">
                <input type="text" class="form-control" href="#" id="school_id" placeholder="University of Delaware" aria-label="University of Delaware" aria-describedby="basic-addon2">
                <div class="input-group-append">
-                  <div class="btn-group">
-                     <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
-                     <div class="dropdown-menu dropdown-menu-right">
-                        <!--TODO: Replace hard coded list for list of schools-->
-                        <!--Placeholder for the list of school-->
-                       <a class="dropdown-item">School 1</a>
-                       <a class="dropdown-item">School 2</a>
-                       <a class="dropdown-item">School 3</a>
-                     </div>
-                   </div>
+                  <button type="button" class="btn btn-primary btn-random bg-info dropdown-toggle" id="school_id" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                  <div class="dropdown-menu dropdown-menu-left" role="menu">
+                     <!--TODO: Replace hard coded list for list of schools-->
+                     <!--Placeholder for the list of school to show up in the dropdown-->
+                     <a class="dropdown-item" data-value="1"><a href="#">One</a></a>
+                  </div>
                </div>
             </div>
           </form>
