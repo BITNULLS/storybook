@@ -25,47 +25,54 @@
 </style>
 
 <script>
+   //function generates random 6 digit study id
    function generateNewID() {
       let randomID = Math.floor((Math.random()*1000000)+1);
       document.getElementById('study_id').value = randomID;
    }
+   //function toggles the ability to see the input field for a new school
+   //when "other" is selected
    function showNewSchoolOption() {
-      if( $('#school-for-study-select').value == 'newSchool')
-         $('#new-school-for-study').toggleClass('visually-hidden');
+      let option = document.getElementById('school-for-study-select').value
+      if (option == "newSchool")
+         $('#new-school-for-study').toggleClass("d-none");
    } 
 </script>
  
  <!--Modal for Create New Study-->
  <div class="modal fade" id="createNewStudyModal" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel" aria-hidden="true">
    <div class="modal-dialog" role="document">
-     <div class="modal-content">
-       <div class="modal-header">
-         <h5 class="modal-title" id="selectBookModalLabel">Create a New Study</h5>
-         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-           <span aria-hidden="true">&times;</span>
-         </button>
-       </div>
-       <div class="modal-body">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="selectBookModalLabel">Create a New Study</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+            </button>
+         </div>
+      
+      <div class="modal-body">
          <form>
 
+            <!--Study ID of New Study-->
             <label for="message-text" class="col-form-label">Study ID:</label>
             <div class="input-group mb-3">
-               <input type="text" class="form-control" id="study_id" placeholder="123456" aria-label="123456" aria-describedby="basic-addon2">
+               <input type="text" class="form-control" id="study_id" placeholder="######" aria-describedby="basic-addon2">
                <div class="input-group-append">
-                  <!--TODO: Actually generate a random code and place in the input area-->
                   <button type="button" class="btn btn-primary btn-random bg-info" id="new_id" onclick="generateNewID()">Randomize</button> 
                </div>
             </div>
 
+            <!--Description of New Study-->
             <label for="message-text" class="col-form-label">Description:</label>
             <div class="form-group">
-              <textarea class="form-control" id="study_description" placeholder="Lorem ipsum dolor sit amet. Est dolorum labore quo saepe officiis in soluta laborum."></textarea>
+            <textarea class="form-control" id="study_description" placeholder="Lorem ipsum dolor sit amet. Est dolorum labore quo saepe officiis in soluta laborum."></textarea>
             </div>
 
+            <!--School of New Study-->
             <label for="message-text" class="col-form-label">School:</label>
             <div class="input-group mb-3">
                <select class="form-select" onclick="showNewSchoolOption()" id="school-for-study-select">
-                  <option selected>Select a School</option>
+                  <option value="" disabled selected>Select a School</option>
                   <option value="newSchool">Other</option>
                   <option value="1">University of Delaware</option>
                   <option value="2">University of Maryland</option>
@@ -73,21 +80,23 @@
                </select>
             </div>
 
-            <div class="visually-hidden" id="new-school-for-study">
+            <!--Input Field for a New School for a New Study-->
+            <div class="d-none" id="new-school-for-study">
                <label for="message-text" class="col-form-label">New School Name:</label>
                <div class="form-group">
                   <input type="text" class="form-control" href="#" id="school-input-from-user" aria-describedby="basic-addon2">
                </div>
             </div>
 
-            
-          </form>
+         </form>
+      </div>
 
-       </div>
-       <div class="modal-footer">
+      <!--Button to send data to backend-->
+      <div class="modal-footer">
          <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Create</button>
          <!--TODO: make info transfer to backend-->
        </div>
+
      </div>
    </div>
  </div>
