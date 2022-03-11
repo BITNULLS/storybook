@@ -23,12 +23,12 @@
    //function generates random 6 digit study id
    function generateNewID() {
       let randomID = Math.floor((Math.random()*1000000)+1);
-      document.getElementById('study_id').value = randomID;
+      $('#study_id').val(randomID);
    }
    //function toggles the ability to see the input field for a new school
    //when "other" is selected
    function showNewSchoolOption() {
-      let option = document.getElementById('school-for-study-select').value
+      let option = $('#school-for-study-select').val();
       if (option == "newSchool")
          $('#new-school-for-study').toggleClass("d-none");
    } 
