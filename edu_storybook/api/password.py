@@ -96,7 +96,7 @@ def password_forgot():
     finally:
         conn_lock.release()
 
-    key = 'edustorybook.com/Password/Reset#key=' + rand_str
+    key = 'edustorybook.tk/password/reset#key=' + rand_str
 
     send_email(user_name, email, 'Edu Storybooks',
                'edustorybooks@gmail.com', 'Password Reset Request', key)

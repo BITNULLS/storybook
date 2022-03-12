@@ -3,10 +3,12 @@
   <div class="col-12 col-md-4 col-sm-3"></div>
   <div class="col">
     <h1 class="text-center mb-5"> Reset Password </h1>
-    <form>
+
+    <div class="card pl-1 pr-2">
+      <div class="card-body">
+
+    <form action="/api/password/reset" method="POST"> 
       <input type="hidden" name="redirect" value="/books" >
-      <div class="card pl-1 pr-2">
-        <div class="card-body">
    
       <div class="form-group mb-4">
       <label for="password"> New Password:</label> 
@@ -20,7 +22,7 @@
         <!-- TODO: take reset_key from url, like "url.com/.../reset#key=A93CDG043..." and automatically populate the
         reset_key field -->
         <label for="reset_key"> Reset Key </label>
-        <input id="reset_key" type="text" formControlName="reset_key" class="form-control"></input>
+        <input id="reset_key" type="text" name="reset_key" class="form-control"></input>
 
       </div>
       <div class="form-group mb-4">
