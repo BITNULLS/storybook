@@ -1,3 +1,4 @@
+~navbar
 <div class="row mt-5">
   <div class="col-12 col-md-4 col-sm-3"></div>
   <div class="col">
@@ -8,48 +9,28 @@
         <div class="card-body">
    
       <div class="form-group mb-4">
-      <!--  <OverlayTrigger delay={{ hide: 450, show: 300 }} overlay={(props)=> (
-          <Tooltip class="pl-3 bg-info" {...props}>
-            <div align='left'>
-              <p>Must contain at least:</p>
-              <li>8 characters,</li>
-              <li>1 capital letter</li>
-              <li>1 special character (@$_*)</li>
-            </div>
-          </Tooltip>
-          )}
-          placement="top">
-          <a class="p-1 border-info">
-            <i class="bi bi-info-circle"></i>
-          </a>
-        </OverlayTrigger> --> 
-        <label for="new_pass">New Password:</label>
-        <input id="new_pass" type="password" class="form-control"></input>
+      <label for="password"> New Password:</label> 
+      
+      <i class="fa-solid fa-circle-info"
+      title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)"></i>
+      
+      <input id="password" type="password" name="password" class="form-control">
 
-        {/* TODO: take reset_key from url, like "url.com/.../reset#key=A93CDG043..." and automatically populate the
-        reset_key field */}
-        <label for="reset_key"> </label>
+
+        <!-- TODO: take reset_key from url, like "url.com/.../reset#key=A93CDG043..." and automatically populate the
+        reset_key field -->
+        <label for="reset_key"> Reset Key </label>
         <input id="reset_key" type="text" formControlName="reset_key" class="form-control"></input>
 
       </div>
       <div class="form-group mb-4">
-       <!-- <OverlayTrigger delay={{ hide: 450, show: 300 }} overlay={(props)=> (
-          <Tooltip class="pl-3 bg-info" {...props}>
-            <div align='left'>
-              <p>Must contain at least:</p>
-              <li>8 characters,</li>
-              <li>1 capital letter</li>
-              <li>1 special character (@$_*)</li>
-            </div>
-          </Tooltip>
-          )}
-          placement="top">
-          <a class="p-1 border-info">
-            <i class="bi bi-info-circle"></i>
-          </a>
-        </OverlayTrigger> --> 
-        <label for="confirm_pass">Confirm Password:</label>
-        <input id="confirm_pass" type="password" class="form-control"></input>
+        <label for="password"> Confirm Password:</label>
+
+        <i class="fa-solid fa-circle-info" 
+        title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)"></i>
+
+        <input id="confirm_password" type="password" name="confirm_password" class="form-control">
+
       </div>
       <div class="text-center form-group">
         <button class="btn btn-primary">Confirm</button>
