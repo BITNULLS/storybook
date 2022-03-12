@@ -3,8 +3,12 @@
   <div class="col">
     <h1 class="text-center mb-5"> Reset Password </h1>
     <form>
+      <input type="hidden" name="redirect" value="/books" >
+      <div class="card pl-1 pr-2">
+        <div class="card-body">
+   
       <div class="form-group mb-4">
-        <OverlayTrigger delay={{ hide: 450, show: 300 }} overlay={(props)=> (
+      <!--  <OverlayTrigger delay={{ hide: 450, show: 300 }} overlay={(props)=> (
           <Tooltip class="pl-3 bg-info" {...props}>
             <div align='left'>
               <p>Must contain at least:</p>
@@ -18,9 +22,9 @@
           <a class="p-1 border-info">
             <i class="bi bi-info-circle"></i>
           </a>
-        </OverlayTrigger>
+        </OverlayTrigger> --> 
         <label for="new_pass">New Password:</label>
-        <input id="new_pass" type="text" formControlName="new_pass" class="form-control"></input>
+        <input id="new_pass" type="password" class="form-control"></input>
 
         {/* TODO: take reset_key from url, like "url.com/.../reset#key=A93CDG043..." and automatically populate the
         reset_key field */}
@@ -29,7 +33,7 @@
 
       </div>
       <div class="form-group mb-4">
-        <OverlayTrigger delay={{ hide: 450, show: 300 }} overlay={(props)=> (
+       <!-- <OverlayTrigger delay={{ hide: 450, show: 300 }} overlay={(props)=> (
           <Tooltip class="pl-3 bg-info" {...props}>
             <div align='left'>
               <p>Must contain at least:</p>
@@ -43,13 +47,15 @@
           <a class="p-1 border-info">
             <i class="bi bi-info-circle"></i>
           </a>
-        </OverlayTrigger>
+        </OverlayTrigger> --> 
         <label for="confirm_pass">Confirm Password:</label>
-        <input id="confirm_pass" type="password" formControlName="confirm_pass" class="form-control"></input>
+        <input id="confirm_pass" type="password" class="form-control"></input>
       </div>
       <div class="text-center form-group">
         <button class="btn btn-primary">Confirm</button>
       </div>
+    </div>
+  </div>
     </form>
 
     <div class="text-center mt-5">

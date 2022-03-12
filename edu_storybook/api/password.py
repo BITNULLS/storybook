@@ -75,7 +75,7 @@ def password_forgot():
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json"}
 
-    user_id = result[9]
+    user_id = result[8]
     user_name = result[1] + ' ' + result[2]
 
     now = datetime.datetime.now()
@@ -109,6 +109,7 @@ def password_forgot():
         res = make_response({
             "status": "ok"
         })
+    return res
 
 
 # new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
@@ -209,3 +210,4 @@ def password_reset():
         res = make_response({
             "status": "ok"
         })
+    return res
