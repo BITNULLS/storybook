@@ -7,7 +7,7 @@ suggestion from @lisapat
 
     -->
 ~navbar
-<div class="row mt-5">
+<div class="row mt-5 justify-content-center">
 
     <script>
         function generateNewID() {
@@ -69,36 +69,199 @@ suggestion from @lisapat
         </div>
     </div>
 
+    <!--Modal for Adding a Book to this Study -->
+    <div class="modal fade" id="addBookToStudy" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="selectBookModalLabel">Add Book to Study</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Study ID: 1234
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Save</button>
+                    <!--TODO: make info transfer to backend-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Adding/Editing User to be in Studies -->
+    <div class="modal fade" id="addStudyToUser" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="selectBookModalLabel">Edit User's Study</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Study ID: 1234
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Save</button>
+                    <!--TODO: make info transfer to backend-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Modal for Editing Users to Studies -->
+    <div class="modal fade" id="addUsersToStudy" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="selectBookModalLabel">Users in Study</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">User ID</th>
+                                    <th scope="col">First Name</th>
+                                    <th scope="col">Last Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">123</th>
+                                    <td>Mark</td>
+                                    <td>Otto</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Done</button>
+                    <!--TODO: make info transfer to backend-->
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <div class="col-md-1 col-sm-1"></div>
 
     <div class="col-md-10 col-sm-10">
-        <h1 class="text-center mb-5">Book Manager</h1>
-        <!--Creating the actual "cards for books"-->
-        <table class="table">
-            <thead>
-                <tr>
-                  <th scope="col">Study ID</th>
-                  <th scope="col">Users</th>
-                  <th scope="col">Books</th>
-                  <th scope="col">Delete</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                  <th scope="row">123</th>
-                  <td><!-- Add button --></td>
-                  <td><!-- Add button --></td>
-                  <td>DELETE</td>
-                </tr>
-                <tr>
-                    <th scope="row">223</th>
-                    <td><!-- Add button --></td>
-                    <td><!-- Add button --></td>
-                    <td>DELETE</td>
-                </tr>
-            </tbody>
-        </table>
+        <h1 class="text-center mb-5">Study Manager</h1>
+
+        <!--Creating the actual nav bar for the seperation of users and studies-->
+        <div>
+            <nav class="nav nav-tabs" role="tablist">
+                <a class="nav-link active" href="#studies" aria-controls="1" role="tab" data-toggle="tab">Studies</a>
+                <a class="nav-link" href="#users" aria-controls="2" role="tab" data-toggle="tab">Users</a>
+            </nav>
+
+            <!-- Studies tab -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="studies">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Study ID</th>
+                                <th scope="col">Users</th>
+                                <th scope="col">Books</th>
+                                <th scope="col">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">123</th>
+                                <td>
+                                    <a type="button" class="btn btn-primary btn-atts bg-info" data-toggle="modal"
+                                        data-target="#addBookToStudy">Books</a>
+                                </td>
+                                <td>
+                                    <a type="button" class="btn btn-primary btn-atts bg-info" data-toggle="modal"
+                                        data-target="#addUsersToStudy">Users</a>
+                                </td>
+                                <td>
+                                    <a type="button" class="btn btn-primary btn-atts bg-danger">Delete</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row">223</th>
+                                <td>
+                                    <a type="button" class="btn btn-primary btn-atts bg-info" data-toggle="modal"
+                                        data-target="#addBookToStudy">Books</a>
+                                </td>
+                                <td>
+                                    <a type="button" class="btn btn-primary btn-atts bg-info" data-toggle="modal"
+                                        data-target="#addUsersToStudy">Users</a>
+                                </td>
+                                <td>
+                                    <a type="button" class="btn btn-primary btn-atts bg-danger">Delete</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Users Tab -->
+                <div role="tabpanel" class="tab-pane" id="users">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">User ID</th>
+                                <th scope="col">First Name</th>
+                                <th scope="col">Last Name</th>
+                                <th scope="col">Studies</th>
+                                <th scope="col">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">123</th>
+                                <td>
+                                    John
+                                </td>
+                                <td>
+                                    Doe
+                                </td>
+                                <td>
+                                    <a type="button" class="btn btn-primary btn-atts bg-info" data-toggle="modal"
+                                        data-target="#addStudyToUser">Studies</a>
+                                </td>
+                                <td>
+                                    <a type="button" class="btn btn-primary btn-atts bg-danger">Delete</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
     </div>
     <div class="col-md-1 col-sm-1"></div>
 </div>
