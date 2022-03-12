@@ -17,16 +17,12 @@ register = Blueprint('register', __name__)
 
 @register.route("/register")
 def gen_register():
-    
-    auth = None
-    if 'Authorization' in request.cookies:
-        auth = request.cookies['Authorization']
 
     register_page = TEMPLATES["_base"].substitute(
         title = "Register an Account",
         description = "Make an account with our website",
         body = TEMPLATES["register"].substitute(
-             navbar = make_navbar( auth )
+             navbar = make_navbar( None )
         )
     )
     return register_page
