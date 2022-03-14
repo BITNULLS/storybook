@@ -10,6 +10,7 @@ Routes:
 """
 
 from flask import request
+from flask import redirect
 from flask import make_response
 from flask import Blueprint
 
@@ -21,7 +22,7 @@ import time
 
 from core.auth import validate_login, issue_auth_token
 from core.bucket import bucket
-from core.helper import allowed_file, label_results_from
+from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
 from core.config import config
 from core.db import connection, conn_lock
@@ -54,8 +55,8 @@ def api_index():
         "status": "ok"
     }
 
-@a_index.route("/api/login")
-def login(email: str, password: str):
+@a_index.route("/api/login", methods=['POST'])
+def login():
     # check that all expected inputs are received
     try:
         assert 'email' in request.form
@@ -132,11 +133,16 @@ def login(email: str, password: str):
 
     iat = int(time.time())
 
-    res = make_response({
-        "status": "ok",
-        "message": "Successfully authenticated",
-        "iat": iat
-    })
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok",
+            "message": "Successfully authenticated",
+            "iat": iat
+        })
     token = jwt.encode({
         "iat": iat,
         "session": session_id,
@@ -171,7 +177,7 @@ def login(email: str, password: str):
 
     return res
 
-@a_index.route("/api/logout")
+@a_index.route("/api/logout", methods=['POST'])
 def logout(auth):
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
@@ -204,13 +210,18 @@ def logout(auth):
     finally:
         conn_lock.release()
 
-    res = make_response({
-        "status": "ok"
-    })
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
     res.set_cookie('Authorization', '', expires=0)
     return res
 
-@a_index.route("/api/register")
+@a_index.route("/api/register", methods=['POST'])
 def register(email: str, password: str, first_name: str, last_name: str, school_id: int):
     # check that all expected inputs are not empty
     try:
@@ -294,6 +305,11 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
         send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com',
                    'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' +
                    '\n\nThanks for registering an account with Edu Storybooks! :)')
-    return {
-        "status": "ok"
-    }
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })

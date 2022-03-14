@@ -1,0 +1,43 @@
+.carousel-control {
+    width: 5%;
+}
+   
+.carousel-caption {
+    position: top;
+    transform: translateY(-50%);
+    bottom: initial;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    bottom: initial;
+    top: 50%;
+    align-self: start;
+}
+ 
+.carousel {
+    overflow: hidden;
+    border-radius: 5px;
+    width: 50%;
+    margin: 1em;
+    touch-action: cross-slide-x
+    
+}
+  
+.carousel-item img{
+    width: 381px;
+    height: 215px;
+    max-height: 225px;
+}
+
+.carousel-inner{
+    width: 50%;
+    align-items: center;
+}
+
+.carousel-indicators li {
+    width: 10px;
+    height: 10px;
+    border-radius: 100%;
+}
+.carousel-indicators {
+    bottom: -50px;
+}
