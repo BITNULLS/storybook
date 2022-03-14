@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for February 24, 2022
+-- Updated Schema for March 9, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -41,7 +41,7 @@
 --------------------------------------------------------
 
    CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
-   
+
 --------------------------------------------------------
 --  TABLES
 --------------------------------------------------------
@@ -103,6 +103,15 @@
   CREATE TABLE "BOOK_STUDY" 
    (	"BOOK_ID" NUMBER, 
 	"STUDY_ID" NUMBER
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table LAST_PAGE
+--------------------------------------------------------
+
+  CREATE TABLE "LAST_PAGE" 
+   (	"USER_ID" VARCHAR2(36 BYTE) COLLATE "USING_NLS_COMP", 
+	"BOOK_ID" NUMBER, 
+	"LAST_PAGE" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table PASSWORD_RESET
@@ -351,6 +360,36 @@
 
   CREATE UNIQUE INDEX "BOOK_PK" ON "BOOK" ("BOOK_ID") 
   ;
+--------------------------------------------------------
+--  DDL for Index QUESTION_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "QUESTION_PK" ON "QUESTION" ("QUESTION_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index SCHOOL_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "SCHOOL_PK" ON "SCHOOL" ("SCHOOL_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index STUDY_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "STUDY_PK" ON "STUDY" ("STUDY_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index USER_PROFILE_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "USER_PROFILE_PK" ON "USER_PROFILE" ("USER_ID") 
+  ;
+--------------------------------------------------------
+--  DDL for Index USER_SESSION_INDEX1
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX "USER_SESSION_INDEX1" ON "USER_SESSION" ("SESSION_ID") 
+  ;
 
 --------------------------------------------------------
 --  TRIGGERS
@@ -519,6 +558,48 @@ END;
 /
 ALTER TRIGGER "USER_PROFILE_CREATED_ON" ENABLE;
 --------------------------------------------------------
+--  DDL for Trigger DETAIL_ID_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "DETAIL_ID_TRG" 
+BEFORE INSERT ON ACTION_DETAIL
+FOR EACH ROW 
+BEGIN
+    SELECT DETAILS_SEQ.NEXTVAL INTO :new.DETAIL_ID FROM dual;
+  NULL;
+END;
+/
+ALTER TRIGGER "DETAIL_ID_TRG" DISABLE;
+--------------------------------------------------------
+--  DDL for Trigger ANSWER_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "ANSWER_TRG" 
+BEFORE INSERT ON ANSWER 
+FOR EACH ROW 
+BEGIN
+    SELECT ANSWER_SEQ.NEXTVAL INTO :new.ANSWER_ID FROM dual;
+  NULL;
+END;
+/
+ALTER TRIGGER "ANSWER_TRG" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger BOOK_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "BOOK_TRG" 
+BEFORE INSERT ON BOOK 
+FOR EACH ROW 
+BEGIN
+
+    SELECT BOOK_SEQ.NEXTVAL INTO :new.BOOK_ID FROM dual;
+    :new.CREATED_ON := sysdate();
+    
+  NULL;
+END;
+/
+ALTER TRIGGER "BOOK_TRG" ENABLE;
+--------------------------------------------------------
 --  DDL for Trigger PASSWORD_RESET_TRG
 --------------------------------------------------------
 
@@ -684,10 +765,7 @@ ALTER TRIGGER "BOOK_TRG" ENABLE;
 --------------------------------------------------------
 --  PROCEDURES
 --------------------------------------------------------
-<<<<<<< HEAD
-=======
 
->>>>>>> main
 --------------------------------------------------------
 --  DDL for Procedure CHECK_DETAIL_ID_PROC
 --------------------------------------------------------
@@ -1052,6 +1130,13 @@ END check_detail_id_fcn;
 
   ALTER TABLE "BOOK_STUDY" MODIFY ("STUDY_ID" NOT NULL ENABLE);
   ALTER TABLE "BOOK_STUDY" MODIFY ("BOOK_ID" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table LAST_PAGE
+--------------------------------------------------------
+
+  ALTER TABLE "LAST_PAGE" MODIFY ("BOOK_ID" NOT NULL ENABLE);
+  ALTER TABLE "LAST_PAGE" MODIFY ("LAST_PAGE" NOT NULL ENABLE);
+  ALTER TABLE "LAST_PAGE" MODIFY ("USER_ID" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table PASSWORD_RESET
 --------------------------------------------------------
