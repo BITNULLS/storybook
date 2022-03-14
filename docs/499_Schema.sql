@@ -6,7 +6,6 @@
 --------------------------------------------------------
 --  SEQUENCES
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Sequence ACTION_DETAIL_SEQ
 --------------------------------------------------------
@@ -16,12 +15,12 @@
 --  DDL for Sequence ANSWER_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "ANSWER_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 181 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "ANSWER_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 201 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence BOOK_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "BOOK_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 101 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "BOOK_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 141 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence DETAILS_SEQ
 --------------------------------------------------------
@@ -42,11 +41,69 @@
 --------------------------------------------------------
 
    CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
-
+   
 --------------------------------------------------------
 --  TABLES
 --------------------------------------------------------
+--------------------------------------------------------
+--  DDL for Table ACTION
+--------------------------------------------------------
 
+  CREATE TABLE "ACTION" 
+   (	"USER_ID" VARCHAR2(32 BYTE) COLLATE "USING_NLS_COMP", 
+	"ACTION_START" DATE, 
+	"ACTION_STOP" DATE, 
+	"BOOK_ID" NUMBER, 
+	"DETAIL_ID" NUMBER
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table ACTION_DETAIL
+--------------------------------------------------------
+
+  CREATE TABLE "ACTION_DETAIL" 
+   (	"DETAIL_ID" NUMBER, 
+	"DETAIL_DESCRIPTION" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP", 
+	"ACTION_KEY_ID" NUMBER
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table ACTION_KEY
+--------------------------------------------------------
+
+  CREATE TABLE "ACTION_KEY" 
+   (	"ACTION_KEY_ID" NUMBER, 
+	"ACTION_NAME" VARCHAR2(32 BYTE) COLLATE "USING_NLS_COMP"
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table ANSWER
+--------------------------------------------------------
+
+  CREATE TABLE "ANSWER" 
+   (	"ANSWER_ID" NUMBER, 
+	"QUESTION_ID" NUMBER, 
+	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
+	"CORRECT" NUMBER
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table BOOK
+--------------------------------------------------------
+
+  CREATE TABLE "BOOK" 
+   (	"BOOK_ID" NUMBER, 
+	"BOOK_NAME" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
+	"CREATED_ON" DATE, 
+	"URL" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
+	"DESCRIPTION" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
+	"PAGE_COUNT" NUMBER, 
+	"FOLDER" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP"
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table BOOK_STUDY
+--------------------------------------------------------
+
+  CREATE TABLE "BOOK_STUDY" 
+   (	"BOOK_ID" NUMBER, 
+	"STUDY_ID" NUMBER
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table PASSWORD_RESET
 --------------------------------------------------------
@@ -66,8 +123,8 @@
 	"BOOK_ID" NUMBER, 
 	"QUESTION" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
 	"PAGE_PREV" NUMBER, 
-	"PAGE_NEXT" NUMBER,
-  "QUESTION_TYPE" NUMBER
+	"PAGE_NEXT" NUMBER, 
+	"QUESTION_TYPE" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table SCHOOL
@@ -99,7 +156,6 @@
 	"CREATED_ON" DATE, 
 	"LAST_LOGIN" DATE, 
 	"PASSWORD" VARCHAR2(60 BYTE) COLLATE "USING_NLS_COMP", 
-	"STUDY_ID" NUMBER, 
 	"USER_ID" VARCHAR2(36 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
@@ -628,7 +684,10 @@ ALTER TRIGGER "BOOK_TRG" ENABLE;
 --------------------------------------------------------
 --  PROCEDURES
 --------------------------------------------------------
+<<<<<<< HEAD
+=======
 
+>>>>>>> main
 --------------------------------------------------------
 --  DDL for Procedure CHECK_DETAIL_ID_PROC
 --------------------------------------------------------
@@ -850,7 +909,6 @@ END insert_question_proc;
 --------------------------------------------------------
 --  FUNCTIONS
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Function CHECK_DETAIL_ID_FCN
 --------------------------------------------------------
@@ -940,7 +998,60 @@ END check_detail_id_fcn;
 --------------------------------------------------------
 --  CONSTRAINTS
 --------------------------------------------------------
+--------------------------------------------------------
+--  Constraints for Table ACTION
+--------------------------------------------------------
 
+  ALTER TABLE "ACTION" MODIFY ("USER_ID" NOT NULL ENABLE);
+  ALTER TABLE "ACTION" MODIFY ("ACTION_START" NOT NULL ENABLE);
+  ALTER TABLE "ACTION" MODIFY ("ACTION_STOP" NOT NULL ENABLE);
+  ALTER TABLE "ACTION" MODIFY ("BOOK_ID" NOT NULL ENABLE);
+  ALTER TABLE "ACTION" MODIFY ("DETAIL_ID" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table ACTION_DETAIL
+--------------------------------------------------------
+
+  ALTER TABLE "ACTION_DETAIL" MODIFY ("DETAIL_ID" NOT NULL ENABLE);
+  ALTER TABLE "ACTION_DETAIL" MODIFY ("DETAIL_DESCRIPTION" NOT NULL ENABLE);
+  ALTER TABLE "ACTION_DETAIL" ADD CONSTRAINT "ACTION_DETAIL_PK" PRIMARY KEY ("DETAIL_ID")
+  USING INDEX  ENABLE;
+  ALTER TABLE "ACTION_DETAIL" MODIFY ("ACTION_KEY_ID" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table ACTION_KEY
+--------------------------------------------------------
+
+  ALTER TABLE "ACTION_KEY" MODIFY ("ACTION_NAME" NOT NULL ENABLE);
+  ALTER TABLE "ACTION_KEY" ADD CONSTRAINT "ACTION_KEY_PK" PRIMARY KEY ("ACTION_KEY_ID")
+  USING INDEX  ENABLE;
+  ALTER TABLE "ACTION_KEY" MODIFY ("ACTION_KEY_ID" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table ANSWER
+--------------------------------------------------------
+
+  ALTER TABLE "ANSWER" MODIFY ("CORRECT" NOT NULL ENABLE);
+  ALTER TABLE "ANSWER" ADD CONSTRAINT "ANSWER_PK" PRIMARY KEY ("ANSWER_ID")
+  USING INDEX  ENABLE;
+  ALTER TABLE "ANSWER" MODIFY ("QUESTION_ID" NOT NULL ENABLE);
+  ALTER TABLE "ANSWER" MODIFY ("ANSWER" NOT NULL ENABLE);
+  ALTER TABLE "ANSWER" MODIFY ("ANSWER_ID" NOT NULL ENABLE);
+--------------------------------------------------------
+--  Constraints for Table BOOK
+--------------------------------------------------------
+
+  ALTER TABLE "BOOK" MODIFY ("FOLDER" NOT NULL ENABLE);
+  ALTER TABLE "BOOK" MODIFY ("PAGE_COUNT" NOT NULL ENABLE);
+  ALTER TABLE "BOOK" MODIFY ("BOOK_ID" NOT NULL ENABLE);
+  ALTER TABLE "BOOK" MODIFY ("BOOK_NAME" NOT NULL ENABLE);
+  ALTER TABLE "BOOK" MODIFY ("CREATED_ON" NOT NULL ENABLE);
+  ALTER TABLE "BOOK" MODIFY ("DESCRIPTION" NOT NULL ENABLE);
+  ALTER TABLE "BOOK" ADD CONSTRAINT "BOOK_PK" PRIMARY KEY ("BOOK_ID")
+  USING INDEX  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table BOOK_STUDY
+--------------------------------------------------------
+
+  ALTER TABLE "BOOK_STUDY" MODIFY ("STUDY_ID" NOT NULL ENABLE);
+  ALTER TABLE "BOOK_STUDY" MODIFY ("BOOK_ID" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table PASSWORD_RESET
 --------------------------------------------------------
