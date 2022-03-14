@@ -8,6 +8,8 @@ from . import sensitive as sensitive
 
 import smtplib
 
+import logging
+
 def send_email(user_name: str, user_email: str, admin_name: str, admin_email: str, subject: str, body: str) -> bool:
     """
     Creates and sends an email to a user
@@ -36,8 +38,9 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         server.starttls(context=sensitive.context)
         server.login('edustorybooks@gmail.com', sensitive.email_password)
         server.sendmail("edustorybooks@gmail.com", user_email, email_text)
-    except:
-        print("Exception in Email Process")
+    except Exception as e:
+        logging.error('Exception in Email Process')
+        logging.error(e)
         return False
     finally:
         del to_line

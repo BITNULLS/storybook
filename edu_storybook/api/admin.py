@@ -24,11 +24,7 @@ import uuid
 import jwt
 import hashlib
 import cx_Oracle
-import random
-import string
-import datetime
-import bcrypt
-import time
+import logging
 
 from core.auth import validate_login, issue_auth_token
 from core.bucket import bucket
@@ -44,7 +40,6 @@ a_admin = Blueprint('a_admin', __name__)
 
 @a_admin.route("/api/admin/book/download", methods=['POST'])
 def admin_download_book():
-
     # validate that user has admin rights to download books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -52,7 +47,12 @@ def admin_download_book():
         permission=0
     )
     if vl != True:
+        logging.debug(
+            'Unauthenticated user tried to access admin_download_book'
+        )
         return vl
+    
+    # TODO: Missing checking if 'filename' in request.form
 
     # get file name from request
     fileInput = request.form['filename']
@@ -62,6 +62,9 @@ def admin_download_book():
         # send file back
         return send_file(filepath)
     except:
+        logging.warning(
+            'Unable to download a file from the bucket, admin_download_book'
+        )
         return {
             "status": "fail",
             "fail_no": 14,
@@ -71,15 +74,19 @@ def admin_download_book():
 
 @a_admin.route("/api/admin/book/upload", methods=['POST'])
 def admin_book_upload():
-
-        # validate that user has admin rights to upload books
+    # validate that user has admin rights to upload books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
         permission=0
     )
     if vl != True:
+        logging.debug(
+            'Unauthenticated user tried to access admin_book_upload'
+        )
         return vl
+    
+    # TODO: Missing checking if 'book_name' & 'book_description' in request.form
 
     # get parameters for adding to book table
     book_name = (request.form.get('book_name')).strip()
@@ -90,6 +97,7 @@ def admin_book_upload():
     try:
         study_id = int(request.form['study_id'])
     except ValueError:
+        logging.debug('User provided an invalid study_id in admin_book_upload')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -98,6 +106,7 @@ def admin_book_upload():
 
     # check if the post request has the file part
     if 'file' not in request.files:
+        logging.debug('User did not provide a file in admin_book_upload')
         return {
             "status": "fail",
             "fail_no": 10,
@@ -108,6 +117,9 @@ def admin_book_upload():
     file = request.files['file']
 
     if file.filename == '':
+        logging.debug(
+            'User did not provide a filename for the file in admin_book_upload'
+        )
         return {
             "status": "fail",
             "fail_no": 11,
@@ -115,7 +127,6 @@ def admin_book_upload():
         }, 400, {"Content-Type": "application/json"}
 
     if file and allowed_file(file.filename):
-
         # prepend unique uuid for filename
         filename = str(uuid.uuid4()) + "_" + file.filename
 
@@ -190,16 +201,18 @@ def admin_book_upload():
         return {
             "status": "ok",
         }
-
-    return {
-        "status": "fail",
-        "fail_no": 13,
-        "message": "invalid file format or file"
-    }, 400, {"Content-Type": "application/json"}
+    else:
+        logging.debug(
+            'User uploaded a file with an invalid extension in admin_book_upload'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 13,
+            "message": "invalid file format or file"
+        }, 400, {"Content-Type": "application/json"}
 
 @a_admin.route("/api/admin/book/grant", methods=['POST'])
 def admin_add_book_to_study():
-
     # validate that user can access data
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -231,8 +244,9 @@ def admin_add_book_to_study():
                        )
         # commit to database
         connection.commit()
-
     except cx_Oracle.Error as e:
+        logging.warning('Error when accessing database')
+        logging.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -459,6 +473,8 @@ def admin_page_handler():
             connection.commit()
 
         except cx_Oracle.Error as e:
+            logging.warning('Error when accessing database')
+            logging.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 4,
@@ -469,9 +485,15 @@ def admin_page_handler():
         return {
             "status": "ok"
         }
-
     else:
-        return "Invalid Operation"
+        logging.warning(
+            'This error should not even be possible in admin_page_handler'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Invalid HTTP operation, not GET, POST, PUT, or DELETE"
+        }, 400, {"Content-Type": "application/json"}
 
 
 @a_admin.route("/api/admin/download/user", methods=['POST'])
@@ -508,8 +530,9 @@ def admin_download_user_data():
         study.study_name from user_profile \
         inner join school on user_profile.school_id = school.school_id \
         inner join study on user_profile.study_id = study.study_id")
-
     except cx_Oracle.Error as e:
+        logging.warning('Error when accessing database')
+        logging.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -535,7 +558,7 @@ def admin_download_user_data():
     filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
-    with open(filename, "w", newline="") as csvfile:
+    with open(filename, 'w', newline="") as csvfile:
         # init csv writer
         writer = csv.writer(csvfile)
         # add headers
@@ -556,10 +579,11 @@ def admin_download_user_data():
     # queue the file to be removed
     future_del_temp(filename)
 
-    try:
-        # return response
+    try: # return response
         return send_file(filename, mimetype="text/csv", attachment_filename="user.csv", as_attachment=True, etag=sha1.hexdigest())
     except Exception as e:
+        logging.warning('Was unable to CSV data file back to user')
+        logging.warning(e)
         return {
             "status": "fail",
             "fail_no": 9,
@@ -603,8 +627,9 @@ def admin_download_action_data():
         inner join book on action.book_id = book.book_id \
         inner join action_detail on action_detail.detail_id = action.detail_id \
         inner join action_key on action_detail.action_id = action_key.action_id")
-
     except cx_Oracle.Error as e:
+        logging.warning('Error when accessing database')
+        logging.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -650,10 +675,11 @@ def admin_download_action_data():
     # queue the file to be removed
     future_del_temp(filename)
 
-    try:
-        # return response
+    try: # return response
         return send_file(filename, mimetype="text/csv", attachment_filename="action.csv", as_attachment=True, etag=sha1.hexdigest())
     except Exception as e:
+        logging.warning('Error when sending CSV data file to user')
+        logging.warning(e)
         return {
             "status": "fail",
             "fail_no": 9,
@@ -695,6 +721,7 @@ def admin_get_users():
     try:
         assert 'offset' in request.form
     except AssertionError:
+        logging.debug('User requested list of users without an offset param')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -705,6 +732,9 @@ def admin_get_users():
     try:
         offset = int(request.form['offset'])
     except ValueError:
+        logging.debug(
+            'User requested list of users with a non-int offset param'
+        )
         return {
             "status": "fail",
             "fail_no": 2,
@@ -721,6 +751,8 @@ def admin_get_users():
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
+        logging.warning('Error when accessing database')
+        logging.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,

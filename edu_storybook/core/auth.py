@@ -13,6 +13,7 @@ import time
 import bcrypt
 import uuid
 import cx_Oracle
+import logging
 from flask import make_response
 
 from .sensitive import jwt_key
@@ -25,6 +26,9 @@ from .reg_exps import *
 def issue_auth_token(res, token):
     """
     Reissues Authorization token for the user.
+
+    :param res: A Flask response object.
+    :param token: Old token to be refreshed.
 
     NOTE: Only works on user that has been checked with validate_login().
     """
@@ -40,7 +44,7 @@ def issue_auth_token(res, token):
     res.set_cookie(
         "Authorization",
         "Bearer " + new_token,
-        max_age=config["login_duration"]  ,
+        max_age=config["login_duration"],
         domain="localhost",
         samesite="Lax"
         # secure=True,
@@ -71,6 +75,7 @@ def validate_login(auth: str, permission: int=0):
         #assert type(origin) is not None, 'You need to pass a valid origin param to validate_login()'
         assert type(permission) is not None, 'You need to pass a valid permission param to validate_login()'
     except AssertionError:
+        logging.debug('A user tried to use an endpoint without providing an Authorization header')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -84,6 +89,7 @@ def validate_login(auth: str, permission: int=0):
     t = int(time.time())
 
     if token['iat'] + config['login_duration'] < t:
+        logging.debug('User provided an expired token')
         return {
             "status": "fail",
             "fail_no": "2",
@@ -96,6 +102,7 @@ def validate_login(auth: str, permission: int=0):
         }, 400, {"Content-Type": "application/json"}
 
     if token['permission'] < permission:
+        logging.debug('User lacks permission for endpoint')
         return {
             "status": "fail",
             "fail_no": "3",

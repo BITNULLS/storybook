@@ -4,7 +4,9 @@ app.py
 """
 
 from flask import Flask
-from api import main
+
+from core.config import config
+import api.main as main
 import admin
 import index
 import login
@@ -13,6 +15,12 @@ import register
 import story_selection
 import storyboard
 
+import logging 
+
+if config['production'] == False:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.WARNING)
 
 app = Flask(__name__, static_url_path="/static/", static_folder="static")
 

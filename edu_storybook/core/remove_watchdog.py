@@ -11,8 +11,13 @@ Functions:
 import os
 import time 
 import sys
+import logging
 from multiprocessing import Process, Queue
 from .config import config
+
+# TODO: fix logging from this script.  The problem is that remove_watchdog() is
+#       run in a parallel process, meaning that it's logging is not correctly
+#       bubbled up.
 
 def remove_watchdog(remove_queue):
     """
@@ -30,7 +35,7 @@ def remove_watchdog(remove_queue):
 
     Where "expiration" is epoch time of file to be deleted.
     """
-    print('Remove Watchdog is now running')
+    logging.debug('Remove Watchdog is now running')
     sys.stdout.flush()
     while True:
         destruct = remove_queue.get(True)  # wait until remove queue is gotten

@@ -8,6 +8,7 @@ Routes:
 
 from flask import request
 from flask import Blueprint
+from api.index import get_users_books
 
 from templates import TEMPLATES
 
@@ -15,27 +16,22 @@ story_selection = Blueprint('story_selection', __name__)
 
 @story_selection.route('/books')
 def gen_books():
-    """
-    example:
     all_books = ""
-    for b in book_query:
+    user_books = get_users_books()
+
+    for b in user_books:
         books += TEMPLATES['story_selection']['book'].substitute(
-            book_title=b['TITLE'],
-            ...
+            book_title       = b['TITLE'],
+            book_description = b['DESCRIPTION'],
+            book_image       = '...', # TODO: figure out how to get
+            book_link        = b['BOOK_ID']
         )
     story_selection_page = TEMPLATES["_base"].substitute(
         title = 'Book Selection',
         description = 'Select a book to read',
         body = TEMPLATES['story_selection']['index'].substitute(
-            books=all_books
+            books = all_books
         )
     )
-    """
-    story_selection_page = TEMPLATES["_base"].substitute(
-        title = 'Book Selection',
-        description = 'Select a book to read',
-        body = TEMPLATES['story_selection']['index'].substitute(
-            books=''
-        )
-    )
+
     return story_selection_page

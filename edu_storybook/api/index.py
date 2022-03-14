@@ -4,6 +4,8 @@ index.py
 
 Routes:
     /api/
+    /api/book
+    /api/schools
     /api/login
     /api/logout
     /api/register
@@ -54,6 +56,102 @@ def api_index():
     return {
         "status": "ok"
     }
+
+
+@a_index.route("/api/book", methods=['GET'])
+def get_users_books():
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT b.BOOK_ID FROM BOOK b "
+            + "INNER JOIN STUDY s ON s.STUDY_ID = b.STUDY_ID "
+            + "INNER JOIN USER_PROFILE u ON s.STUDY_ID = u.STUDY_ID "
+            + "WHERE u.user_id='"
+            + token['sub'] + "'"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing books.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall()
+    data = cursor.fetchall()
+
+    print(data)
+
+    return {
+        "status": "ok"
+    }
+
+
+@a_index.route("/api/schools", methods=['GET'])
+def get_schools():
+    '''
+    Return a list of schools in the same style/format/convention that 
+    admin_get_users() returns a list of users.
+    '''
+
+    # check to make sure you have a offset
+    try:
+        assert 'offset' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "offset was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure offset is int
+    try:
+        offset = int(request.form['offset'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "offset failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT SCHOOL_NAME FROM SCHOOL ORDER BY SCHOOL_ID OFFSET " +
+            request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    schools = cursor.fetchall()
+
+    return {
+        "schools": list(map(lambda x: x[0], schools))
+    }
+
 
 @a_index.route("/api/login", methods=['POST'])
 def login():
@@ -216,14 +314,14 @@ def logout(auth):
     return res
 
 @a_index.route("/api/register")
-def register(email: str, password: str, first_name: str, last_name: str, school_id: int):
+def register():
     # check that all expected inputs are not empty
     try:
-        assert len('email') > 0
-        assert len('password') > 0
-        assert len('first_name') > 0
-        assert len('last_name') > 0
-        assert len('school_id') > 0
+        assert 'email' in request.form
+        assert 'password' in request.form
+        assert 'first_name' in request.form
+        assert 'last_name' in request.form
+        assert 'school_id' in request.form
     except AssertionError:
         return {
             "status": "fail",

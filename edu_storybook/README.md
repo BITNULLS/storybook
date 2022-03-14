@@ -15,7 +15,7 @@ This Python module is organized in the following manner:
  - [`story_selection.py`](#storyselectionpy): Only the `/books` endpoint.
  - [`storyboard.py`](#storyboardpy): Several endpoints relating to the storyboard viewer.
 
-## Notes
+## Developer Notes
 
 **Rule of thumb:** All `edu_storybook/*.py` files (except for `app.py`) corresponds to an HTML file in the `templates/` directory, or a directory in the `templates/` directory. For example, `admin.py` corresponds to the `admin/` directory, which contains HTML templates. `index.py` only corresponds to `index.py`.
 
@@ -27,6 +27,14 @@ This Python module is organized in the following manner:
 
 **Tabs vs Spaces:** 4 spaces.
 
+**Column Character Limit (Print Margin):** 80 characters.
+
+## Common Acronyms
+
+ - **SSG**: Server-side generated (pages); templated pages
+ - **DB**: Database
+ - **DBA**: Database Administrator
+
 ---
 
 ## app.py
@@ -35,31 +43,54 @@ The controller of the server. Only launches Flask and calls other initialization
 
 ## admin.py
 
-...
+Routes:
+ - `/admin/`
+ - `/admin/book_manager`
+ - `/admin/edit_book`
+ - `/admin/study_manager`
+ - `/admin/upload_book`
+
+Purpose: Serve all of the admin pages.
 
 ## index.py
 
-...
+Routes:
+ - `/`
+
+Purpose: Serve the homepage.
 
 ## login.py
 
 Routes: 
- - `login/`
+ - `/login`
 
 Purpose: To allow the user to login to the website. Handles giving JWT session cookie to user.
 
 ## password.py
 
-...
+Routes:
+ - `/password/forgot`
+ - `/password/reset`
+
+Purpose: ...
 
 ## register.py
 
-...
+Routes: 
+ - `/register`
+
+Purpose: ...
 
 ## story_selection.py
 
-...
+Routes:
+ - `/books`
+
+Purpose: ...
 
 ## storyboard.py
 
-...
+Routes:
+ - `/storyboard/page/<int:book_id_in>/<int:page_number_in>`
+
+Purpose: ...

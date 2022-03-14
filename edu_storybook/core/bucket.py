@@ -13,9 +13,11 @@ Functions:
 import oci
 import json
 import os
-from .helper import fix_filepath
+from .filepath import fix_filepath
 from tempfile import TemporaryDirectory
 from typing import List
+
+import logging 
 
 # Sen_Files Downloader setup - Only used to download project configuration files
 # Chum-Bucket Downloader will be set up after config files have been downloaded
@@ -63,7 +65,7 @@ def download_bucket_file(filename: str, folder = 'temp') -> str:
             f.close()
         return new_file
     except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
+        logging.warning("The object '" + filename + "' does not exist in bucket.")
         return None
 
 
@@ -77,7 +79,7 @@ def delete_bucket_file(filename: str) -> bool:
         oracle_cloud_client.delete_object(bucket['namespace'], bucket['name'], filename)
         return True
     except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
+        logging.warning("The object '" + filename + "' does not exist in bucket.")
         return False
 
 def list_bucket_files() -> List[str]:

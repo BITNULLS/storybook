@@ -1,9 +1,10 @@
 """
 sensitive.py
     Downloads, loads in, and then deletes all sensitive data files.
+    Any error here is critical, and should stop execution of the app.
 """
 
-from .helper import fix_filepath
+from .filepath import fix_filepath
 from . import bucket
 import os
 from zipfile import ZipFile

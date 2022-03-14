@@ -5,6 +5,9 @@ main.py
 
 from flask import Blueprint
 
+import logging
+logging.debug('Loading edu_storybook.api modules')
+
 from . import admin
 from . import index
 from . import password
@@ -18,3 +21,5 @@ api.register_blueprint(index.a_index)
 api.register_blueprint(password.a_password)
 api.register_blueprint(quiz.a_quiz)
 api.register_blueprint(storyboard.a_storyboard)
+
+logging.debug('Finished loading edu_storybook.api modules')
