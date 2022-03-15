@@ -102,8 +102,6 @@ def login():
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json"}
 
-    # print(result)
-    # print(result[8])
     if not bcrypt.checkpw(request.form['password'].encode('utf8'), result['PASSWORD'].encode('utf8')):
         return {
             "status": "fail",
@@ -222,14 +220,15 @@ def logout(auth):
     return res
 
 @a_index.route("/api/register", methods=['POST'])
-def register(email: str, password: str, first_name: str, last_name: str, school_id: int):
+def register():
     # check that all expected inputs are not empty
     try:
-        assert len('email') > 0
-        assert len('password') > 0
-        assert len('first_name') > 0
-        assert len('last_name') > 0
-        assert len('school_id') > 0
+        assert 'email' in request.form
+        assert 'password'in request.form
+        assert 'confirm_password' in request.form
+        assert 'first_name'in request.form
+        assert 'last_name' in request.form
+        assert 'school_id'in request.form
     except AssertionError:
         return {
             "status": "fail",
@@ -249,10 +248,10 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
         }
 
     # all good, now query database
-    email = (email).lower().strip()
-    first_name = (first_name).strip()
-    last_name = (last_name).strip()
-    school_id = (school_id).lower().strip()
+    email = (request.form['email']).lower().strip()
+    first_name = (request.form['first_name']).strip()
+    last_name = (request.form['last_name']).strip()
+    school_id = (request.form['school_id']).lower().strip()
 
     cursor = connection.cursor()
     try:
@@ -281,13 +280,12 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
     try:
         conn_lock.acquire()
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('"
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, password) VALUES ('"
             + email + "', '"
             + first_name + "', '"
             + last_name + "', "
             + "0 , "
-            + school_id + ", "
-            + 'null' + ", '"
+            + school_id + ", '"
             + hashed.decode('utf8')
             + "')"
         )
@@ -313,3 +311,4 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
         res = make_response({
             "status": "ok"
         })
+    return res
