@@ -6,7 +6,7 @@ from .config import config
 from threading import Lock
 import cx_Oracle
 from . import sensitive
-from .helper import fix_filepath
+from .filepath import fix_filepath
 
 import logging 
 

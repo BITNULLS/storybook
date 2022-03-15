@@ -487,7 +487,10 @@ def admin_page_handler():
         }
     else:
         logging.warning(
-            'This error should not even be possible in admin_page_handler'
+            'This error should not even be possible in admin_page_handler, as' +
+            'it would require the user using an HTTP method that is not GET, ' +
+            'POST, PUT, or DELETE, but somehow allowed by Flask; even though ' +
+            'this endpoint specifically only allows those HTTP methods.'
         )
         return {
             "status": "fail",
