@@ -25,7 +25,7 @@ import bcrypt
 import time
 
 from core.auth import validate_login
-from core.bucket import bucket
+from core.bucket import download_bucket_file
 from core.config import config
 from core.db import connection, conn_lock
 from core.helper import label_results_from
@@ -122,7 +122,7 @@ def storyboard_get_page(book_id_in, page_number_in):
     
     # Return page assuming current page has no quiz question
     try:
-        return send_file(bucket.download_bucket_file(fileInput))
+        return send_file(download_bucket_file(fileInput))
     except:
         return {
             "status": "fail",
