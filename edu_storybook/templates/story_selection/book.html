@@ -1,16 +1,23 @@
-<a href="~book_link">
-  <div>
+<!--TODO: need to change the image based on the book ( called from index)
+  This factors into the href and image seen as well-->
+
+ 
     <div>
-      <!-- what we want to do is to call the function get studies and see what books the user has and get the title 
-      image and get the title and description in order for this to fully work def get_users_books(): 
-      We need to also have it edited in database to connect at least one book to a study-->
-      ~book_title
-    </div>
-    <div>
-      <img src="~book_image"></img>
-    </div>
-    <div>
-      ~book_description
+      <div class="row mt-5">
+  
+        <div class="col-md-1 col-sm-1"></div>
+        <div class="col-md-10 col-sm-10">
+          <div class="card text-center" style="width: 18rem;">
+            <img src="/static/images/TitlePage.png" class="card-img-top" alt="Book Image">
+            <div class="card-body">
+              <h5 class="card-title">~book_title</h5>
+              <p class="card-text">~book_description</p>
+              <a href="/storyboard/122/0" class="btn btn-primary stretched-link">Read this book</a>
+              <!-- have to change the 122 to whatever the bookID number is -->
+            </div>
+          </div>  
+          </div>
     </div>
   </div>
-</a>
+
+

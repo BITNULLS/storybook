@@ -65,21 +65,7 @@ def storyboard_get_page(book_id_in, page_number_in):
     # goes into database and gets the bucket folder.
     # goes into bucket and then says I want this image from this folder.
     cursor = connection.cursor()
-
-    try:
-        # get folder that holds that book's images
-        cursor.execute(
-            "SELECT folder FROM BOOK where book_id =" + str(book_id))
-    except cx_Oracle.Error as e:
-        return {"status": "fail",
-                "fail_no": 3,
-                "message": "Error when updating database action",
-                "database_message": str(e)
-                }, 400, {"Content-Type": "application/json"}
-
-    # check if this is in write format ; then we have to fix it and ammend it with page number
-    fileInput = cursor.fetchone()[0]
-    fileInput = fileInput + '/' + fileInput + '_' + str(page_number) + '.png'
+    fileInput = get_image_folder(book_id, page_number)
     
     try:
         # get quiz questions and answers and more information about those
@@ -226,3 +212,23 @@ def storyboard_save_user_action():
     return {
         "status": "ok"
     }
+
+
+def get_image_folder(book_id, page_number):
+    cursor = connection.cursor()
+
+    try:
+        # get folder that holds that book's images
+        cursor.execute(
+            "SELECT folder FROM BOOK where book_id =" + str(book_id))
+    except cx_Oracle.Error as e:
+        return {"status": "fail",
+                "fail_no": 3,
+                "message": "Error when updating database action",
+                "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+
+    # check if this is in write format ; then we have to fix it and ammend it with page number
+    fileInput = cursor.fetchone()[0]
+    return (fileInput + '/' + fileInput + '_' + str(page_number) + '.png')
+    

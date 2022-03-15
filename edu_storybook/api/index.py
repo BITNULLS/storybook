@@ -313,3 +313,54 @@ def register(email: str, password: str, first_name: str, last_name: str, school_
         res = make_response({
             "status": "ok"
         })
+
+@a_index.route("/api/book", methods=['GET'])
+def get_users_books():
+
+    # validate that user has rights to access books
+
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # connect to database
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute(
+            "SELECT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK "+
+            "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
+            "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
+            "WHERE user_study.user_id= '"+ token['sub'] +"'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing books.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall()
+    label_results_from(cursor)
+    data = cursor.fetchall()
+
+    print(data)
+    #get image from bucket and return :) 
+    #need book_id so we need to get book_id based on each one to
+    #for each book_id in data: 
+    # send_file(bucket.download_bucket_file(get_image_folder(book_id, 0)))
+
+    return {
+       "books": data
+    }
+   

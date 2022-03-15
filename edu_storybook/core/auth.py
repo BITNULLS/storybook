@@ -16,7 +16,7 @@ import cx_Oracle
 from flask import make_response
 
 from .sensitive import jwt_key
-from . import config
+from .config import config
 from .helper import label_results_from
 from .email import send_email
 from .reg_exps import *
@@ -76,14 +76,14 @@ def validate_login(auth: str, permission: int=0):
             "fail_no": 1,
             "message": "The Authorization header was not provided."
         }
-
+    
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
-
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+   
+    token = jwt.decode(auth, jwt_key, algorithms=config["jwt_alg"])
     t = int(time.time())
 
-    if token['iat'] + config['login_duration'] < t:
+    if token['iat'] + config['login_duration'] < t: 
         return {
             "status": "fail",
             "fail_no": "2",
@@ -101,5 +101,5 @@ def validate_login(auth: str, permission: int=0):
             "fail_no": "3",
             "message": "You do not have high enough permissions to view this endpoint."
         }, 403, {"Content-Type": "application/json"}
-
+    
     return True
