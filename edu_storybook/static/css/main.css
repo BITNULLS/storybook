@@ -1,0 +1,17 @@
+.mcBtn {
+    min-width: 500px;
+    max-width: 500px;
+    min-height: 75px;
+    max-height: 75px;
+}
+
+.storyPage img{
+    height: 400em;
+    width: 400em;
+    
+}
+
+img{
+    width: 400px;
+    height: 400px;
+}

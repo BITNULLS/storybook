@@ -24,7 +24,7 @@ import time
 
 from core.auth import validate_login, issue_auth_token
 from core.bucket import bucket
-from core.helper import allowed_file, label_results_from
+from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
 from core.config import config
 from core.db import connection, conn_lock
@@ -200,8 +200,6 @@ def login():
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json"}
 
-    # print(result)
-    # print(result[8])
     if not bcrypt.checkpw(request.form['password'].encode('utf8'), result['PASSWORD'].encode('utf8')):
         return {
             "status": "fail",
@@ -233,7 +231,8 @@ def login():
 
     res = None
     if 'redirect' in request.form:
-        res = make_response(redirect(request.form['redirect']))
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
     else:
         res = make_response({
             "status": "ok",
@@ -274,7 +273,7 @@ def login():
 
     return res
 
-@a_index.route("/api/logout")
+@a_index.route("/api/logout", methods=['POST'])
 def logout(auth):
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
@@ -307,21 +306,27 @@ def logout(auth):
     finally:
         conn_lock.release()
 
-    res = make_response({
-        "status": "ok"
-    })
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
     res.set_cookie('Authorization', '', expires=0)
     return res
 
-@a_index.route("/api/register")
+@a_index.route("/api/register", methods=['POST'])
 def register():
     # check that all expected inputs are not empty
     try:
         assert 'email' in request.form
-        assert 'password' in request.form
-        assert 'first_name' in request.form
+        assert 'password'in request.form
+        assert 'confirm_password' in request.form
+        assert 'first_name'in request.form
         assert 'last_name' in request.form
-        assert 'school_id' in request.form
+        assert 'school_id'in request.form
     except AssertionError:
         return {
             "status": "fail",
@@ -341,10 +346,10 @@ def register():
         }
 
     # all good, now query database
-    email = (email).lower().strip()
-    first_name = (first_name).strip()
-    last_name = (last_name).strip()
-    school_id = (school_id).lower().strip()
+    email = (request.form['email']).lower().strip()
+    first_name = (request.form['first_name']).strip()
+    last_name = (request.form['last_name']).strip()
+    school_id = (request.form['school_id']).lower().strip()
 
     cursor = connection.cursor()
     try:
@@ -373,13 +378,12 @@ def register():
     try:
         conn_lock.acquire()
         cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, study_id, password) VALUES ('"
+            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, password) VALUES ('"
             + email + "', '"
             + first_name + "', '"
             + last_name + "', "
             + "0 , "
-            + school_id + ", "
-            + 'null' + ", '"
+            + school_id + ", '"
             + hashed.decode('utf8')
             + "')"
         )
@@ -397,6 +401,12 @@ def register():
         send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com',
                    'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' +
                    '\n\nThanks for registering an account with Edu Storybooks! :)')
-    return {
-        "status": "ok"
-    }
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+    return res

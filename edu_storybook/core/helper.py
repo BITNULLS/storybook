@@ -13,6 +13,8 @@ import cx_Oracle
 import smtplib
 from . import sensitive as sensitive
 import os
+import logging
+from core.reg_exps import re_redirect_link
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
@@ -48,3 +50,17 @@ def label_results_from(cursor: cx_Oracle.Cursor):
     columns = [col[0] for col in cursor.description]
     cursor.rowfactory = lambda *args: dict(zip(columns, args))
     return cursor
+    
+def sanitize_redirects(redirect_link: str) -> str:
+    """
+    Determines if a given redirect link is a valid relative or absolute path
+
+    :param redirect_link: The link to validate
+
+    :returns: The relative or absolute path if it is valid, '/' if it is not.
+    """
+    if re_redirect_link.match(redirect_link):
+        logging.warning("Redirect Link is not a valid relative or absolute path.")
+        return '/'
+    else:
+        return redirect_link

@@ -12,10 +12,12 @@ Routes:
     /api/admin/get/user
 """
 
+from pydoc import Helper
 from flask import request
 from flask import make_response
 from flask import Blueprint
 from flask import send_file
+from flask import redirect
 
 from pdf2image import convert_from_path
 import os
@@ -28,13 +30,14 @@ import logging
 
 from core.auth import validate_login, issue_auth_token
 from core.bucket import bucket
-from core.helper import allowed_file, label_results_from
+from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
 from core.config import config
 from core.db import connection, conn_lock
 from core.sensitive import jwt_key
 from core.remove_watchdog import future_del_temp
 from core.reg_exps import *
+from core.helper import sanitize_redirects
 
 a_admin = Blueprint('a_admin', __name__)
 
@@ -198,18 +201,23 @@ def admin_book_upload():
         finally:
             conn_lock.release()
 
-        return {
-            "status": "ok",
-        }
-    else:
-        logging.debug(
-            'User uploaded a file with an invalid extension in admin_book_upload'
-        )
-        return {
-            "status": "fail",
-            "fail_no": 13,
-            "message": "invalid file format or file"
-        }, 400, {"Content-Type": "application/json"}
+        res = None
+        if 'redirect' in request.form:
+            user_redirect_url = sanitize_redirects(request.form['redirect'])
+            res = make_response(redirect(user_redirect_url))
+        else:
+            res = make_response({
+                "status": "ok"
+            })
+
+    logging.debug(
+        'User uploaded a file with an invalid extension in admin_book_upload'
+    )
+    return {
+        "status": "fail",
+        "fail_no": 13,
+        "message": "invalid file format or file"
+    }, 400, {"Content-Type": "application/json"}
 
 @a_admin.route("/api/admin/book/grant", methods=['POST'])
 def admin_add_book_to_study():
