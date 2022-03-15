@@ -75,7 +75,7 @@ def password_forgot():
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json"}
 
-    user_id = result[9]
+    user_id = result[8]
     user_name = result[1] + ' ' + result[2]
 
     now = datetime.datetime.now()
@@ -96,19 +96,20 @@ def password_forgot():
     finally:
         conn_lock.release()
 
-    key = 'edustorybook.com/Password/Reset#key=' + rand_str
+    key = 'edustorybook.tk/password/reset#key=' + rand_str
 
     send_email(user_name, email, 'Edu Storybooks',
                'edustorybooks@gmail.com', 'Password Reset Request', key)
 
     res = None
     if 'redirect' in request.form:
-        redirect = sanitize_redirects(request.form['redirect'])
-        res = make_response(redirect(redirect))
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
     else:
         res = make_response({
             "status": "ok"
         })
+    return res
 
 
 # new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
@@ -203,9 +204,10 @@ def password_reset():
 
     res = None
     if 'redirect' in request.form:
-        redirect = sanitize_redirects(request.form['redirect'])
-        res = make_response(redirect(redirect))
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
     else:
         res = make_response({
             "status": "ok"
         })
+    return res

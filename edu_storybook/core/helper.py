@@ -9,7 +9,6 @@ Functions:
     send_email(...)
 """
 
-from turtle import st
 import cx_Oracle
 import smtplib
 from . import sensitive as sensitive
