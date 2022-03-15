@@ -35,7 +35,8 @@ if __name__ == "__main__":
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     app.logger.addHandler(handler)
     app.logger.setLevel(logging.DEBUG)
-    
+    app.logger.debug('Starting app')
+
     print(app.url_map) 
     app.run(host="0.0.0.0", port="5001", debug=True)
            
