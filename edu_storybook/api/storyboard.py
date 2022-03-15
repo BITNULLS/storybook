@@ -25,6 +25,7 @@ from core.sensitive import jwt_key
 from core.reg_exps import *
 
 a_storyboard = Blueprint('a_storyboard', __name__)
+a_storyboard_log = logging.getLogger('api.storyboard')
 
 @a_storyboard.route("/api/storyboard/page/<int:book_id_in>/<int:page_number_in>", methods=['GET'])
 def storyboard_get_page(book_id_in: int, page_number_in: int):
@@ -48,7 +49,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
         book_id = int(book_id_in)
         page_number = int(page_number_in)    
     except ValueError:
-        logging.warning('This should not even be possible. ' +
+        a_storyboard_log.warning('This should not even be possible. ' +
             'A user HTTP GET non-int values to an int endpoint')
         return {
             "status": "fail",
@@ -65,8 +66,8 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
         cursor.execute(
             "SELECT folder FROM BOOK where book_id =" + str(book_id))
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_storyboard_log.warning('Error when accessing database')
+        a_storyboard_log.warning(e)
         return {"status": "fail",
                 "fail_no": 3,
                 "message": "Error when updating database action",
@@ -88,8 +89,8 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
-        logging.warning('Error when acessing database')
-        logging.warning(e)
+        a_storyboard_log.warning('Error when acessing database')
+        a_storyboard_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -122,7 +123,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
     try:
         return send_file(bucket.download_bucket_file(fileInput))
     except:
-        logging.warning('Could not load bucket file for some unknown reason')
+        a_storyboard_log.warning('Could not load bucket file for some unknown reason')
         return {
             "status": "fail",
             "fail_no": 5,
@@ -151,7 +152,7 @@ def storyboard_get_pagecount(book_id_in: int):
     try:
         book_id = int(book_id_in)
     except ValueError:
-        logging.warning(
+        a_storyboard_log.warning(
             'User provided an invalid book_id for storyboard_get_pagecount'
         )
         return {
@@ -169,8 +170,8 @@ def storyboard_get_pagecount(book_id_in: int):
         cursor.execute(
             "SELECT page_count FROM BOOK where book_id =" + str(book_id) )
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_storyboard_log.warning('Error when accessing database')
+        a_storyboard_log.warning(e)
         return {"status": "fail",
                 "fail_no": 3,
                 "message": "Error when updating database action",
@@ -215,7 +216,7 @@ def storyboard_save_user_action():
         assert 'action_start' in request.form
         assert 'action_stop' in request.form
     except AssertionError:
-        logging.warning(
+        a_storyboard_log.warning(
             'User did not provide one of the form values for storyboard_save_user_action'
         )
         return {
@@ -239,7 +240,7 @@ def storyboard_save_user_action():
     if re_timestamp.match(request.form["action_start"]) is None or \
             re_timestamp.match(request.form["action_stop"]) is None or \
             re_alphanumeric.match(request.form["detail_description"]) is None:
-        logging.warning('User provided an invalid action data')
+        a_storyboard_log.warning('User provided an invalid action data')
         return {
             "status": "fail",
             "fail_no": 3,
@@ -275,8 +276,8 @@ def storyboard_save_user_action():
         )
         connection.commit()
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_storyboard_log.warning('Error when accessing database')
+        a_storyboard_log.warning(e)
         return{
             "status": "fail",
             "fail_no": 4,

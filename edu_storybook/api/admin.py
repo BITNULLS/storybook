@@ -40,6 +40,7 @@ from core.reg_exps import *
 from core.helper import sanitize_redirects
 
 a_admin = Blueprint('a_admin', __name__)
+a_admin_log = logging.getLogger('api.admin')
 
 @a_admin.route("/api/admin/book/download", methods=['POST'])
 def admin_download_book():
@@ -50,7 +51,7 @@ def admin_download_book():
         permission=0
     )
     if vl != True:
-        logging.debug(
+        a_admin_log.debug(
             'Unauthenticated user tried to access admin_download_book'
         )
         return vl
@@ -65,7 +66,7 @@ def admin_download_book():
         # send file back
         return send_file(filepath)
     except:
-        logging.warning(
+        a_admin_log.warning(
             'Unable to download a file from the bucket, admin_download_book'
         )
         return {
@@ -84,7 +85,7 @@ def admin_book_upload():
         permission=0
     )
     if vl != True:
-        logging.debug(
+        a_admin_log.debug(
             'Unauthenticated user tried to access admin_book_upload'
         )
         return vl
@@ -100,7 +101,7 @@ def admin_book_upload():
     try:
         study_id = int(request.form['study_id'])
     except ValueError:
-        logging.debug('User provided an invalid study_id in admin_book_upload')
+        a_admin_log.debug('User provided an invalid study_id in admin_book_upload')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -109,7 +110,7 @@ def admin_book_upload():
 
     # check if the post request has the file part
     if 'file' not in request.files:
-        logging.debug('User did not provide a file in admin_book_upload')
+        a_admin_log.debug('User did not provide a file in admin_book_upload')
         return {
             "status": "fail",
             "fail_no": 10,
@@ -120,7 +121,7 @@ def admin_book_upload():
     file = request.files['file']
 
     if file.filename == '':
-        logging.debug(
+        a_admin_log.debug(
             'User did not provide a filename for the file in admin_book_upload'
         )
         return {
@@ -210,7 +211,7 @@ def admin_book_upload():
                 "status": "ok"
             })
 
-    logging.debug(
+    a_admin_log.debug(
         'User uploaded a file with an invalid extension in admin_book_upload'
     )
     return {
@@ -253,8 +254,8 @@ def admin_add_book_to_study():
         # commit to database
         connection.commit()
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -481,8 +482,8 @@ def admin_page_handler():
             connection.commit()
 
         except cx_Oracle.Error as e:
-            logging.warning('Error when accessing database')
-            logging.warning(e)
+            a_admin_log.warning('Error when accessing database')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 4,
@@ -494,7 +495,7 @@ def admin_page_handler():
             "status": "ok"
         }
     else:
-        logging.warning(
+        a_admin_log.warning(
             'This error should not even be possible in admin_page_handler, as' +
             'it would require the user using an HTTP method that is not GET, ' +
             'POST, PUT, or DELETE, but somehow allowed by Flask; even though ' +
@@ -542,8 +543,8 @@ def admin_download_user_data():
         inner join school on user_profile.school_id = school.school_id \
         inner join study on user_profile.study_id = study.study_id")
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -593,8 +594,8 @@ def admin_download_user_data():
     try: # return response
         return send_file(filename, mimetype="text/csv", attachment_filename="user.csv", as_attachment=True, etag=sha1.hexdigest())
     except Exception as e:
-        logging.warning('Was unable to CSV data file back to user')
-        logging.warning(e)
+        a_admin_log.warning('Was unable to CSV data file back to user')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 9,
@@ -639,8 +640,8 @@ def admin_download_action_data():
         inner join action_detail on action_detail.detail_id = action.detail_id \
         inner join action_key on action_detail.action_id = action_key.action_id")
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -689,8 +690,8 @@ def admin_download_action_data():
     try: # return response
         return send_file(filename, mimetype="text/csv", attachment_filename="action.csv", as_attachment=True, etag=sha1.hexdigest())
     except Exception as e:
-        logging.warning('Error when sending CSV data file to user')
-        logging.warning(e)
+        a_admin_log.warning('Error when sending CSV data file to user')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 9,
@@ -732,7 +733,7 @@ def admin_get_users():
     try:
         assert 'offset' in request.form
     except AssertionError:
-        logging.debug('User requested list of users without an offset param')
+        a_admin_log.debug('User requested list of users without an offset param')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -743,7 +744,7 @@ def admin_get_users():
     try:
         offset = int(request.form['offset'])
     except ValueError:
-        logging.debug(
+        a_admin_log.debug(
             'User requested list of users with a non-int offset param'
         )
         return {
@@ -762,8 +763,8 @@ def admin_get_users():
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,

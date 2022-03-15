@@ -21,6 +21,7 @@ from core.sensitive import jwt_key
 from core.reg_exps import *
 
 a_quiz = Blueprint('a_quiz', __name__)
+a_quiz_log = logging.getLogger('api.quiz')
 
 @a_quiz.route("/api/quiz/submit", methods=['POST'])
 def quiz_submit_answer():
@@ -28,7 +29,7 @@ def quiz_submit_answer():
         assert 'answer_id' in request.form
         assert 'question_id' in request.form
     except AssertionError:
-        logging.debug('User submitted a quiz response without an answer and/or question ID')
+        a_quiz_log.debug('User submitted a quiz response without an answer and/or question ID')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -39,7 +40,7 @@ def quiz_submit_answer():
         answer_id = int(request.form['answer_id'])
         question_id = int(request.form['question_id'])
     except ValueError:
-        logging.debug('User submitted a quiz response that was malformed')
+        a_quiz_log.debug('User submitted a quiz response that was malformed')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -71,8 +72,8 @@ def quiz_submit_answer():
         )
         connection.commit()
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_quiz_log.warning('Error when accessing database')
+        a_quiz_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,
@@ -90,8 +91,8 @@ def quiz_submit_answer():
        label_results_from(cursor)
        connection.commit()
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_quiz_log.warning('Error when accessing database')
+        a_quiz_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,

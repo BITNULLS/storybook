@@ -18,6 +18,8 @@ from core.reg_exps import re_redirect_link
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
+c_helper_log = logging.getLogger('core.helper')
+
 def allowed_file(filename):
     """
     checks that a file extension is one of the allowed extensions, defined by ALLOWED_EXTENSIONS
@@ -60,7 +62,7 @@ def sanitize_redirects(redirect_link: str) -> str:
     :returns: The relative or absolute path if it is valid, '/' if it is not.
     """
     if re_redirect_link.match(redirect_link):
-        logging.warning("Redirect Link is not a valid relative or absolute path.")
+        c_helper_log.warning("Redirect Link is not a valid relative or absolute path.")
         return '/'
     else:
         return redirect_link

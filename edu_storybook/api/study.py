@@ -22,6 +22,7 @@ from core.sensitive import jwt_key
 from core.reg_exps import *
 
 a_study = Blueprint('a_study', __name__)
+a_study_log = logging.getLogger('api.study')
 
 @a_study.route("/api/studies", methods=['GET'])
 def get_studies():
@@ -34,7 +35,7 @@ def get_studies():
     try:
         assert 'offset' in request.form
     except AssertionError:
-        logging.debug(
+        a_study_log.debug(
             'User did not provide an offset when requesting a list of studies'
         )
         return {
@@ -47,7 +48,7 @@ def get_studies():
     try:
         offset = int(request.form['offset'])
     except ValueError:
-        logging.debug('User provided a non-int value for the offset parameter')
+        a_study_log.debug('User provided a non-int value for the offset parameter')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -65,8 +66,8 @@ def get_studies():
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_study_log.warning('Error when accessing database')
+        a_study_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,

@@ -10,7 +10,9 @@ from .filepath import fix_filepath
 
 import logging 
 
-logging.info('Connecting to database...')
+c_db_log = logging.getLogger('core.db')
+
+c_db_log.info('Connecting to database...')
 oracle_lib_dir = None
 with open(fix_filepath(__file__, config['sensitives']['files']['oracle_dir'])) as txtfile:
     for line in txtfile.readlines():
@@ -31,7 +33,7 @@ corrected_connect_string = oracle_configs['connect_string'].replace(
     1 # replace once
 )
 
-logging.debug('Corrected Oracle Wallet connect string is ' + corrected_connect_string)
+c_db_log.debug('Corrected Oracle Wallet connect string is ' + corrected_connect_string)
 
 connection = cx_Oracle.connect(
     oracle_configs['username'],
@@ -39,6 +41,6 @@ connection = cx_Oracle.connect(
     corrected_connect_string
 )
 
-logging.info('Connected to database')
+c_db_log.info('Connected to database')
 
 conn_lock = Lock()

@@ -18,17 +18,17 @@ story_selection = Blueprint('story_selection', __name__)
 
 @story_selection.route('/books')
 def gen_books():
-    all_books = ""
+    """
+    all_books = ''
     user_books = get_users_books()
 
     for b in user_books:
-        books += TEMPLATES['story_selection']['book'].substitute(
+        all_books += TEMPLATES['story_selection']['book'].substitute(
             book_title       = b['TITLE'],
             book_description = b['DESCRIPTION'],
             book_image       = '...', # TODO: figure out how to get
             book_link        = b['BOOK_ID']
         )
-    )
     """
 
     auth = None

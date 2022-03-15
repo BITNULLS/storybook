@@ -22,4 +22,5 @@ api.register_blueprint(password.a_password)
 api.register_blueprint(quiz.a_quiz)
 api.register_blueprint(storyboard.a_storyboard)
 
-logging.debug('Finished loading edu_storybook.api modules')
+a_main = logging.getLogger('api.main')
+a_main.debug('Finished loading edu_storybook.api modules')

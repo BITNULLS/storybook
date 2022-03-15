@@ -25,6 +25,7 @@ from core.reg_exps import *
 from core.helper import sanitize_redirects
 
 a_password = Blueprint('a_password', __name__)
+a_password_log = logging.getLogger('api.password')
 
 # input email & check if email exists
 @a_password.route("/api/password/forgot", methods=['POST'])
@@ -33,7 +34,7 @@ def password_forgot():
     try:
         assert 'email' in request.form
     except AssertionError:
-        logging.debug('Missing email in password forgot request.')
+        a_password_log.debug('Missing email in password forgot request.')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -42,7 +43,7 @@ def password_forgot():
 
     # sanitize inputs: alphanumeric, > 8 chars
     if re_email.match(request.form['email']) is None:
-        logging.debug('Email form data failed sanitize check.')
+        a_password_log.debug('Email form data failed sanitize check.')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -62,8 +63,8 @@ def password_forgot():
             # fix the SQL statement with user_session?
             "SELECT * FROM USER_PROFILE WHERE EMAIL ='" + email + "'")
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,
@@ -73,7 +74,7 @@ def password_forgot():
 
     result = cursor.fetchone()
     if result is None:
-        logging.debug('User requested a password forgot on an email that did not exist: ' + email)
+        a_password_log.debug('User requested a password forgot on an email that did not exist: ' + email)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -92,8 +93,8 @@ def password_forgot():
             "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "','" + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'))")
         connection.commit()
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 5,
@@ -131,7 +132,7 @@ def password_reset():
         assert 'confirm_pass' in request.form
         assert 'reset_key' in request.form
     except AssertionError:
-        logging.debug('User tried to reset a password without providing a new password, or reset key')
+        a_password_log.debug('User tried to reset a password without providing a new password, or reset key')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -141,7 +142,7 @@ def password_reset():
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
     if re_alphanumeric8.match(request.form['new_pass']) is None or \
             re_alphanumeric8.match(request.form['confirm_pass']) is None:
-        logging.debug('User tried to reset password with invalid password')
+        a_password_log.debug('User tried to reset password with invalid password')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -150,7 +151,7 @@ def password_reset():
 
     # check if both passwords match
     if (request.form['new_pass'] != request.form['confirm_pass']):
-        logging.debug('User tried to reset password with unmatched password')
+        a_password_log.debug('User tried to reset password with unmatched password')
         return {
             "status": "fail",
             "fail_no": 3,
@@ -168,8 +169,8 @@ def password_reset():
         cursor.execute(
             "SELECT USER_ID FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -179,7 +180,7 @@ def password_reset():
 
     result = cursor.fetchone()
     if result is None:
-        logging.debug('User tried to reset a password with an invalid reset_key')
+        a_password_log.debug('User tried to reset a password with an invalid reset_key')
         return {
             "status": "fail",
             "fail_no": 5,
@@ -192,8 +193,8 @@ def password_reset():
                        hashed.decode('utf8') + "' WHERE user_id ='" + result[0] + "'")
         connection.commit()
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 6,
@@ -209,8 +210,8 @@ def password_reset():
             "DELETE FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
         connection.commit()
     except cx_Oracle.Error as e:
-        logging.warning('Error when accessing database')
-        logging.warning(e)
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 7,

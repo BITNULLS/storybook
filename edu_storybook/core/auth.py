@@ -22,6 +22,8 @@ from .helper import label_results_from
 from .email import send_email
 from .reg_exps import *
 
+c_auth_log = logging.getLogger('core.auth')
+
 
 def issue_auth_token(res, token):
     """
@@ -75,7 +77,7 @@ def validate_login(auth: str, permission: int=0):
         #assert type(origin) is not None, 'You need to pass a valid origin param to validate_login()'
         assert type(permission) is not None, 'You need to pass a valid permission param to validate_login()'
     except AssertionError:
-        logging.debug('A user tried to use an endpoint without providing an Authorization header')
+        c_auth_log.debug('A user tried to use an endpoint without providing an Authorization header')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -89,7 +91,7 @@ def validate_login(auth: str, permission: int=0):
     t = int(time.time())
 
     if token['iat'] + config['login_duration'] < t:
-        logging.debug('User provided an expired token')
+        c_auth_log.debug('User provided an expired token')
         return {
             "status": "fail",
             "fail_no": "2",
@@ -102,7 +104,7 @@ def validate_login(auth: str, permission: int=0):
         }, 400, {"Content-Type": "application/json"}
 
     if token['permission'] < permission:
-        logging.debug('User lacks permission for endpoint')
+        c_auth_log.debug('User lacks permission for endpoint')
         return {
             "status": "fail",
             "fail_no": "3",
