@@ -1,0 +1,83 @@
+~navbar
+<div class="row mt-5">
+  <div class="col-12 col-md-4 col-sm-3"></div>
+  <div class="col">
+    <h1 class="text-center mb-5">Register</h1> 
+
+    <div class="card pl-1 pr-2"> 
+      <div class="card-body">
+        <form action="/api/register" method="POST">
+          <input type="hidden" name="redirect" value="/books">
+
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <div class="form-group mb-4">
+                <label for="first_name">First Name:</label>
+                <input id="first_name" type="text" name="first_name" class="form-control"></input>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="form-group mb-4">
+                <label for="last_name">Last Name:</label>
+                <input id="last_name" type="text" name="last_name" class="form-control"></input>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <div class="form-group mb-4">
+                <label for="email">Email Address:</label>
+                <input id="email" type="email" name="email" class="form-control"></input>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="form-group mb-4">
+                <label for="school_id">School ID:</label>
+                <input id="school_id" type="number" name="school_id" class="form-control"></input>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12 col-sm-6">
+              <div class="form-group mb-4">
+                <label for="password">Password:</label> 
+               
+                <i class="fa-solid fa-circle-info" 
+                title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)"></i>
+                
+                <input id="password" type="password" name="password" class="form-control"></input>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="form-group mb-4">
+                <label for="confirm_password">Confirm Password:</label>
+               
+                <i class="fa-solid fa-circle-info" 
+                title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)"></i>
+               
+                <input id="confirm_password" type="password" name="confirm_password"
+                  class="form-control"></input>
+              </div>
+            </div>      
+          </div>
+
+          <!-- Sign in button-->
+          <div class="form-group text-center">
+            <a href="/register">
+              <button id="button_signUp" type="submit" class="btn btn-primary">Sign In</button>
+            </a>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Links to other pages-->
+    <div class="text-center mt-5">
+      <a href="/login" class="btn btn-link">Login</a>
+      <a href="/password/forgot" class="btn btn-link">Forgot Password</a>
+    </div>
+  </div>
+  <div class="col col-12 col-md-4 col-sm-3"></div>
+</div>
