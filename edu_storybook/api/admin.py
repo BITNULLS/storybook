@@ -52,7 +52,7 @@ def admin_download_book():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -79,7 +79,7 @@ def admin_book_upload():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -212,7 +212,7 @@ def admin_add_book_to_study():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -496,7 +496,7 @@ def admin_download_user_data():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -590,7 +590,7 @@ def admin_download_action_data():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -739,6 +739,5 @@ def admin_get_users():
     users = cursor.fetchall()
 
     return {
-        "status": "ok",
         "users": users
     }
