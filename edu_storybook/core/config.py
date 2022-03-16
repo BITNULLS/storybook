@@ -3,7 +3,6 @@ config.py
     Just loads the configuration file in.
 """
 
-from re import I
 from .helper import fix_filepath
 import json
 import os
