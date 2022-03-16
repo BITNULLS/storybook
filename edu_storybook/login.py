@@ -29,3 +29,4 @@ def gen_login():
         )
     )
     return login_page
+
