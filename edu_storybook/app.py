@@ -13,10 +13,6 @@ import register
 import story_selection 
 import storyboard  
 
-from core.config import config
-
-import os
-
 app = Flask(__name__, static_url_path="/static/", static_folder="static")
 
 app.register_blueprint(main.api) 
