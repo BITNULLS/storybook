@@ -4,7 +4,6 @@ app.py
 """
 
 from flask import Flask
-from flask import g
 from api import main 
 import admin
 import index
