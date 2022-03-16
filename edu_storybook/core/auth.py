@@ -16,7 +16,7 @@ import cx_Oracle
 from flask import make_response
 
 from .sensitive import jwt_key
-from . import config
+from .config import config
 from .helper import label_results_from
 from .email import send_email
 from .reg_exps import *
