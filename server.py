@@ -93,7 +93,7 @@ conn_lock = Lock()
 
 
 
-@app.route("/book", methods=['POST'])
+@app.route("/book", methods=['GET'])
 def get_users_books():
 
     # validate that user has rights to access books
@@ -114,11 +114,10 @@ def get_users_books():
 
     try:
         cursor.execute(
-            "SELECT b.BOOK_ID FROM BOOK b "
-            + "INNER JOIN STUDY s ON s.STUDY_ID = b.STUDY_ID "
-            + "INNER JOIN USER_PROFILE u ON s.STUDY_ID = u.STUDY_ID "
-            + "WHERE u.user_id='"
-            + token['sub'] + "'"
+            "SELECT BOOK_NAME, DESCRIPTION FROM BOOK "
+            +"INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID"
+            +"INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID"
+            +"WHERE user_study.user_id= '"+ token['sub'] +"'"
         )
     except cx_Oracle.Error as e:
         return {

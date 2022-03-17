@@ -31,7 +31,7 @@ def gen_books():
             book_id = b["BOOK_ID"], 
             book_cover = '/api/storyboard/cover/' + str(b['BOOK_ID']), 
             last_page=b['LAST_PAGE'], #if last_page is null then 0 
-            book_url = '/storyboard' + str(b['BOOK_ID'])+ '/' + str(b['LAST_PAGE'])
+            book_url = '/storyboard/' + str(b['BOOK_ID'])+ '/' + str(b['LAST_PAGE'])
         )          
         
     story_selection_page = TEMPLATES["_base"].substitute(
