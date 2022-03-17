@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for March 9, 2022
+-- Updated Schema for March 17, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -20,7 +20,7 @@
 --  DDL for Sequence BOOK_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "BOOK_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 141 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "BOOK_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 181 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence DETAILS_SEQ
 --------------------------------------------------------
@@ -40,11 +40,11 @@
 --  DDL for Sequence STUDY_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 41 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 
 --------------------------------------------------------
 --  TABLES
---------------------------------------------------------
+--------------------------------------------------------   
 --------------------------------------------------------
 --  DDL for Table ACTION
 --------------------------------------------------------
@@ -150,7 +150,8 @@
   CREATE TABLE "STUDY" 
    (	"STUDY_ID" NUMBER, 
 	"SCHOOL_ID" NUMBER, 
-	"STUDY_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP"
+	"STUDY_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP", 
+	"STUDY_INVITE_CODE" VARCHAR2(64 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table USER_PROFILE
@@ -195,63 +196,11 @@
    (	"USER_ID" VARCHAR2(32 BYTE) COLLATE "USING_NLS_COMP", 
 	"STUDY_ID" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
---------------------------------------------------------
---  DDL for Table ACTION
---------------------------------------------------------
-
-  CREATE TABLE "ACTION" 
-   (	"USER_ID" VARCHAR2(32 BYTE) COLLATE "USING_NLS_COMP", 
-	"ACTION_START" DATE, 
-	"ACTION_STOP" DATE, 
-	"BOOK_ID" NUMBER, 
-	"DETAIL_ID" NUMBER
-   )  DEFAULT COLLATION "USING_NLS_COMP" ;
---------------------------------------------------------
---  DDL for Table ACTION_DETAIL
---------------------------------------------------------
-
-  CREATE TABLE "ACTION_DETAIL" 
-   (	"DETAIL_ID" NUMBER, 
-	"DETAIL_DESCRIPTION" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP", 
-	"ACTION_KEY_ID" NUMBER
-   )  DEFAULT COLLATION "USING_NLS_COMP" ;
---------------------------------------------------------
---  DDL for Table ACTION_KEY
---------------------------------------------------------
-
-  CREATE TABLE "ACTION_KEY" 
-   (	"ACTION_KEY_ID" NUMBER, 
-	"ACTION_NAME" VARCHAR2(32 BYTE) COLLATE "USING_NLS_COMP"
-   )  DEFAULT COLLATION "USING_NLS_COMP" ;
---------------------------------------------------------
---  DDL for Table ANSWER
---------------------------------------------------------
-
-  CREATE TABLE "ANSWER" 
-   (	"ANSWER_ID" NUMBER, 
-	"QUESTION_ID" NUMBER, 
-	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP"
-  "CORRECT" NUMBER
-   )  DEFAULT COLLATION "USING_NLS_COMP" ;
---------------------------------------------------------
---  DDL for Table BOOK
---------------------------------------------------------
-
-  CREATE TABLE "BOOK" 
-   (	"BOOK_ID" NUMBER, 
-	"BOOK_NAME" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
-	"CREATED_ON" DATE, 
-	"URL" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
-	"DESCRIPTION" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
-	"STUDY_ID" NUMBER, 
-	"PAGE_COUNT" NUMBER, 
-	"FOLDER" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP"
-   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+   
 
 --------------------------------------------------------
 --  INDEXES
---------------------------------------------------------
-
+--------------------------------------------------------   
 --------------------------------------------------------
 --  DDL for Index ACTION_DETAIL_PK
 --------------------------------------------------------
@@ -269,36 +218,6 @@
 --------------------------------------------------------
 
   CREATE UNIQUE INDEX "ANSWER_PK" ON "ANSWER" ("ANSWER_ID") 
-  ;
---------------------------------------------------------
---  DDL for Index USER_PROFILE_PK
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "USER_PROFILE_PK" ON "USER_PROFILE" ("USER_ID") 
-  ;
---------------------------------------------------------
---  DDL for Index USER_SESSION_INDEX1
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "USER_SESSION_INDEX1" ON "USER_SESSION" ("SESSION_ID") 
-  ;
---------------------------------------------------------
---  DDL for Index STUDY_PK
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "STUDY_PK" ON "STUDY" ("STUDY_ID") 
-  ;
---------------------------------------------------------
---  DDL for Index SCHOOL_PK
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "SCHOOL_PK" ON "SCHOOL" ("SCHOOL_ID") 
-  ;
---------------------------------------------------------
---  DDL for Index QUESTION_PK
---------------------------------------------------------
-
-  CREATE UNIQUE INDEX "QUESTION_PK" ON "QUESTION" ("QUESTION_ID") 
   ;
 --------------------------------------------------------
 --  DDL for Index BOOK_PK
@@ -393,8 +312,7 @@
 
 --------------------------------------------------------
 --  TRIGGERS
---------------------------------------------------------
-
+--------------------------------------------------------  
 --------------------------------------------------------
 --  DDL for Trigger ANSWER_TRG
 --------------------------------------------------------
@@ -719,53 +637,10 @@ BEGIN
 END;
 /
 ALTER TRIGGER "USER_ID_TRG" ENABLE;
---------------------------------------------------------
---  DDL for Trigger DETAIL_ID_TRG
---------------------------------------------------------
-
-  CREATE OR REPLACE EDITIONABLE TRIGGER "DETAIL_ID_TRG" 
-BEFORE INSERT ON ACTION_DETAIL
-FOR EACH ROW 
-BEGIN
-    SELECT DETAILS_SEQ.NEXTVAL INTO :new.DETAIL_ID FROM dual;
-  NULL;
-END;
-/
-ALTER TRIGGER "DETAIL_ID_TRG" DISABLE;
---------------------------------------------------------
---  DDL for Trigger ANSWER_TRG
---------------------------------------------------------
-
-  CREATE OR REPLACE EDITIONABLE TRIGGER "ANSWER_TRG" 
-BEFORE INSERT ON ANSWER 
-FOR EACH ROW 
-BEGIN
-    SELECT ANSWER_SEQ.NEXTVAL INTO :new.ANSWER_ID FROM dual;
-  NULL;
-END;
-/
-ALTER TRIGGER "ANSWER_TRG" ENABLE;
---------------------------------------------------------
---  DDL for Trigger BOOK_TRG
---------------------------------------------------------
-
-  CREATE OR REPLACE EDITIONABLE TRIGGER "BOOK_TRG" 
-BEFORE INSERT ON BOOK 
-FOR EACH ROW 
-BEGIN
-
-    SELECT BOOK_SEQ.NEXTVAL INTO :new.BOOK_ID FROM dual;
-    :new.CREATED_ON := sysdate();
-    
-  NULL;
-END;
-/
-ALTER TRIGGER "BOOK_TRG" ENABLE;
 
 --------------------------------------------------------
 --  PROCEDURES
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Procedure CHECK_DETAIL_ID_PROC
 --------------------------------------------------------
@@ -1072,10 +947,6 @@ BEGIN
 END check_detail_id_fcn;
 
 /
-
---------------------------------------------------------
---  CONSTRAINTS
---------------------------------------------------------
 --------------------------------------------------------
 --  Constraints for Table ACTION
 --------------------------------------------------------
@@ -1212,127 +1083,3 @@ END check_detail_id_fcn;
 
   ALTER TABLE "USER_STUDY" MODIFY ("USER_ID" NOT NULL ENABLE);
   ALTER TABLE "USER_STUDY" MODIFY ("STUDY_ID" NOT NULL ENABLE);
---------------------------------------------------------
---  Constraints for Table ACTION
---------------------------------------------------------
-
-  ALTER TABLE "ACTION" MODIFY ("USER_ID" NOT NULL ENABLE);
-  ALTER TABLE "ACTION" MODIFY ("ACTION_START" NOT NULL ENABLE);
-  ALTER TABLE "ACTION" MODIFY ("ACTION_STOP" NOT NULL ENABLE);
-  ALTER TABLE "ACTION" MODIFY ("BOOK_ID" NOT NULL ENABLE);
-  ALTER TABLE "ACTION" MODIFY ("DETAIL_ID" NOT NULL ENABLE);
---------------------------------------------------------
---  Constraints for Table ACTION_DETAIL
---------------------------------------------------------
-
-  ALTER TABLE "ACTION_DETAIL" MODIFY ("DETAIL_ID" NOT NULL ENABLE);
-  ALTER TABLE "ACTION_DETAIL" MODIFY ("DETAIL_DESCRIPTION" NOT NULL ENABLE);
-  ALTER TABLE "ACTION_DETAIL" ADD CONSTRAINT "ACTION_DETAIL_PK" PRIMARY KEY ("DETAIL_ID")
-  USING INDEX  ENABLE;
-  ALTER TABLE "ACTION_DETAIL" MODIFY ("ACTION_KEY_ID" NOT NULL ENABLE);
---------------------------------------------------------
---  Constraints for Table ACTION_KEY
---------------------------------------------------------
-
-  ALTER TABLE "ACTION_KEY" MODIFY ("ACTION_NAME" NOT NULL ENABLE);
-  ALTER TABLE "ACTION_KEY" ADD CONSTRAINT "ACTION_KEY_PK" PRIMARY KEY ("ACTION_KEY_ID")
-  USING INDEX  ENABLE;
-  ALTER TABLE "ACTION_KEY" MODIFY ("ACTION_KEY_ID" NOT NULL ENABLE);
---------------------------------------------------------
---  Constraints for Table ANSWER
---------------------------------------------------------
-
-  ALTER TABLE "ANSWER" MODIFY ("CORRECT" NOT NULL ENABLE);
-  ALTER TABLE "ANSWER" ADD CONSTRAINT "ANSWER_PK" PRIMARY KEY ("ANSWER_ID")
-  USING INDEX  ENABLE;
-  ALTER TABLE "ANSWER" MODIFY ("QUESTION_ID" NOT NULL ENABLE);
-  ALTER TABLE "ANSWER" MODIFY ("ANSWER" NOT NULL ENABLE);
-  ALTER TABLE "ANSWER" MODIFY ("ANSWER_ID" NOT NULL ENABLE);
---------------------------------------------------------
---  Constraints for Table BOOK
---------------------------------------------------------
-
-  ALTER TABLE "BOOK" MODIFY ("FOLDER" NOT NULL ENABLE);
-  ALTER TABLE "BOOK" MODIFY ("PAGE_COUNT" NOT NULL ENABLE);
-  ALTER TABLE "BOOK" MODIFY ("BOOK_ID" NOT NULL ENABLE);
-  ALTER TABLE "BOOK" MODIFY ("BOOK_NAME" NOT NULL ENABLE);
-  ALTER TABLE "BOOK" MODIFY ("CREATED_ON" NOT NULL ENABLE);
-  ALTER TABLE "BOOK" MODIFY ("DESCRIPTION" NOT NULL ENABLE);
-  ALTER TABLE "BOOK" ADD CONSTRAINT "BOOK_PK" PRIMARY KEY ("BOOK_ID")
-  USING INDEX  ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table PASSWORD_RESET
---------------------------------------------------------
-
-  ALTER TABLE "PASSWORD_RESET" ADD CONSTRAINT "PASSWORD_RESET_USER_ID_FK" FOREIGN KEY ("USER_ID")
-	  REFERENCES "USER_PROFILE" ("USER_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table QUESTION
---------------------------------------------------------
-
-  ALTER TABLE "QUESTION" ADD CONSTRAINT "QUESTION_SCHOOL_ID_FK" FOREIGN KEY ("SCHOOL_ID")
-	  REFERENCES "SCHOOL" ("SCHOOL_ID") ENABLE;
-  ALTER TABLE "QUESTION" ADD CONSTRAINT "QUESTION_BOOK_ID" FOREIGN KEY ("BOOK_ID")
-	  REFERENCES "BOOK" ("BOOK_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table STUDY
---------------------------------------------------------
-
-  ALTER TABLE "STUDY" ADD CONSTRAINT "STUDY_SCHOOL_ID_FK" FOREIGN KEY ("SCHOOL_ID")
-	  REFERENCES "SCHOOL" ("SCHOOL_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table USER_PROFILE
---------------------------------------------------------
-
-  ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_SCHOOL_ID_FK" FOREIGN KEY ("SCHOOL_ID")
-	  REFERENCES "SCHOOL" ("SCHOOL_ID") ENABLE;
-  ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
-	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table USER_RESPONSE
---------------------------------------------------------
-
-  ALTER TABLE "USER_RESPONSE" ADD CONSTRAINT "USER_RESPONSE_ANSWER_ID_FK" FOREIGN KEY ("ANSWER_ID")
-	  REFERENCES "ANSWER" ("ANSWER_ID") ENABLE;
-  ALTER TABLE "USER_RESPONSE" ADD CONSTRAINT "USER_RESPONSE_QUESTION_ID_FK" FOREIGN KEY ("QUESTION_ID")
-	  REFERENCES "QUESTION" ("QUESTION_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table USER_SESSION
---------------------------------------------------------
-
-  ALTER TABLE "USER_SESSION" ADD CONSTRAINT "USER_SESSION_FK1" FOREIGN KEY ("USER_ID")
-	  REFERENCES "USER_PROFILE" ("USER_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table USER_STUDY
---------------------------------------------------------
-
-  ALTER TABLE "USER_STUDY" ADD CONSTRAINT "USER_STUDY_USER_ID_FK" FOREIGN KEY ("USER_ID")
-	  REFERENCES "USER_PROFILE" ("USER_ID") ENABLE;
-  ALTER TABLE "USER_STUDY" ADD CONSTRAINT "USER_STUDY_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
-	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table ACTION
---------------------------------------------------------
-
-  ALTER TABLE "ACTION" ADD CONSTRAINT "ACTION_BOOK_FK" FOREIGN KEY ("BOOK_ID")
-	  REFERENCES "BOOK" ("BOOK_ID") ENABLE;
-  ALTER TABLE "ACTION" ADD CONSTRAINT "ACTION_DETAIL_ID" FOREIGN KEY ("DETAIL_ID")
-	  REFERENCES "ACTION_DETAIL" ("DETAIL_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table ACTION_DETAIL
---------------------------------------------------------
-
-  ALTER TABLE "ACTION_DETAIL" ADD CONSTRAINT "ACTION_DETAIL_ACTION_ID_FK" FOREIGN KEY ("ACTION_KEY_ID")
-	  REFERENCES "ACTION_KEY" ("ACTION_KEY_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table ANSWER
---------------------------------------------------------
-
-  ALTER TABLE "ANSWER" ADD CONSTRAINT "ANSWER_QUESTION_FK" FOREIGN KEY ("QUESTION_ID")
-	  REFERENCES "QUESTION" ("QUESTION_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table BOOK
---------------------------------------------------------
-
-  ALTER TABLE "BOOK" ADD CONSTRAINT "BOOK_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
-	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;
