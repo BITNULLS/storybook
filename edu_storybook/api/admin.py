@@ -42,7 +42,6 @@ from core.sensitive import jwt_key
 from core.remove_watchdog import future_del_temp
 from core.reg_exps import *
 from core.helper import sanitize_redirects
-#from .storyboard import get_image_folder()
 
 a_admin = Blueprint('a_admin', __name__)
 
@@ -747,12 +746,11 @@ def admin_get_users():
 @a_admin.route("/api/admin/get/book", methods=['GET'])
 def admin_get_books():
     """
-    Exports user data to a json
+    Exports book data to a json
 
     - Connects to database
     - Computes a select query to get book data
     - return BOOK_ID, BOOKNAME , DESCRIPTION 
-        Important: want to get first image of book call function ( get_image from storyboard.py and then send_file_path)
     - Allow an admin to retrieve a JSON list of all of the users. 
         LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
         Make offset an input parameter (int).
@@ -810,11 +808,6 @@ def admin_get_books():
         }, 400, {"Content-Type": "application/json"}
 
     books = cursor.fetchall()
-
-    #TODO: get image from bucket and return :) 
-    #need book_id so we need to get book_id based on each one to
-    #for each book_id in data: 
-    #    send_file(bucket.download_bucket_file(get_image_folder(book_id, 0)))
 
     return {
         "books": books
