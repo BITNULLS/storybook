@@ -798,3 +798,73 @@ def admin_get_users():
         "status": "ok",
         "users": users
     }
+
+@a_admin.route("/api/admin/get/book", methods=['GET'])
+def admin_get_books():
+    """
+    Exports book data to a json
+
+    - Connects to database
+    - Computes a select query to get book data
+    - return BOOK_ID, BOOKNAME , DESCRIPTION 
+    - Allow an admin to retrieve a JSON list of all of the users. 
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
+        Make offset an input parameter (int).
+    """
+
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # check to make sure you have a offset
+    try:
+        assert 'offset' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "offset was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure offset is int
+    try:
+        offset = int(request.form['offset'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "offset failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK OFFSET "+ 
+            request.form["offset"] +" ROWS FETCH NEXT 50 ROWS ONLY"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    books = cursor.fetchall()
+
+    return {
+        "books": books
+    }

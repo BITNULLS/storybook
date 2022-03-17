@@ -38,6 +38,7 @@ Routes:
  - `/api/admin/page`
  - `/api/admin/download/user`
  - `/api/admin/download/action`
+ - `/api/admin/get/book`
  - `/api/admin/get/user`
 
 ## password.py
