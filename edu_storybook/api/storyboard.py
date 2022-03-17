@@ -25,7 +25,10 @@ from core.sensitive import jwt_key
 from core.reg_exps import *
 
 a_storyboard = Blueprint('a_storyboard', __name__)
+
 a_storyboard_log = logging.getLogger('api.storyboard')
+if config['production'] == False:
+    a_storyboard_log.setLevel(logging.DEBUG)
 
 @a_storyboard.route("/api/storyboard/page/<int:book_id_in>/<int:page_number_in>", methods=['GET'])
 def storyboard_get_page(book_id_in: int, page_number_in: int):
