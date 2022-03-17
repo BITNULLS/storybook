@@ -103,8 +103,6 @@ def get_users_books():
     # assign variable data to cursor.fetchall()
     data = cursor.fetchall()
 
-    print(data)
-
     return {
         "status": "ok"
     }

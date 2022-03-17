@@ -37,6 +37,6 @@ app.register_blueprint(story_selection.story_selection)
 app.register_blueprint(storyboard.storyboard)
 
 if __name__ == "__main__":
-    print(app.url_map) 
+    app.logger.debug(app.url_map) 
     app.run(host="0.0.0.0", port="5001", debug=True)
            

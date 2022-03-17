@@ -27,8 +27,6 @@ if config['production'] == False:
 # Sen_Files Downloader setup - Only used to download project configuration files
 # Chum-Bucket Downloader will be set up after config files have been downloaded
 
-#print(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/StorybookFiles.json'))
-
 with open(fix_filepath(__file__, 'data/StorybookFiles.json')) as sb_files:
     bucket = json.load(sb_files)
 

@@ -167,7 +167,6 @@ def admin_book_upload():
                     )
                 )
                 book_pngs[i].save(file_upload_image_path, 'PNG')
-                print('path exists: ' + str(os.path.exists(file_upload_image_path)))
                 # upload images to a folder in bucket
                 upload_bucket_file(file_upload_image_path, filename + '/' + book_image_name)
                 # remove img file
