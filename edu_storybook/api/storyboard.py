@@ -5,6 +5,7 @@ storyboard.py
 Routes:
     /api/storyboard/page/<int:book_id_in>/<int:page_number_in>
     /api/storyboard/action
+    /api/storyboard/cover/<int:book_id_in>
 """
 
 from flask import request
@@ -25,7 +26,7 @@ import bcrypt
 import time
 
 from core.auth import validate_login
-from core.bucket import bucket
+from core.bucket import download_bucket_file
 from core.config import config
 from core.db import connection, conn_lock
 from core.helper import label_results_from
@@ -65,7 +66,7 @@ def storyboard_get_page(book_id_in, page_number_in):
     # goes into database and gets the bucket folder.
     # goes into bucket and then says I want this image from this folder.
     cursor = connection.cursor()
-    fileInput = get_image_folder(book_id, page_number)
+    fileInput = get_book_image_path(book_id, page_number)
     
     try:
         # get quiz questions and answers and more information about those
@@ -108,7 +109,7 @@ def storyboard_get_page(book_id_in, page_number_in):
     
     # Return page assuming current page has no quiz question
     try:
-        return send_file(bucket.download_bucket_file(fileInput))
+        return send_file(download_bucket_file(fileInput))
     except:
         return {
             "status": "fail",
@@ -214,7 +215,7 @@ def storyboard_save_user_action():
     }
 
 
-def get_image_folder(book_id, page_number):
+def get_book_image_path(book_id, page_number):
     cursor = connection.cursor()
 
     try:
@@ -230,5 +231,34 @@ def get_image_folder(book_id, page_number):
 
     # check if this is in write format ; then we have to fix it and ammend it with page number
     fileInput = cursor.fetchone()[0]
-    return (fileInput + '/' + fileInput + '_' + str(page_number) + '.png')
+    return (fileInput + '_images/' + fileInput + '_' + str(page_number) + '.png')
+
+
+
     
+@a_storyboard.route("/api/storyboard/cover/<int:book_id_in>", methods=['GET'])
+def storyboard_get_cover_image(book_id_in):
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    try:
+        book_id_in = int( book_id_in)
+        
+    
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id or page_number failed a sanitize check. The POSTed fields should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    return send_file(download_bucket_file(get_book_image_path(book_id_in, 1)))

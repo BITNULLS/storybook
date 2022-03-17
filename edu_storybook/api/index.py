@@ -21,7 +21,6 @@ import bcrypt
 import time
 
 from core.auth import validate_login, issue_auth_token
-from core.bucket import bucket
 from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
 from core.config import config
@@ -337,9 +336,10 @@ def get_users_books():
     
     try:
         cursor.execute(
-            "SELECT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK "+
+            "SELECT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
             "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
             "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
+            "INNER JOIN LAST_PAGE ON last_page.book_id = book.book_id "+
             "WHERE user_study.user_id= '"+ token['sub'] +"'"
         )
     except cx_Oracle.Error as e:
@@ -353,12 +353,6 @@ def get_users_books():
     # assign variable data to cursor.fetchall()
     label_results_from(cursor)
     data = cursor.fetchall()
-
-    print(data)
-    #get image from bucket and return :) 
-    #need book_id so we need to get book_id based on each one to
-    #for each book_id in data: 
-    # send_file(bucket.download_bucket_file(get_image_folder(book_id, 0)))
 
     return {
        "books": data

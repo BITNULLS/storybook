@@ -27,7 +27,11 @@ def gen_books():
     for b in get_users_books()['books']:
         all_books += TEMPLATES['story_selection']['book'].substitute(
             book_title = b['BOOK_NAME'],
-            book_description = b['DESCRIPTION']
+            book_description = b['DESCRIPTION'],
+            book_id = b["BOOK_ID"], 
+            book_cover = '/api/storyboard/cover/' + str(b['BOOK_ID']), 
+            last_page=b['LAST_PAGE'], #if last_page is null then 0 
+            book_url = '/storyboard' + str(b['BOOK_ID'])+ '/' + str(b['LAST_PAGE'])
         )          
         
     story_selection_page = TEMPLATES["_base"].substitute(
