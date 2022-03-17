@@ -28,6 +28,8 @@ backend/data/StorybookFiles.pem
 # file uploads
 backend/bucket_files
 backend/temp/
+temp/
+edu_storybook/temp/
 
 # === Node JS ===
 

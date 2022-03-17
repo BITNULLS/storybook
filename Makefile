@@ -5,7 +5,7 @@ run:
 windows-run:
 	$Env:FLASK_APP = "app.py"
 	$Env:FLASK_ENV = "development"
-	python -m flask run
+	python3 -m flask run
 setup:
 	pip3 install -r requirements.txt
 test:

@@ -17,7 +17,7 @@ import cx_Oracle
 import logging
 
 from core.auth import validate_login
-from core.bucket import bucket
+from core.bucket import download_bucket_file
 from core.config import config
 from core.db import connection, conn_lock
 from core.helper import label_results_from
@@ -124,7 +124,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
     
     # Return page assuming current page has no quiz question
     try:
-        return send_file(bucket.download_bucket_file(fileInput))
+        return send_file(download_bucket_file(fileInput))
     except:
         a_storyboard_log.warning('Could not load bucket file for some unknown reason')
         return {
