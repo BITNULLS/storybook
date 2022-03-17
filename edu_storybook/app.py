@@ -18,7 +18,14 @@ import storyboard
 import logging
 import sys
 
-app = Flask(__name__, static_url_path="/static/", static_folder="static")
+app = Flask('edu_storybook', static_url_path="/static/", static_folder="static")
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.DEBUG)
+app.logger.debug('Starting app')
 
 app.register_blueprint(main.api) 
 app.register_blueprint(admin.admin)
@@ -30,13 +37,6 @@ app.register_blueprint(story_selection.story_selection)
 app.register_blueprint(storyboard.storyboard)
 
 if __name__ == "__main__":
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    app.logger.addHandler(handler)
-    app.logger.setLevel(logging.DEBUG)
-    app.logger.debug('Starting app')
-
     print(app.url_map) 
     app.run(host="0.0.0.0", port="5001", debug=True)
            

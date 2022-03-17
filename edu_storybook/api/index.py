@@ -34,7 +34,10 @@ from core.remove_watchdog import future_del_temp
 from core.reg_exps import *
 
 a_index = Blueprint('a_index', __name__)
+
 a_index_log = logging.getLogger('api.index')
+if config['production'] == False:
+    a_index_log.setLevel(logging.DEBUG)
 
 @a_index.route("/api/")
 def api_index():

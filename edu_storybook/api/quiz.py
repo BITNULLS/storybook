@@ -21,7 +21,10 @@ from core.sensitive import jwt_key
 from core.reg_exps import *
 
 a_quiz = Blueprint('a_quiz', __name__)
+
 a_quiz_log = logging.getLogger('api.quiz')
+if config['production'] == False:
+    a_quiz_log.setLevel(logging.DEBUG)
 
 @a_quiz.route("/api/quiz/submit", methods=['POST'])
 def quiz_submit_answer():

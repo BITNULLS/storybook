@@ -15,10 +15,13 @@ from . import sensitive as sensitive
 import os
 import logging
 from core.reg_exps import re_redirect_link
+from .config import config
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
 c_helper_log = logging.getLogger('core.helper')
+if config['production'] == False:
+    c_helper_log.setLevel(logging.DEBUG)
 
 def allowed_file(filename):
     """

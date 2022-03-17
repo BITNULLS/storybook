@@ -16,10 +16,13 @@ import os
 from .filepath import fix_filepath
 from tempfile import TemporaryDirectory
 from typing import List
+from .config import config
 
 import logging 
 
 c_bucket_log = logging.getLogger('core.bucket')
+if config['production'] == False:
+    c_bucket_log.setLevel(logging.DEBUG)
 
 # Sen_Files Downloader setup - Only used to download project configuration files
 # Chum-Bucket Downloader will be set up after config files have been downloaded

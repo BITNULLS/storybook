@@ -11,6 +11,8 @@ import smtplib
 import logging
 
 c_email_log = logging.getLogger('core.email')
+if config['production'] == False:
+    c_email_log.setLevel(logging.DEBUG)
 
 def send_email(user_name: str, user_email: str, admin_name: str, admin_email: str, subject: str, body: str) -> bool:
     """
@@ -41,7 +43,7 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         server.login('edustorybooks@gmail.com', sensitive.email_password)
         server.sendmail("edustorybooks@gmail.com", user_email, email_text)
     except Exception as e:
-        c_email_log.error('Exception in Email Process')
+        c_email_log.error('Exception in send_email')
         c_email_log.error(e)
         return False
     finally:

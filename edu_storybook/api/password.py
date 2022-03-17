@@ -23,9 +23,13 @@ from core.email import send_email
 from core.db import connection, conn_lock
 from core.reg_exps import *
 from core.helper import sanitize_redirects
+from core.config import config
 
 a_password = Blueprint('a_password', __name__)
+
 a_password_log = logging.getLogger('api.password')
+if config['production'] == False:
+    a_password_log.setLevel(logging.DEBUG)
 
 # input email & check if email exists
 @a_password.route("/api/password/forgot", methods=['POST'])

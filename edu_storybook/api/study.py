@@ -22,7 +22,10 @@ from core.sensitive import jwt_key
 from core.reg_exps import *
 
 a_study = Blueprint('a_study', __name__)
+
 a_study_log = logging.getLogger('api.study')
+if config['production'] == False:
+    a_study_log.setLevel(logging.DEBUG)
 
 @a_study.route("/api/studies", methods=['GET'])
 def get_studies():

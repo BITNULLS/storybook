@@ -10,7 +10,7 @@ from .filepath import fix_filepath
 
 import logging 
 
-c_db_log = logging.getLogger('core.db')
+c_db_log = logging.getLogger('werkzeug')
 
 c_db_log.info('Connecting to database...')
 oracle_lib_dir = None

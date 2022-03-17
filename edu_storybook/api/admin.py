@@ -40,7 +40,10 @@ from core.reg_exps import *
 from core.helper import sanitize_redirects
 
 a_admin = Blueprint('a_admin', __name__)
+
 a_admin_log = logging.getLogger('api.admin')
+if config['production'] == False:
+    a_admin_log.setLevel(logging.DEBUG)
 
 @a_admin.route("/api/admin/book/download", methods=['POST'])
 def admin_download_book():
