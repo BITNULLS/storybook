@@ -31,12 +31,13 @@ import string
 import datetime
 import bcrypt
 import time
+import shutil
 
 from core.auth import validate_login, issue_auth_token
-from core.bucket import bucket
+from core.bucket import upload_bucket_file, download_bucket_file
 from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
-from core.config import config
+from core.config import config, temp_folder
 from core.db import connection, conn_lock
 from core.sensitive import jwt_key
 from core.remove_watchdog import future_del_temp
@@ -61,7 +62,7 @@ def admin_download_book():
     fileInput = request.form['filename']
     try:
         # download file to bucket
-        filepath = bucket.download_bucket_file(fileInput)
+        filepath = download_bucket_file(fileInput)
         # send file back
         return send_file(filepath)
     except:
@@ -85,19 +86,9 @@ def admin_book_upload():
         return vl
 
     # get parameters for adding to book table
-    book_name = (request.form.get('book_name')).strip()
-    book_description = (request.form.get('book_description')).strip()
-    # book_id and created_on handled by trigger
-
-    # check that study_id and page_count are ints
-    try:
-        study_id = int(request.form['study_id'])
-    except ValueError:
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "study_id failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
+    book_name = (request.form.get('title')).strip() # Gives us the value of 'book name' field from frontend
+    book_description = (request.form.get('description')).strip() # Gives us the value of 'book description' field from frontend
+    study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
 
     # check if the post request has the file part
     if 'file' not in request.files:
@@ -116,46 +107,56 @@ def admin_book_upload():
             "fail_no": 11,
             "message": "filename is empty string"
         }, 400, {"Content-Type": "application/json"}
-
+        
     if file and allowed_file(file.filename):
 
         # prepend unique uuid for filename
         filename = str(uuid.uuid4()) + "_" + file.filename
 
         # save file to local /temp/file_upload folder
-        filePath = os.path.join("temp/", filename)
-        filePath = filePath.replace('\\', '/')
-        file.save(filePath)
+        file_path = os.path.join( temp_folder, filename )
+        file.save(file_path)
         
         # convert pdf to images
-        book_pngs = convert_from_path("temp/" + filename, 500)
-
-        # remove pdf from temp/file_upload. we don't need it anymore
-        os.remove("temp/" + filename)
+        book_pngs = convert_from_path(file_path, 500)
 
         # remove .pdf extension from filename
         filename = filename.rstrip(".pdf")
 
         # make folder to store images
-        os.makedirs("temp/file_upload/" + filename)
+        upload_temp_folder = os.path.join(temp_folder, 'file_upload/')
+        if not os.path.exists( upload_temp_folder ):
+            os.makedirs( upload_temp_folder )
 
         # 1) insert files into bucket
         try:
             # iterate through length of book
             for i in range(len(book_pngs)):
                 # Save pages as images in the pdf
-                book_pngs[i].save('temp/file_upload/' + filename +
-                                  "/" + filename + "_" + str(i+1) + '.png', 'PNG')
+                file_upload_folder = os.path.join(
+                    upload_temp_folder,
+                    filename
+                )
+                if not os.path.exists( file_upload_folder ):
+                    os.makedirs( file_upload_folder )
+                book_image_name = filename + '_' + str(i+1) + '.png' 
+                file_upload_image_path = os.path.join(
+                    upload_temp_folder,
+                    os.path.join(
+                        filename,
+                        book_image_name
+                    )
+                )
+                book_pngs[i].save(file_upload_image_path, 'PNG')
+                print('path exists: ' + str(os.path.exists(file_upload_image_path)))
                 # upload images to a folder in bucket
-                bucket.upload_bucket_file('temp/file_upload/' + filename + "/" + filename + "_" + str(
-                    i+1) + '.png', filename + "/" + filename + "_" + str(i+1) + '.png')
+                upload_bucket_file(file_upload_image_path, filename + '/' + book_image_name)
                 # remove img file
-                os.remove('temp/file_upload/' + filename + "/" +
-                          filename + "_" + str(i+1) + '.png')
+                os.remove(file_upload_image_path)
 
             # remove temp dir
-            os.rmdir("temp/file_upload/" + filename)
-
+            shutil.rmtree( upload_temp_folder )
+            
         except Exception as e:
             return {
                 "status": "fail",
@@ -166,17 +167,17 @@ def admin_book_upload():
 
         # connect to database
         cursor = connection.cursor()
-
-        # 2) insert book into table
+        
+        # 2) insert book into 'book' table
         try:
             conn_lock.acquire()
 
-            cursor.execute("INSERT into BOOK (book_name, description, study_id, folder, page_count) VALUES ('"
+            cursor.execute("INSERT into BOOK (book_name, description, folder, page_count) VALUES ('"
                            + book_name + "', '"
                            + book_description + "', '"
-                           + str(study_id) + "', '"
                            + filename + "', "
                            + str(len(book_pngs)) + ")")
+        
             # commit to database
             connection.commit()
 
@@ -185,6 +186,58 @@ def admin_book_upload():
                 "status": "fail",
                 "fail_no": 4,
                 "message": "Error when querying database. 1159",
+                "database_message": str(e)
+            }
+        finally:
+            conn_lock.release()
+        
+        # 3) Get book_id from 'book' table (given book name and its description) to insert entries in 'book_study' later
+        try:
+            conn_lock.acquire()
+            
+            cursor.execute("SELECT BOOK_ID FROM BOOK " +
+                           "WHERE BOOK_NAME='" + book_name + "' AND DESCRIPTION='" + book_description + "'")
+            
+            label_results_from(cursor)
+            
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database. 1160",
+                "database_message": str(e)
+            }
+        finally:
+            conn_lock.release()
+            
+        book_id = cursor.fetchone()
+        if book_id is None:
+            print('Book ID not found from the parameter values upon querying database')
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "book id not found upon querying database"
+            }, 400, {"Content-Type": "application/json"}
+            
+        
+        # 4) insert studies assigned to a book in 'book_study' table
+        try:
+            conn_lock.acquire()
+
+            # Iterate through all study ids and insert them one-by-one to a 'book_study' table
+            for study_id in study_ids:
+                cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
+                               + str(book_id['BOOK_ID']) + ", "
+                               + str(study_id) + ")")
+        
+            # commit to database
+            connection.commit()
+
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
         finally:
@@ -198,12 +251,15 @@ def admin_book_upload():
             res = make_response({
                 "status": "ok"
             })
-
-    return {
-        "status": "fail",
-        "fail_no": 13,
-        "message": "invalid file format or file"
-    }, 400, {"Content-Type": "application/json"}
+            print(res)
+        
+        return res
+    else:
+        return {
+            "status": "fail",
+            "fail_no": 13,
+            "message": "invalid file format or file"
+        }, 400, {"Content-Type": "application/json"}
 
 @a_admin.route("/api/admin/book/grant", methods=['POST'])
 def admin_add_book_to_study():
@@ -812,4 +868,3 @@ def admin_get_books():
     return {
         "books": books
     }
-
