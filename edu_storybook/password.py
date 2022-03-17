@@ -7,13 +7,20 @@ Routes:
     /password/reset
 """
 
+import logging
+
 from flask import request
 from flask import Blueprint
 
 from templates import TEMPLATES
 from navbar import make_navbar
+from core.config import config
 
 password = Blueprint('password', __name__)
+
+log = logging.getLogger('ssg.password')
+if config['production'] == False:
+    log.setLevel(logging.DEBUG)
 
 @password.route("/password/forgot")
 def gen_password_forgot():

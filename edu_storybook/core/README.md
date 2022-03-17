@@ -6,6 +6,7 @@ This Python module is organized in the following manner:
  - [`bucket.py`](bucket.py): Functions to download, upload, and initialization for the storage bucket.
  - [`config.py`](config.py): Just loads in the `config.json` file. Used to load in the main configuration file once.
  - [`email.py`](email.py): Initialization of email client and interface functions.
+ - [`filepath.py`](filepath.py): A fix for Python's main script relative pathing problem.
  - [`db.py`](db.py): Initialization of the database.
  - [`helper.py`](helper.py): Miscellaneous helper functions.
  - [`reg_exps.py`](reg_exps.py): All regular expressions.

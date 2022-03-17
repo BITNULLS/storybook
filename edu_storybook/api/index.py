@@ -4,6 +4,8 @@ index.py
 
 Routes:
     /api/
+    /api/book
+    /api/schools
     /api/login
     /api/logout
     /api/register
@@ -19,6 +21,7 @@ import jwt
 import cx_Oracle
 import bcrypt
 import time
+import logging
 
 from core.auth import validate_login, issue_auth_token
 from core.bucket import bucket
@@ -31,6 +34,10 @@ from core.remove_watchdog import future_del_temp
 from core.reg_exps import *
 
 a_index = Blueprint('a_index', __name__)
+
+a_index_log = logging.getLogger('api.index')
+if config['production'] == False:
+    a_index_log.setLevel(logging.DEBUG)
 
 @a_index.route("/api/")
 def api_index():
@@ -55,6 +62,109 @@ def api_index():
         "status": "ok"
     }
 
+
+@a_index.route("/api/book", methods=['GET'])
+def get_users_books():
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT b.BOOK_ID FROM BOOK b "
+            + "INNER JOIN STUDY s ON s.STUDY_ID = b.STUDY_ID "
+            + "INNER JOIN USER_PROFILE u ON s.STUDY_ID = u.STUDY_ID "
+            + "WHERE u.user_id='"
+            + token['sub'] + "'"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing books.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall()
+    data = cursor.fetchall()
+
+    print(data)
+
+    return {
+        "status": "ok"
+    }
+
+
+@a_index.route("/api/schools", methods=['GET'])
+def get_schools():
+    '''
+    Return a list of schools in the same style/format/convention that 
+    admin_get_users() returns a list of users.
+    '''
+
+    # check to make sure you have a offset
+    try:
+        assert 'offset' in request.form
+    except AssertionError:
+        a_index_log.debug(
+            'User did not provide offset in request for get_schools'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "offset was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure offset is int
+    try:
+        offset = int(request.form['offset'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "offset failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT SCHOOL_NAME FROM SCHOOL ORDER BY SCHOOL_ID OFFSET " +
+            request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+        )
+    except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    schools = cursor.fetchall()
+
+    return {
+        "schools": list(map(lambda x: x[0], schools))
+    }
+
+
 @a_index.route("/api/login", methods=['POST'])
 def login():
     # check that all expected inputs are received
@@ -62,6 +172,8 @@ def login():
         assert 'email' in request.form
         assert 'password' in request.form
     except AssertionError:
+        a_index_log.debug(
+            'User did not provide either email or password when logging in')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -71,6 +183,8 @@ def login():
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
     if re_email.match(request.form['email']) is None or \
             re_alphanumeric8.match(request.form['password']) is None:
+        a_index_log.debug(
+            'User provided malformed email or password when logging in')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -87,6 +201,8 @@ def login():
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,
@@ -96,6 +212,8 @@ def login():
 
     result = cursor.fetchone()
     if result is None:
+        a_index_log.debug(
+            'User provided an email that does not exist for logging in')
         return {
             "status": "fail",
             "fail_no": 4,
@@ -103,6 +221,7 @@ def login():
         }, 400, {"Content-Type": "application/json"}
 
     if not bcrypt.checkpw(request.form['password'].encode('utf8'), result['PASSWORD'].encode('utf8')):
+        a_index_log.debug('User provided incorrect password when logging in')
         return {
             "status": "fail",
             "fail_no": 5,
@@ -120,6 +239,8 @@ def login():
         )
         connection.commit()
     except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 6,
@@ -164,6 +285,8 @@ def login():
         )
         connection.commit()
     except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 7,
@@ -199,6 +322,8 @@ def logout(auth):
         )
         connection.commit()
     except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 8,
@@ -230,6 +355,8 @@ def register():
         assert 'last_name' in request.form
         assert 'school_id'in request.form
     except AssertionError:
+        a_index_log.debug(
+            'User did not provide a required field when registering')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -241,6 +368,7 @@ def register():
             re_alphanumeric8.match(request.form['password']) is None or \
             re_alphanumeric2.match(request.form['first_name']) is None or \
             re_alphanumeric2.match(request.form['last_name']) is None:
+        a_index_log.warning('User provided a malformed field when registering')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -259,6 +387,8 @@ def register():
             "select * from USER_PROFILE where email='" + email + "'"
         )
     except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,
@@ -268,10 +398,11 @@ def register():
 
     result = cursor.fetchone()
     if result is not None:
+        a_index_log.debug('User tried to register an email that already exists')
         return {
             "status": "fail",
             "fail_no": 4,
-            "message": "Email is Already Registered."
+            "message": "Email is already registered."
         }
 
     hashed = bcrypt.hashpw(
@@ -291,6 +422,8 @@ def register():
         )
         connection.commit()
     except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 5,

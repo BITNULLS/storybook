@@ -24,6 +24,8 @@ This Python module is organized in the following manner:
 Routes:
 
  - `/api/`
+ - `/api/book`
+ - `/api/schools`
  - `/api/login`
  - `/api/logout`
  - `/api/register`
