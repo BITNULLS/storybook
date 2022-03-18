@@ -24,6 +24,7 @@ import cx_Oracle
 import bcrypt
 import time
 import logging
+import json
 
 from core.auth import validate_login, issue_auth_token
 from core.helper import allowed_file, label_results_from, sanitize_redirects
@@ -72,9 +73,10 @@ def get_book_info(book_id_in: int):
     # connect to database
     cursor = connection.cursor()
     
+    # Removing Column "CREATED_ON" since that would create a problem for converting to JSON
     try:
         cursor.execute(
-            "SELECT BOOK_ID, BOOK_NAME, CREATED_ON, DESCRIPTION, PAGE_COUNT FROM BOOK "+
+            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK "+
             "WHERE book_id= '"+ str(book_id) +"'"
         )
     except cx_Oracle.Error as e:
@@ -90,8 +92,8 @@ def get_book_info(book_id_in: int):
     label_results_from(cursor)
     data = cursor.fetchone()
     
-    # Converts data from List to a string to see the output on browser
-    return str(data)
+    # Converts data from List to a JSON
+    return json.dumps(data)
     
 
 @a_index.route("/api/book_old", methods=['GET'])
