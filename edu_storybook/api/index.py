@@ -5,6 +5,7 @@ index.py
 Routes:
     /api/
     /api/book
+    /api/book_old
     /api/schools
     /api/login
     /api/logout
@@ -24,7 +25,6 @@ import time
 import logging
 
 from core.auth import validate_login, issue_auth_token
-from core.bucket import bucket
 from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
 from core.config import config
@@ -63,8 +63,9 @@ def api_index():
     }
 
 
-@a_index.route("/api/book", methods=['GET'])
-def get_users_books():
+@a_index.route("/api/book_old", methods=['GET'])
+def get_users_books_old():
+    # TODO: may delete in future
     # validate that user has rights to access books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -445,3 +446,50 @@ def register():
             "status": "ok"
         })
     return res
+
+
+@a_index.route("/api/book", methods=['GET'])
+def get_users_books():
+
+    # validate that user has rights to access books
+
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # connect to database
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute(
+            "SELECT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
+            "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
+            "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
+            "INNER JOIN LAST_PAGE ON last_page.book_id = book.book_id "+
+            "WHERE user_study.user_id= '"+ token['sub'] +"'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing books.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall()
+    label_results_from(cursor)
+    data = cursor.fetchall()
+
+    return {
+       "books": data
+    }
+   
