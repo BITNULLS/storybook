@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for March 9, 2022
+-- Updated Schema for March 17, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -20,7 +20,7 @@
 --  DDL for Sequence BOOK_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "BOOK_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 141 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "BOOK_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 181 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence DETAILS_SEQ
 --------------------------------------------------------
@@ -40,7 +40,7 @@
 --  DDL for Sequence STUDY_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 41 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 
 --------------------------------------------------------
 --  TABLES
@@ -150,7 +150,8 @@
   CREATE TABLE "STUDY" 
    (	"STUDY_ID" NUMBER, 
 	"SCHOOL_ID" NUMBER, 
-	"STUDY_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP"
+	"STUDY_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP", 
+	"STUDY_INVITE_CODE" VARCHAR2(64 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table USER_PROFILE
@@ -195,6 +196,7 @@
    (	"USER_ID" VARCHAR2(32 BYTE) COLLATE "USING_NLS_COMP", 
 	"STUDY_ID" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
+
 --------------------------------------------------------
 --  DDL for Table ACTION
 --------------------------------------------------------
@@ -230,7 +232,7 @@
   CREATE TABLE "ANSWER" 
    (	"ANSWER_ID" NUMBER, 
 	"QUESTION_ID" NUMBER, 
-	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP"
+	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP",
   "CORRECT" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
@@ -251,7 +253,6 @@
 --------------------------------------------------------
 --  INDEXES
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Index ACTION_DETAIL_PK
 --------------------------------------------------------
@@ -263,7 +264,7 @@
 --------------------------------------------------------
 
   CREATE UNIQUE INDEX "ACTION_KEY_PK" ON "ACTION_KEY" ("ACTION_KEY_ID") 
-  ;
+  ;  
 --------------------------------------------------------
 --  DDL for Index ANSWER_PK
 --------------------------------------------------------
@@ -394,7 +395,6 @@
 --------------------------------------------------------
 --  TRIGGERS
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Trigger ANSWER_TRG
 --------------------------------------------------------
@@ -761,11 +761,11 @@ BEGIN
 END;
 /
 ALTER TRIGGER "BOOK_TRG" ENABLE;
+
 
 --------------------------------------------------------
 --  PROCEDURES
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Procedure CHECK_DETAIL_ID_PROC
 --------------------------------------------------------
@@ -1261,6 +1261,42 @@ END check_detail_id_fcn;
   ALTER TABLE "BOOK" ADD CONSTRAINT "BOOK_PK" PRIMARY KEY ("BOOK_ID")
   USING INDEX  ENABLE;
 --------------------------------------------------------
+--  Ref Constraints for Table ACTION
+--------------------------------------------------------
+
+  ALTER TABLE "ACTION" ADD CONSTRAINT "ACTION_BOOK_FK" FOREIGN KEY ("BOOK_ID")
+	  REFERENCES "BOOK" ("BOOK_ID") ENABLE;
+  ALTER TABLE "ACTION" ADD CONSTRAINT "ACTION_DETAIL_ID" FOREIGN KEY ("DETAIL_ID")
+	  REFERENCES "ACTION_DETAIL" ("DETAIL_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table ACTION_DETAIL
+--------------------------------------------------------
+
+  ALTER TABLE "ACTION_DETAIL" ADD CONSTRAINT "ACTION_DETAIL_ACTION_ID_FK" FOREIGN KEY ("ACTION_KEY_ID")
+	  REFERENCES "ACTION_KEY" ("ACTION_KEY_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table ANSWER
+--------------------------------------------------------
+
+  ALTER TABLE "ANSWER" ADD CONSTRAINT "ANSWER_QUESTION_FK" FOREIGN KEY ("QUESTION_ID")
+	  REFERENCES "QUESTION" ("QUESTION_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table BOOK_STUDY
+--------------------------------------------------------
+
+  ALTER TABLE "BOOK_STUDY" ADD CONSTRAINT "BOOK_STUDY_FK1" FOREIGN KEY ("BOOK_ID")
+	  REFERENCES "BOOK" ("BOOK_ID") ENABLE;
+  ALTER TABLE "BOOK_STUDY" ADD CONSTRAINT "BOOK_STUDY_FK2" FOREIGN KEY ("STUDY_ID")
+	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table LAST_PAGE
+--------------------------------------------------------
+
+  ALTER TABLE "LAST_PAGE" ADD CONSTRAINT "LAST_PAGE_FK1" FOREIGN KEY ("USER_ID")
+	  REFERENCES "USER_PROFILE" ("USER_ID") ENABLE;
+  ALTER TABLE "LAST_PAGE" ADD CONSTRAINT "LAST_PAGE_FK2" FOREIGN KEY ("BOOK_ID")
+	  REFERENCES "BOOK" ("BOOK_ID") ENABLE;
+--------------------------------------------------------
 --  Ref Constraints for Table PASSWORD_RESET
 --------------------------------------------------------
 
@@ -1286,7 +1322,7 @@ END check_detail_id_fcn;
 
   ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_SCHOOL_ID_FK" FOREIGN KEY ("SCHOOL_ID")
 	  REFERENCES "SCHOOL" ("SCHOOL_ID") ENABLE;
-  ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
+    ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
 	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;
 --------------------------------------------------------
 --  Ref Constraints for Table USER_RESPONSE
