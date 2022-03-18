@@ -23,7 +23,7 @@ if config['production'] == False:
     log.setLevel(logging.DEBUG)
 
 @storyboard.route("/storyboard/<int:book_id_in>/<int:page_number_in>")
-def gen_storyboard_page():
+def gen_storyboard_page(book_id_in: int, page_number_in: int):
     storyboard_page = TEMPLATES['_base'].substitute(
         title = 'Storyboard Page',
         description = 'Make an account with our website',
