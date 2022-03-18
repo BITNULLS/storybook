@@ -9,12 +9,18 @@ Routes:
 from flask import request
 from flask import make_response
 from flask import Blueprint
+import logging
 
 from templates import TEMPLATES
 
 from navbar import make_navbar
+from core.config import config
 
 homepage = Blueprint('homepage', __name__)
+
+log = logging.getLogger('ssg.index')
+if config['production'] == False:
+    log.setLevel(logging.DEBUG)
 
 @homepage.route("/")
 def gen_index():

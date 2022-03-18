@@ -10,4 +10,4 @@ You will need to download two files into this directory:
 
 You will need to have permission to download the files from Google Drive.
 
-These two files are on the `.gitignore`, and should not be committed.
+These two files are on the `.gitignore`, and should not be committed. 

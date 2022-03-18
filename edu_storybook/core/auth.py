@@ -13,6 +13,7 @@ import time
 import bcrypt
 import uuid
 import cx_Oracle
+import logging
 from flask import make_response
 
 from .sensitive import jwt_key
@@ -21,10 +22,16 @@ from .helper import label_results_from
 from .email import send_email
 from .reg_exps import *
 
+c_auth_log = logging.getLogger('core.auth')
+if config['production'] == False:
+    c_auth_log.setLevel(logging.DEBUG)
 
 def issue_auth_token(res, token):
     """
     Reissues Authorization token for the user.
+
+    :param res: A Flask response object.
+    :param token: Old token to be refreshed.
 
     NOTE: Only works on user that has been checked with validate_login().
     """
@@ -40,7 +47,7 @@ def issue_auth_token(res, token):
     res.set_cookie(
         "Authorization",
         "Bearer " + new_token,
-        max_age=config["login_duration"]  ,
+        max_age=config["login_duration"],
         domain="localhost",
         samesite="Lax"
         # secure=True,
@@ -71,6 +78,7 @@ def validate_login(auth: str, permission: int=0):
         #assert type(origin) is not None, 'You need to pass a valid origin param to validate_login()'
         assert type(permission) is not None, 'You need to pass a valid permission param to validate_login()'
     except AssertionError:
+        c_auth_log.debug('A user tried to use an endpoint without providing an Authorization header')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -83,7 +91,8 @@ def validate_login(auth: str, permission: int=0):
     token = jwt.decode(auth, jwt_key, algorithms=config["jwt_alg"])
     t = int(time.time())
 
-    if token['iat'] + config['login_duration'] < t: 
+    if token['iat'] + config['login_duration'] < t:
+        c_auth_log.debug('User provided an expired token')
         return {
             "status": "fail",
             "fail_no": "2",
@@ -96,6 +105,7 @@ def validate_login(auth: str, permission: int=0):
         }, 400, {"Content-Type": "application/json"}
 
     if token['permission'] < permission:
+        c_auth_log.debug('User lacks permission for endpoint')
         return {
             "status": "fail",
             "fail_no": "3",

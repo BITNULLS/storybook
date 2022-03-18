@@ -24,6 +24,8 @@ This Python module is organized in the following manner:
 Routes:
 
  - `/api/`
+ - `/api/book`
+ - `/api/schools`
  - `/api/login`
  - `/api/logout`
  - `/api/register`
@@ -38,6 +40,7 @@ Routes:
  - `/api/admin/page`
  - `/api/admin/download/user`
  - `/api/admin/download/action`
+ - `/api/admin/get/book`
  - `/api/admin/get/user`
 
 ## password.py

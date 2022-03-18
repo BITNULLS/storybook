@@ -6,15 +6,22 @@ Routes:
     /books
 """
 
+import logging
+
 from flask import request
 from flask import Blueprint
 from api.index import get_users_books
+from core.config import config
 
 from templates import TEMPLATES
 
 from navbar import make_navbar
 
 story_selection = Blueprint('story_selection', __name__)
+
+log = logging.getLogger('ssg.story_selection')
+if config['production'] == False:
+    log.setLevel(logging.DEBUG)
 
 @story_selection.route('/books')
 def gen_books():    
@@ -43,5 +50,4 @@ def gen_books():
         )
     )
 
-   
     return story_selection_page

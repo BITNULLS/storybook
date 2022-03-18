@@ -11,7 +11,9 @@ from flask import Blueprint
 
 import jwt
 import cx_Oracle
+import logging
 
+from core.helper import label_results_from
 from core.auth import validate_login, issue_auth_token
 from core.config import config
 from core.db import connection, conn_lock
@@ -20,12 +22,17 @@ from core.reg_exps import *
 
 a_quiz = Blueprint('a_quiz', __name__)
 
+a_quiz_log = logging.getLogger('api.quiz')
+if config['production'] == False:
+    a_quiz_log.setLevel(logging.DEBUG)
+
 @a_quiz.route("/api/quiz/submit", methods=['POST'])
 def quiz_submit_answer():
     try:
         assert 'answer_id' in request.form
         assert 'question_id' in request.form
     except AssertionError:
+        a_quiz_log.debug('User submitted a quiz response without an answer and/or question ID')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -36,6 +43,7 @@ def quiz_submit_answer():
         answer_id = int(request.form['answer_id'])
         question_id = int(request.form['question_id'])
     except ValueError:
+        a_quiz_log.debug('User submitted a quiz response that was malformed')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -67,6 +75,8 @@ def quiz_submit_answer():
         )
         connection.commit()
     except cx_Oracle.Error as e:
+        a_quiz_log.warning('Error when accessing database')
+        a_quiz_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,
@@ -82,17 +92,18 @@ def quiz_submit_answer():
            "SELECT correct FROM answer WHERE answer_id= " + str(answer_id) + " and question_id= " + str(question_id)
        )
        label_results_from(cursor)
-       
        connection.commit()
     except cx_Oracle.Error as e:
-       return {
-           "status": "fail",
-           "fail_no": 4,
-           "message": "Error when updating database.",
-           "database_message": str(e)
-       }, 400, {"Content-Type": "application/json"}
+        a_quiz_log.warning('Error when accessing database')
+        a_quiz_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
     finally:
-       conn_lock.release()
+        conn_lock.release()
 
     result = cursor.fetchone()
 

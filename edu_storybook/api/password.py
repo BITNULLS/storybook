@@ -17,22 +17,28 @@ import random
 import string
 import datetime
 import bcrypt
+import logging
 
 from core.email import send_email
 from core.db import connection, conn_lock
 from core.reg_exps import *
 from core.helper import sanitize_redirects
+from core.config import config
 
 a_password = Blueprint('a_password', __name__)
+
+a_password_log = logging.getLogger('api.password')
+if config['production'] == False:
+    a_password_log.setLevel(logging.DEBUG)
 
 # input email & check if email exists
 @a_password.route("/api/password/forgot", methods=['POST'])
 def password_forgot():
-
     # checks for input
     try:
         assert 'email' in request.form
     except AssertionError:
+        a_password_log.debug('Missing email in password forgot request.')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -41,6 +47,7 @@ def password_forgot():
 
     # sanitize inputs: alphanumeric, > 8 chars
     if re_email.match(request.form['email']) is None:
+        a_password_log.debug('Email form data failed sanitize check.')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -60,6 +67,8 @@ def password_forgot():
             # fix the SQL statement with user_session?
             "SELECT * FROM USER_PROFILE WHERE EMAIL ='" + email + "'")
     except cx_Oracle.Error as e:
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,
@@ -69,13 +78,14 @@ def password_forgot():
 
     result = cursor.fetchone()
     if result is None:
+        a_password_log.debug('User requested a password forgot on an email that did not exist: ' + email)
         return {
             "status": "fail",
             "fail_no": 4,
             "message": "No email matches what was passed."
         }, 400, {"Content-Type": "application/json"}
 
-    user_id = result[9]
+    user_id = result[8]
     user_name = result[1] + ' ' + result[2]
 
     now = datetime.datetime.now()
@@ -87,6 +97,8 @@ def password_forgot():
             "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "','" + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'))")
         connection.commit()
     except cx_Oracle.Error as e:
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 5,
@@ -96,7 +108,7 @@ def password_forgot():
     finally:
         conn_lock.release()
 
-    key = 'edustorybook.com/Password/Reset#key=' + rand_str
+    key = 'edustorybook.tk/password/reset#key=' + rand_str
 
     send_email(user_name, email, 'Edu Storybooks',
                'edustorybooks@gmail.com', 'Password Reset Request', key)
@@ -109,18 +121,22 @@ def password_forgot():
         res = make_response({
             "status": "ok"
         })
+    return res
 
 
-# new password updates old password in USER_PROFILE & deletes the inserted row in PASSWORD_RESET
-# check if both password fields match
 @a_password.route("/api/password/reset", methods=['POST'])
 def password_reset():
-   # check expected input
+    '''
+    New password updates old password in USER_PROFILE & deletes the inserted row
+    in PASSWORD_RESET check if both password fields match
+    '''
+    # check expected input
     try:
         assert 'new_pass' in request.form
         assert 'confirm_pass' in request.form
         assert 'reset_key' in request.form
     except AssertionError:
+        a_password_log.debug('User tried to reset a password without providing a new password, or reset key')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -130,6 +146,7 @@ def password_reset():
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
     if re_alphanumeric8.match(request.form['new_pass']) is None or \
             re_alphanumeric8.match(request.form['confirm_pass']) is None:
+        a_password_log.debug('User tried to reset password with invalid password')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -138,6 +155,7 @@ def password_reset():
 
     # check if both passwords match
     if (request.form['new_pass'] != request.form['confirm_pass']):
+        a_password_log.debug('User tried to reset password with unmatched password')
         return {
             "status": "fail",
             "fail_no": 3,
@@ -154,8 +172,9 @@ def password_reset():
     try:
         cursor.execute(
             "SELECT USER_ID FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
-
     except cx_Oracle.Error as e:
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -165,6 +184,7 @@ def password_reset():
 
     result = cursor.fetchone()
     if result is None:
+        a_password_log.debug('User tried to reset a password with an invalid reset_key')
         return {
             "status": "fail",
             "fail_no": 5,
@@ -177,6 +197,8 @@ def password_reset():
                        hashed.decode('utf8') + "' WHERE user_id ='" + result[0] + "'")
         connection.commit()
     except cx_Oracle.Error as e:
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 6,
@@ -192,6 +214,8 @@ def password_reset():
             "DELETE FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
         connection.commit()
     except cx_Oracle.Error as e:
+        a_password_log.warning('Error when accessing database')
+        a_password_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 7,
@@ -209,3 +233,4 @@ def password_reset():
         res = make_response({
             "status": "ok"
         })
+    return res

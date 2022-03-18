@@ -10,18 +10,8 @@ from flask import request
 from flask import Blueprint
 from flask import send_file
 
-from pdf2image import convert_from_path
-import os
-import csv
-import uuid
-import jwt
-import hashlib
 import cx_Oracle
-import random
-import string
-import datetime
-import bcrypt
-import time
+import logging 
 
 from core.auth import validate_login
 from core.bucket import bucket
@@ -33,16 +23,24 @@ from core.reg_exps import *
 
 a_study = Blueprint('a_study', __name__)
 
+a_study_log = logging.getLogger('api.study')
+if config['production'] == False:
+    a_study_log.setLevel(logging.DEBUG)
+
 @a_study.route("/api/studies", methods=['GET'])
 def get_studies():
     '''
-    Return a list of studies in the same style/format/convention that admin_get_schools() returns a list of users.
+    Return a list of studies in the same style/format/convention that 
+    admin_get_schools() returns a list of users.
     '''
 
     # check to make sure you have a offset
     try:
         assert 'offset' in request.form
     except AssertionError:
+        a_study_log.debug(
+            'User did not provide an offset when requesting a list of studies'
+        )
         return {
             "status": "fail",
             "fail_no": 1,
@@ -53,6 +51,7 @@ def get_studies():
     try:
         offset = int(request.form['offset'])
     except ValueError:
+        a_study_log.debug('User provided a non-int value for the offset parameter')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -70,6 +69,8 @@ def get_studies():
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
+        a_study_log.warning('Error when accessing database')
+        a_study_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,
@@ -80,7 +81,5 @@ def get_studies():
     studies = cursor.fetchall()
 
     return {
-
         "studies": studies
-
     }

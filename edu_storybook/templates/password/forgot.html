@@ -1,18 +1,25 @@
+~navbar
 <div class="row mt-5">
   <div class="col-12 col-md-4 col-sm-3"></div>
   <div class="col">
     <h1 class="text-center mb-5">Forgot Your Password? </h1>
     <h4 class="text-center mb-5"> Don't worry! We will send you an email to update your password. </h4>
 
-    <form>
+    <div class="card p1-1 pr-2" >
+      <div class="card-body">
+  
+    <form action="/api/password/forgot" method="POST">
+      <input type="hidden" name="redirect" value="/login">
       <div class="form-group mb-4">
         <label for="email">Email Address:</label>
-        <input id="email" type="email" formControlName="email" class="form-control"></input>
+        <input id="email" type="email" name="email" class="form-control"></input>
       </div>
       <div class="text-center form-group">
         <button id="submit-button" class="btn btn-primary">Send Email</button>
       </div>
     </form>
+  </div>
+</div>
 
     <div class="text-center mt-5">
       <a href="/login" class="btn btn-link">Back to Sign In</a>
