@@ -75,7 +75,7 @@ def get_book_info(book_id_in: int):
     try:
         cursor.execute(
             "SELECT BOOK_ID, BOOK_NAME, CREATED_ON, DESCRIPTION, PAGE_COUNT FROM BOOK "+
-            "WHERE book_id= '"+ book_id +"'"
+            "WHERE book_id= '"+ str(book_id) +"'"
         )
     except cx_Oracle.Error as e:
         return {
@@ -85,11 +85,13 @@ def get_book_info(book_id_in: int):
             "database_message": str(e)
         }
 
-    # assign variable data to cursor.fetchall()
+    # assign variable data to cursor.fetchone()
+    # This would hold info about a book based on book_id in List format
     label_results_from(cursor)
-    data = cursor.fetchall()
+    data = cursor.fetchone()
     
-    return data
+    # Converts data from List to a string to see the output on browser
+    return str(data)
     
 
 @a_index.route("/api/book_old", methods=['GET'])
