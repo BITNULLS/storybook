@@ -5,6 +5,7 @@ index.py
 Routes:
     /api/
     /api/book
+    /api/book/<int:book_id_in>
     /api/book_old
     /api/schools
     /api/login
@@ -62,6 +63,34 @@ def api_index():
         "status": "ok"
     }
 
+@a_index.route("/api/book/<int:book_id_in>", methods=['GET'])
+def get_book_info(book_id_in: int):
+    
+    # parsing book_id from string to integer
+    book_id = int(book_id_in)
+
+    # connect to database
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute(
+            "SELECT BOOK_ID, BOOK_NAME, CREATED_ON, DESCRIPTION, PAGE_COUNT FROM BOOK "+
+            "WHERE book_id= '"+ book_id +"'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing a book.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall()
+    label_results_from(cursor)
+    data = cursor.fetchall()
+    
+    return data
+    
 
 @a_index.route("/api/book_old", methods=['GET'])
 def get_users_books_old():
