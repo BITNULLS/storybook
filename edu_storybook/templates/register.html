@@ -4,7 +4,7 @@
   <div class="col">
     <h1 class="text-center mb-5">Register</h1> 
 
-    <div class="card pl-1 pr-2"> 
+    <div class="card"> 
       <div class="card-body">
         <form action="/api/register" method="POST">
           <input type="hidden" name="redirect" value="/books">
@@ -23,18 +23,26 @@
               </div>
             </div>
           </div>
-
+<!---- Minor fix -->
           <div class="row">
-            <div class="col-12 col-sm-6">
+            <div class="col-12">
               <div class="form-group mb-4">
                 <label for="email">Email Address:</label>
-                <input id="email" type="email" name="email" class="form-control"></input>
+                <input id="email" type="email" name="email" class="form-control" placeholder="name@example.com"></input>
               </div>
             </div>
+          </div>
+          <div class="row">
             <div class="col-12 col-sm-6">
               <div class="form-group mb-4">
                 <label for="school_id">School ID:</label>
                 <input id="school_id" type="number" name="school_id" class="form-control"></input>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6">
+              <div class="form-group mb-4">
+                <label for="school_id">Study Code:</label>
+                <input id="study_invite_code" type="number" name="study_invite_code" class="form-control"></input>
               </div>
             </div>
           </div>
