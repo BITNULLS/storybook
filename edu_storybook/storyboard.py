@@ -29,7 +29,6 @@ if config['production'] == False:
 
 @storyboard.route("/storyboard/<int:book_id_in>/<int:page_number_in>")
 def gen_storyboard_page(book_id_in: int, page_number_in: int):
-    
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
