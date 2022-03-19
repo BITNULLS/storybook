@@ -17,7 +17,7 @@ from templates import TEMPLATES
 from core.config import config
 
 from api.storyboard import storyboard_get_pagecount
-from api.index import get_users_books
+from api.index import get_book_info
 
 from navbar import make_navbar
 
