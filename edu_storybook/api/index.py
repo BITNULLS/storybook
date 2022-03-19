@@ -66,7 +66,18 @@ def api_index():
 
 @a_index.route("/api/book/<int:book_id_in>", methods=['GET'])
 def get_book_info(book_id_in: int):
-    
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
     # parsing book_id from string to integer
     book_id = int(book_id_in)
 
@@ -150,6 +161,18 @@ def get_schools():
     Return a list of schools in the same style/format/convention that 
     admin_get_users() returns a list of users.
     '''
+
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
 
     # check to make sure you have a offset
     try:
