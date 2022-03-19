@@ -38,19 +38,9 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
     
     page_count = storyboard_get_pagecount(book_id)['pagecount'] # Get the number of pages based on book_id
     
-    name = None
-
-    # Get the name of the book based on 'book_id' to display it on Storyboard Viewer
-    # Definitely this part could be better by fetching book title from either Story Selection or calling another
-    # API endpoint
-    
-    # Using this for-loop here for now just to get it working 
-    # In Future: use a better method for fetching book title
-    if name is None:
-        for b in get_users_books()['books']:
-            if b['BOOK_ID'] == book_id:
-                name = b['BOOK_NAME']
-                break
+    # Get book_info based on book_id from latest api endpoint /api/book/book_id
+    book_info = json.loads(get_book_info(book_id))
+    name = book_info['BOOK_NAME']
             
     # Display/Hide "Previous" link based on current page number
     if page_number == 1:
