@@ -588,7 +588,7 @@ def admin_page_handler():
         }, 400, {"Content-Type": "application/json"}
 
 
-@a_admin.route("/api/admin/download/user", methods=['POST'])
+@a_admin.route("/api/admin/download/user", methods=['GET'])
 def admin_download_user_data():
     """
     Exports user profile data to a csv file
@@ -684,7 +684,7 @@ def admin_download_user_data():
         }
 
 
-@a_admin.route("/api/admin/download/action", methods=['POST'])
+@a_admin.route("/api/admin/download/action", methods=['GET'])
 def admin_download_action_data():
     """
     Exports user action data to a csv file
@@ -718,7 +718,7 @@ def admin_download_action_data():
         inner join action on user_profile.user_id = action.user_id \
         inner join book on action.book_id = book.book_id \
         inner join action_detail on action_detail.detail_id = action.detail_id \
-        inner join action_key on action_detail.action_id = action_key.action_id")
+        inner join action_key on action_detail.action_key_id = action_key.action_key_id")
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)

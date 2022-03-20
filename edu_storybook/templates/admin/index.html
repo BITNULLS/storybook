@@ -1,24 +1,3 @@
-<style>
-   .btn-atts
-   {
-     min-width: 200px;
-     max-width: 200px;
-     margin-left: 5px !important;
-     margin-right: 5px !important;
-     margin-bottom: 5px !important;
-     border-style: none;
-   }
-   .btn-random
-   {
-     border-style: none;
-   }
-   .col_atts 
-   {
-     margin-left: 20px !important;
-     margin-right: 20px !important;
-   }
-</style>
-
 <script>
    //function generates random 6 digit study id
    function generateNewID() {
@@ -53,7 +32,7 @@
             <div class="input-group mb-3">
                <input type="text" class="form-control" id="study_id" placeholder="######" aria-describedby="basic-addon2">
                <div class="input-group-append">
-                  <button type="button" class="btn btn-primary btn-random bg-info" id="new_id" onclick="generateNewID()">Randomize</button> 
+                  <button type="button" class="btn btn-random bg-info" id="new_id" onclick="generateNewID()">Randomize</button> 
                </div>
             </div>
 
@@ -88,7 +67,7 @@
 
       <!--Button to send data to backend-->
       <div class="modal-footer">
-         <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Create</button>
+         <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Create</button>
          <!--TODO: make info transfer to backend-->
        </div>
 
@@ -114,19 +93,19 @@
    <div class="row justify-content--center">
       <div class="col text-center col_atts">
          <h3 class="text-center mt-5">Books</h3>
-         <a href="/admin/upload_book" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Upload A New Book</a>
-         <a href="/admin/edit_book" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Edit A Book</a>
-         <a href="/admin/book_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Book Manager</a>
+         <a href="/admin/upload_book" class="btn btn-atts bg-info" role="button" aria-pressed="true">Upload A New Book</a>
+         <a href="/admin/edit_book" class="btn btn-atts bg-info" role="button" aria-pressed="true">Edit A Book</a>
+         <a href="/admin/book_manager" class="btn btn-atts bg-info" role="button" aria-pressed="true">Book Manager</a>
       </div>
       <div class="col text-center col_atts">
          <h3 class="text-center mt-5">Studies</h3>
-         <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Study Manager</a>
-         <a type="button" class="btn btn-primary btn-atts bg-info" data-toggle="modal" data-target="#createNewStudyModal">Create New Study</a>
+         <a href="/admin/study_manager" class="btn btn-atts bg-info" role="button" aria-pressed="true">Study Manager</a>
+         <a type="button" class="btn btn-atts bg-info" data-toggle="modal" data-target="#createNewStudyModal">Create New Study</a>
       </div>
       <div class="col text-center col_atts">
          <h3 class="text-center mt-5">Download Data</h3>
-         <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">User Data</a>
-         <a href="/admin/study_manager" class="btn btn-primary btn-atts bg-info" role="button" aria-pressed="true">Action Data</a>
+         <a href="/api/admin/download/user" target="_blank" class="btn btn-atts bg-info" role="button" aria-pressed="true">User Data</a>
+         <a href="/api/admin/download/action" target="_blank" class="btn btn-atts bg-info" role="button" aria-pressed="true">Action Data</a>
       </div>
    </div>
  </div>
