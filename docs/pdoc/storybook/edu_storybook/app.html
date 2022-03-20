@@ -30,6 +30,25 @@
 
 
 
+        <h2>API Documentation</h2>
+            <ul class="memberlist">
+            <li>
+                    <a class="function" href="#site_map">site_map</a>
+            </li>
+            <li>
+                    <a class="function" href="#gen_site_map_txt">gen_site_map_txt</a>
+            </li>
+            <li>
+                    <a class="function" href="#gen_site_map_json">gen_site_map_json</a>
+            </li>
+            <li>
+                    <a class="function" href="#gen_site_map_xml">gen_site_map_xml</a>
+            </li>
+            <li>
+                    <a class="function" href="#robots_txt">robots_txt</a>
+            </li>
+    </ul>
+
 
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev">
@@ -57,9 +76,8 @@ storybook<wbr>.edu_storybook<wbr>.app    </h1>
 <span class="sd">Main launch point for our web server.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">Response</span>
 
-<span class="kn">from</span> <span class="nn">core.config</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">import</span> <span class="nn">api.main</span> <span class="k">as</span> <span class="nn">main</span>
 <span class="kn">import</span> <span class="nn">admin</span>
 <span class="kn">import</span> <span class="nn">index</span>
@@ -68,6 +86,8 @@ storybook<wbr>.edu_storybook<wbr>.app    </h1>
 <span class="kn">import</span> <span class="nn">register</span>
 <span class="kn">import</span> <span class="nn">story_selection</span>
 <span class="kn">import</span> <span class="nn">storyboard</span>
+<span class="kn">from</span> <span class="nn">core.helper</span> <span class="kn">import</span> <span class="n">has_no_empty_params</span>
+<span class="kn">from</span> <span class="nn">core.config</span> <span class="kn">import</span> <span class="n">config</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -81,7 +101,7 @@ storybook<wbr>.edu_storybook<wbr>.app    </h1>
 <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Starting app&#39;</span><span class="p">)</span>
 
-<span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">main</span><span class="o">.</span><span class="n">api</span><span class="p">)</span> 
+<span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">main</span><span class="o">.</span><span class="n">api</span><span class="p">)</span>
 <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">admin</span><span class="p">)</span>
 <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">homepage</span><span class="p">)</span>
 <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">login</span><span class="o">.</span><span class="n">login</span><span class="p">)</span>
@@ -90,15 +110,323 @@ storybook<wbr>.edu_storybook<wbr>.app    </h1>
 <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">story_selection</span><span class="o">.</span><span class="n">story_selection</span><span class="p">)</span>
 <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">storyboard</span><span class="o">.</span><span class="n">storyboard</span><span class="p">)</span>
 
+
+<span class="k">def</span> <span class="nf">site_map</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate a dictionary of URLs for this Flask app that have no arguments, and</span>
+<span class="sd">    do not begin with `/api`. The dictionary is arranged as:</span>
+
+<span class="sd">    ```</span>
+<span class="sd">    {</span>
+<span class="sd">        url: {</span>
+<span class="sd">            &#39;endpoint&#39;: ...,</span>
+<span class="sd">            &#39;methods&#39;: ...,</span>
+<span class="sd">            &#39;defaults&#39;: ...</span>
+<span class="sd">        },</span>
+<span class="sd">        ...</span>
+<span class="sd">    }</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Returns: A dictionary arranged as described above.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">iter_rules</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;/api&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">defaults</span> <span class="ow">or</span> <span class="p">{}))</span>
+        <span class="n">links</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;endpoint&#39;</span><span class="p">:</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span>
+            <span class="s1">&#39;methods&#39;</span><span class="p">:</span> <span class="n">rule</span><span class="o">.</span><span class="n">methods</span><span class="p">,</span>
+            <span class="s1">&#39;defaults&#39;</span><span class="p">:</span> <span class="n">rule</span><span class="o">.</span><span class="n">defaults</span>
+        <span class="p">}</span>
+    <span class="k">return</span> <span class="n">links</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/sitemap.txt&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gen_site_map_txt</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate the sitemap for this Flask app as a `txt` file.</span>
+
+<span class="sd">    Returns: Text file with all routes of the Flask app.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="n">site_map</span><span class="p">()</span>
+    <span class="n">sitemap</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">links</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># Filter out rules we can&#39;t navigate to in a browser</span>
+        <span class="c1"># and rules that require parameters</span>
+        <span class="k">if</span> <span class="s1">&#39;GET&#39;</span> <span class="ow">in</span> <span class="n">links</span><span class="p">[</span><span class="n">rule</span><span class="p">][</span><span class="s1">&#39;methods&#39;</span><span class="p">]:</span>
+            <span class="n">sitemap</span> <span class="o">+=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">rule</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">return</span> <span class="n">sitemap</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;text/plain&quot;</span><span class="p">}</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/sitemap.json&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gen_site_map_json</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate the sitemap for this Flask app as a `json` file.</span>
+
+<span class="sd">    Returns: JSON file with all routes of the Flask app.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="n">site_map</span><span class="p">()</span>
+    <span class="n">reachable_links</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">links</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># Filter out rules we can&#39;t navigate to in a browser</span>
+        <span class="c1"># and rules that require parameters</span>
+        <span class="k">if</span> <span class="s2">&quot;GET&quot;</span> <span class="ow">in</span> <span class="n">links</span><span class="p">[</span><span class="n">rule</span><span class="p">][</span><span class="s1">&#39;methods&#39;</span><span class="p">]:</span>
+            <span class="n">reachable_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">rule</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;sitemap&quot;</span><span class="p">:</span> <span class="n">reachable_links</span>
+    <span class="p">},</span> <span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">}</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/sitemap.xml&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gen_site_map_xml</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate the sitemap for this Flask app as an `xml` file.</span>
+
+<span class="sd">    Returns: XML file with all routes of the Flask app.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="n">site_map</span><span class="p">()</span>
+    <span class="n">xml</span> <span class="o">=</span> <span class="s1">&#39;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+        <span class="s1">&#39;&lt;urlset xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">links</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># Filter out rules we can&#39;t navigate to in a browser</span>
+        <span class="c1"># and rules that require parameters</span>
+        <span class="k">if</span> <span class="s2">&quot;GET&quot;</span> <span class="ow">in</span> <span class="n">links</span><span class="p">[</span><span class="n">rule</span><span class="p">][</span><span class="s1">&#39;methods&#39;</span><span class="p">]:</span>
+            <span class="n">xml</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&lt;url&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                    <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="s1">&lt;loc&gt;</span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span><span class="si">}{</span><span class="n">rule</span><span class="si">}</span><span class="s1">&lt;/loc&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>\
+                    <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="s1">&lt;lastmod&gt;</span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;last_mod&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/lastmod&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>\
+                    <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&lt;/url&gt;&#39;</span>
+    <span class="n">xml</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/urlset&gt;&#39;</span>
+    <span class="k">return</span> <span class="n">xml</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;text/xml&#39;</span><span class="p">}</span>
+
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/robots.txt&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">robots_txt</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Serve the `robots.txt` file from the static folder for SEO.</span>
+
+<span class="sd">    Returns: The `robots.txt` as a Flask.Response.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;robots.txt&#39;</span><span class="p">)</span>
+
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="p">)</span> 
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="p">)</span>
     <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="s2">&quot;5001&quot;</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-           
 </pre></div>
 
         </details>
 
             </section>
+                <section id="site_map">
+                            <div class="attr function"><a class="headerlink" href="#site_map">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">site_map</span><span class="signature">()</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">site_map</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate a dictionary of URLs for this Flask app that have no arguments, and</span>
+<span class="sd">    do not begin with `/api`. The dictionary is arranged as:</span>
+
+<span class="sd">    ```</span>
+<span class="sd">    {</span>
+<span class="sd">        url: {</span>
+<span class="sd">            &#39;endpoint&#39;: ...,</span>
+<span class="sd">            &#39;methods&#39;: ...,</span>
+<span class="sd">            &#39;defaults&#39;: ...</span>
+<span class="sd">        },</span>
+<span class="sd">        ...</span>
+<span class="sd">    }</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Returns: A dictionary arranged as described above.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">iter_rules</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;/api&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">url_for</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">defaults</span> <span class="ow">or</span> <span class="p">{}))</span>
+        <span class="n">links</span><span class="p">[</span><span class="n">url</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;endpoint&#39;</span><span class="p">:</span> <span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">,</span>
+            <span class="s1">&#39;methods&#39;</span><span class="p">:</span> <span class="n">rule</span><span class="o">.</span><span class="n">methods</span><span class="p">,</span>
+            <span class="s1">&#39;defaults&#39;</span><span class="p">:</span> <span class="n">rule</span><span class="o">.</span><span class="n">defaults</span>
+        <span class="p">}</span>
+    <span class="k">return</span> <span class="n">links</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Generate a dictionary of URLs for this Flask app that have no arguments, and
+do not begin with <code>/api</code>. The dictionary is arranged as:</p>
+
+<pre><code>{
+    url: {
+        'endpoint': ...,
+        'methods': ...,
+        'defaults': ...
+    },
+    ...
+}
+</code></pre>
+
+<p>Returns: A dictionary arranged as described above.</p>
+</div>
+
+
+                </section>
+                <section id="gen_site_map_txt">
+                            <div class="attr function"><a class="headerlink" href="#gen_site_map_txt">#&nbsp;&nbsp</a>
+
+                <div class="decorator">@app.route(&#39;/sitemap.txt&#39;)</div>
+
+            <span class="def">def</span>
+            <span class="name">gen_site_map_txt</span><span class="signature">()</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/sitemap.txt&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gen_site_map_txt</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate the sitemap for this Flask app as a `txt` file.</span>
+
+<span class="sd">    Returns: Text file with all routes of the Flask app.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="n">site_map</span><span class="p">()</span>
+    <span class="n">sitemap</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">links</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># Filter out rules we can&#39;t navigate to in a browser</span>
+        <span class="c1"># and rules that require parameters</span>
+        <span class="k">if</span> <span class="s1">&#39;GET&#39;</span> <span class="ow">in</span> <span class="n">links</span><span class="p">[</span><span class="n">rule</span><span class="p">][</span><span class="s1">&#39;methods&#39;</span><span class="p">]:</span>
+            <span class="n">sitemap</span> <span class="o">+=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">rule</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">return</span> <span class="n">sitemap</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;text/plain&quot;</span><span class="p">}</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Generate the sitemap for this Flask app as a <code>txt</code> file.</p>
+
+<p>Returns: Text file with all routes of the Flask app.</p>
+</div>
+
+
+                </section>
+                <section id="gen_site_map_json">
+                            <div class="attr function"><a class="headerlink" href="#gen_site_map_json">#&nbsp;&nbsp</a>
+
+                <div class="decorator">@app.route(&#39;/sitemap.json&#39;)</div>
+
+            <span class="def">def</span>
+            <span class="name">gen_site_map_json</span><span class="signature">()</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/sitemap.json&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gen_site_map_json</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate the sitemap for this Flask app as a `json` file.</span>
+
+<span class="sd">    Returns: JSON file with all routes of the Flask app.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="n">site_map</span><span class="p">()</span>
+    <span class="n">reachable_links</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">links</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># Filter out rules we can&#39;t navigate to in a browser</span>
+        <span class="c1"># and rules that require parameters</span>
+        <span class="k">if</span> <span class="s2">&quot;GET&quot;</span> <span class="ow">in</span> <span class="n">links</span><span class="p">[</span><span class="n">rule</span><span class="p">][</span><span class="s1">&#39;methods&#39;</span><span class="p">]:</span>
+            <span class="n">reachable_links</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">rule</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;sitemap&quot;</span><span class="p">:</span> <span class="n">reachable_links</span>
+    <span class="p">},</span> <span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">}</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Generate the sitemap for this Flask app as a <code>json</code> file.</p>
+
+<p>Returns: JSON file with all routes of the Flask app.</p>
+</div>
+
+
+                </section>
+                <section id="gen_site_map_xml">
+                            <div class="attr function"><a class="headerlink" href="#gen_site_map_xml">#&nbsp;&nbsp</a>
+
+                <div class="decorator">@app.route(&#39;/sitemap.xml&#39;)</div>
+
+            <span class="def">def</span>
+            <span class="name">gen_site_map_xml</span><span class="signature">()</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/sitemap.xml&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">gen_site_map_xml</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate the sitemap for this Flask app as an `xml` file.</span>
+
+<span class="sd">    Returns: XML file with all routes of the Flask app.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">links</span> <span class="o">=</span> <span class="n">site_map</span><span class="p">()</span>
+    <span class="n">xml</span> <span class="o">=</span> <span class="s1">&#39;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+        <span class="s1">&#39;&lt;urlset xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">links</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># Filter out rules we can&#39;t navigate to in a browser</span>
+        <span class="c1"># and rules that require parameters</span>
+        <span class="k">if</span> <span class="s2">&quot;GET&quot;</span> <span class="ow">in</span> <span class="n">links</span><span class="p">[</span><span class="n">rule</span><span class="p">][</span><span class="s1">&#39;methods&#39;</span><span class="p">]:</span>
+            <span class="n">xml</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&lt;url&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> \
+                    <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="s1">&lt;loc&gt;</span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span><span class="si">}{</span><span class="n">rule</span><span class="si">}</span><span class="s1">&lt;/loc&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>\
+                    <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="s1">&lt;lastmod&gt;</span><span class="si">{</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;last_mod&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">&lt;/lastmod&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>\
+                    <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&lt;/url&gt;&#39;</span>
+    <span class="n">xml</span> <span class="o">+=</span> <span class="s1">&#39;&lt;/urlset&gt;&#39;</span>
+    <span class="k">return</span> <span class="n">xml</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">:</span> <span class="s1">&#39;text/xml&#39;</span><span class="p">}</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Generate the sitemap for this Flask app as an <code>xml</code> file.</p>
+
+<p>Returns: XML file with all routes of the Flask app.</p>
+</div>
+
+
+                </section>
+                <section id="robots_txt">
+                            <div class="attr function"><a class="headerlink" href="#robots_txt">#&nbsp;&nbsp</a>
+
+                <div class="decorator">@app.route(&#39;/robots.txt&#39;)</div>
+
+            <span class="def">def</span>
+            <span class="name">robots_txt</span><span class="signature">() -&gt; flask.wrappers.Response</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/robots.txt&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">robots_txt</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Serve the `robots.txt` file from the static folder for SEO.</span>
+
+<span class="sd">    Returns: The `robots.txt` as a Flask.Response.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">app</span><span class="o">.</span><span class="n">send_static_file</span><span class="p">(</span><span class="s1">&#39;robots.txt&#39;</span><span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Serve the <code>robots.txt</code> file from the static folder for SEO.</p>
+
+<p>Returns: The <code>robots.txt</code> as a Flask.Response.</p>
+</div>
+
+
+                </section>
     </main>
 <script>
     function escapeHTML(html) {

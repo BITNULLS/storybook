@@ -22,6 +22,9 @@ if config['production'] == False:
 
 @homepage.route("/")
 def gen_index():
+    '''
+    Generates the homepage.
+    '''
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']

@@ -22,6 +22,9 @@ if config['production'] == False:
 
 @storyboard.route("/storyboard/<int:book_id_in>/<int:page_number_in>")
 def gen_storyboard_page():
+    '''
+    Generate the storyboard viewer page.
+    '''
     storyboard_page = TEMPLATES['_base'].substitute(
         title = 'Storyboard Page',
         description = 'Make an account with our website',

@@ -49,21 +49,17 @@
                     <h1 class="modulename">
 <a href="./../api.html">api</a><wbr>.study    </h1>
 
-                        <div class="docstring"><p>study.py
-    Handle all study related GET, POST, PUT, DELETE</p>
+                        <div class="docstring"><p>study.py</p>
 
-<p>Route:
-    /api/studies</p>
+<p>Handle all study related GET, POST, PUT, DELETE operations.</p>
 </div>
 
                         <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">study.py</span>
-<span class="sd">    Handle all study related GET, POST, PUT, DELETE</span>
 
-<span class="sd">Route:</span>
-<span class="sd">    /api/studies</span>
+<span class="sd">Handle all study related GET, POST, PUT, DELETE operations.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span>
@@ -71,7 +67,7 @@
 <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">send_file</span>
 
 <span class="kn">import</span> <span class="nn">cx_Oracle</span>
-<span class="kn">import</span> <span class="nn">logging</span> 
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">core.auth</span> <span class="kn">import</span> <span class="n">validate_login</span>
 <span class="kn">from</span> <span class="nn">core.bucket</span> <span class="kn">import</span> <span class="n">bucket</span>
@@ -90,7 +86,7 @@
 <span class="nd">@a_study</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/studies&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">get_studies</span><span class="p">():</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Return a list of studies in the same style/format/convention that </span>
+<span class="sd">    Return a list of studies in the same style/format/convention that</span>
 <span class="sd">    admin_get_schools() returns a list of users.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
@@ -162,7 +158,7 @@
             <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@a_study</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/studies&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">get_studies</span><span class="p">():</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Return a list of studies in the same style/format/convention that </span>
+<span class="sd">    Return a list of studies in the same style/format/convention that</span>
 <span class="sd">    admin_get_schools() returns a list of users.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
@@ -219,7 +215,7 @@
 
         </details>
 
-            <div class="docstring"><p>Return a list of studies in the same style/format/convention that 
+            <div class="docstring"><p>Return a list of studies in the same style/format/convention that
 admin_get_schools() returns a list of users.</p>
 </div>
 

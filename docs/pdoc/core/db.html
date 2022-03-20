@@ -45,6 +45,8 @@
                         <div class="docstring"><p>db.py</p>
 
 <p>Initializes the database connection.</p>
+
+<p>Any error here is critical, and results in a halt of Flask app startup.</p>
 </div>
 
                         <details>
@@ -53,6 +55,8 @@
 <span class="sd">db.py</span>
 
 <span class="sd">Initializes the database connection.</span>
+
+<span class="sd">Any error here is critical, and results in a halt of Flask app startup.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">config</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Lock</span>
@@ -60,7 +64,7 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">sensitive</span>
 <span class="kn">from</span> <span class="nn">.filepath</span> <span class="kn">import</span> <span class="n">fix_filepath</span>
 
-<span class="kn">import</span> <span class="nn">logging</span> 
+<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="n">c_db_log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;werkzeug&#39;</span><span class="p">)</span>
 
@@ -80,8 +84,8 @@
 <span class="c1"># hacky solution for Python relative importing</span>
 <span class="c1"># so that running this regularly and unit testing works</span>
 <span class="n">corrected_connect_string</span> <span class="o">=</span> <span class="n">oracle_configs</span><span class="p">[</span><span class="s1">&#39;connect_string&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-    <span class="s1">&#39;data/Wallet_EDUStorybook&#39;</span><span class="p">,</span> 
-    <span class="vm">__file__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;db.py&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;data/Wallet_EDUStorybook&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;data/Wallet_EDUStorybook&#39;</span><span class="p">,</span>
+    <span class="vm">__file__</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;db.py&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;data/Wallet_EDUStorybook&#39;</span><span class="p">,</span>
     <span class="mi">1</span> <span class="c1"># replace once</span>
 <span class="p">)</span>
 

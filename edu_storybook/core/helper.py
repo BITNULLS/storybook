@@ -20,7 +20,7 @@ if config['production'] == False:
     c_helper_log.setLevel(logging.DEBUG)
 
 
-def allowed_file(filename):
+def allowed_file(filename) -> bool:
     """
     checks that a file extension is one of the allowed extensions, defined by ALLOWED_EXTENSIONS
 
@@ -72,7 +72,15 @@ def sanitize_redirects(redirect_link: str) -> str:
         return redirect_link
 
 
-def has_no_empty_params(rule):
+def has_no_empty_params(rule: dict) -> bool:
+    '''
+    Checks if a Flask rule has no arguments.
+
+    Args:
+     - rule: A Flask rule cast into a dictionary.
+
+    Returns: True if the rule has no params, False if not.
+    '''
     defaults = rule['defaults'] if rule['defaults'] is not None else ()
     arguments = rule['arguments'] if rule['arguments'] is not None else ()
     return len(defaults) >= len(arguments)

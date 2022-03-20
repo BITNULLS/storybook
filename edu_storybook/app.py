@@ -4,7 +4,7 @@ app.py
 Main launch point for our web server.
 """
 
-from flask import Flask, url_for
+from flask import Flask, url_for, Response
 
 import api.main as main
 import admin
@@ -73,9 +73,9 @@ def site_map():
 @app.route('/sitemap.txt')
 def gen_site_map_txt():
     '''
-    Generate the sitemap for this Flask app as `txt` file.
+    Generate the sitemap for this Flask app as a `txt` file.
 
-    Returns: Text file will all routes of the Flask app.
+    Returns: Text file with all routes of the Flask app.
     '''
     links = site_map()
     sitemap = ''
@@ -89,6 +89,11 @@ def gen_site_map_txt():
 
 @app.route('/sitemap.json')
 def gen_site_map_json():
+    '''
+    Generate the sitemap for this Flask app as a `json` file.
+
+    Returns: JSON file with all routes of the Flask app.
+    '''
     links = site_map()
     reachable_links = []
     for rule in links.keys():
@@ -103,6 +108,11 @@ def gen_site_map_json():
 
 @app.route('/sitemap.xml')
 def gen_site_map_xml():
+    '''
+    Generate the sitemap for this Flask app as an `xml` file.
+
+    Returns: XML file with all routes of the Flask app.
+    '''
     links = site_map()
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + \
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -119,7 +129,12 @@ def gen_site_map_xml():
 
 
 @app.route('/robots.txt')
-def robots_txt():
+def robots_txt() -> Response:
+    '''
+    Serve the `robots.txt` file from the static folder for SEO.
+
+    Returns: The `robots.txt` as a Flask.Response.
+    '''
     return app.send_static_file('robots.txt')
 
 

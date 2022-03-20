@@ -70,25 +70,30 @@ So, I give up. Here it is on its own.</p>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    When referencing a file from a Python file that is not the original start of</span>
 <span class="sd">    the Python program, a filepath must be corrected from the current file&#39;s</span>
-<span class="sd">    __file__ path, as to start using the current Python file as a based for</span>
+<span class="sd">    `__file__` path, as to start using the current Python file as a based for</span>
 <span class="sd">    relative file referencing.</span>
 
-<span class="sd">    Example:</span>
-<span class="sd">        a.py</span>
-<span class="sd">        module_b/</span>
-<span class="sd">            __init__.py</span>
-<span class="sd">            c.py</span>
-<span class="sd">            config.txt</span>
-<span class="sd">        </span>
-<span class="sd">        If a.py imports module_b.c, and if c.py imports c.config as </span>
-<span class="sd">        &quot;./config.txt&quot;, it will fail since the Python interpreter pathing is</span>
-<span class="sd">        relative to the start script, a.py.</span>
-<span class="sd">    </span>
+<span class="sd">    **Example:**</span>
+<span class="sd">    ```</span>
+<span class="sd">    a.py</span>
+<span class="sd">    module_b/</span>
+<span class="sd">        __init__.py</span>
+<span class="sd">        c.py</span>
+<span class="sd">        config.txt</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    If a.py imports module_b.c, and if c.py imports c.config as</span>
+<span class="sd">    `&quot;./config.txt&quot;`, it will fail since the Python interpreter pathing is</span>
+<span class="sd">    relative to the start script, `a.py`.</span>
+
 <span class="sd">    You would call this function as</span>
-<span class="sd">        fix_filepath(__file__, &#39;relative/file/path.txt&#39;)</span>
-<span class="sd">    </span>
-<span class="sd">    :param filepath: The current file context, __file__.</span>
-<span class="sd">    :param file: Relative file to reference.</span>
+<span class="sd">    ```</span>
+<span class="sd">    fix_filepath(__file__, &#39;relative/file/path.txt&#39;)</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     - filepath: The current file context, `__file__`.</span>
+<span class="sd">     - file: Relative file to reference.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filepath</span><span class="p">)),</span> <span class="n">file</span><span class="p">)</span>
 </pre></div>
@@ -110,25 +115,30 @@ So, I give up. Here it is on its own.</p>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    When referencing a file from a Python file that is not the original start of</span>
 <span class="sd">    the Python program, a filepath must be corrected from the current file&#39;s</span>
-<span class="sd">    __file__ path, as to start using the current Python file as a based for</span>
+<span class="sd">    `__file__` path, as to start using the current Python file as a based for</span>
 <span class="sd">    relative file referencing.</span>
 
-<span class="sd">    Example:</span>
-<span class="sd">        a.py</span>
-<span class="sd">        module_b/</span>
-<span class="sd">            __init__.py</span>
-<span class="sd">            c.py</span>
-<span class="sd">            config.txt</span>
-<span class="sd">        </span>
-<span class="sd">        If a.py imports module_b.c, and if c.py imports c.config as </span>
-<span class="sd">        &quot;./config.txt&quot;, it will fail since the Python interpreter pathing is</span>
-<span class="sd">        relative to the start script, a.py.</span>
-<span class="sd">    </span>
+<span class="sd">    **Example:**</span>
+<span class="sd">    ```</span>
+<span class="sd">    a.py</span>
+<span class="sd">    module_b/</span>
+<span class="sd">        __init__.py</span>
+<span class="sd">        c.py</span>
+<span class="sd">        config.txt</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    If a.py imports module_b.c, and if c.py imports c.config as</span>
+<span class="sd">    `&quot;./config.txt&quot;`, it will fail since the Python interpreter pathing is</span>
+<span class="sd">    relative to the start script, `a.py`.</span>
+
 <span class="sd">    You would call this function as</span>
-<span class="sd">        fix_filepath(__file__, &#39;relative/file/path.txt&#39;)</span>
-<span class="sd">    </span>
-<span class="sd">    :param filepath: The current file context, __file__.</span>
-<span class="sd">    :param file: Relative file to reference.</span>
+<span class="sd">    ```</span>
+<span class="sd">    fix_filepath(__file__, &#39;relative/file/path.txt&#39;)</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     - filepath: The current file context, `__file__`.</span>
+<span class="sd">     - file: Relative file to reference.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filepath</span><span class="p">)),</span> <span class="n">file</span><span class="p">)</span>
 </pre></div>
@@ -137,26 +147,33 @@ So, I give up. Here it is on its own.</p>
 
             <div class="docstring"><p>When referencing a file from a Python file that is not the original start of
 the Python program, a filepath must be corrected from the current file's
-__file__ path, as to start using the current Python file as a based for
+<code>__file__</code> path, as to start using the current Python file as a based for
 relative file referencing.</p>
 
-<p>Example:
-    a.py
-    module_b/
-        __init__.py
-        c.py
-        config.txt</p>
+<p><strong>Example:</strong></p>
 
-<pre><code>If a.py imports module_b.c, and if c.py imports c.config as 
-"./config.txt", it will fail since the Python interpreter pathing is
-relative to the start script, a.py.
+<pre><code>a.py
+module_b/
+    __init__.py
+    c.py
+    config.txt
 </code></pre>
 
-<p>You would call this function as
-    fix_filepath(__file__, 'relative/file/path.txt')</p>
+<p>If a.py imports module_b.c, and if c.py imports c.config as
+<code>"./config.txt"</code>, it will fail since the Python interpreter pathing is
+relative to the start script, <code>a.py</code>.</p>
 
-<p>:param filepath: The current file context, __file__.
-:param file: Relative file to reference.</p>
+<p>You would call this function as</p>
+
+<pre><code>fix_filepath(__file__, 'relative/file/path.txt')
+</code></pre>
+
+<p>Args:</p>
+
+<ul>
+<li>filepath: The current file context, <code>__file__</code>.</li>
+<li>file: Relative file to reference.</li>
+</ul>
 </div>
 
 

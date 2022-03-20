@@ -39,6 +39,9 @@
             <li>
                     <a class="function" href="#sanitize_redirects">sanitize_redirects</a>
             </li>
+            <li>
+                    <a class="function" href="#has_no_empty_params">has_no_empty_params</a>
+            </li>
     </ul>
 
 
@@ -84,7 +87,8 @@ our app.</p>
 <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
     <span class="n">c_helper_log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">allowed_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">allowed_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    checks that a file extension is one of the allowed extensions, defined by ALLOWED_EXTENSIONS</span>
 
@@ -105,33 +109,49 @@ our app.</p>
 <span class="sd">        ...</span>
 <span class="sd">    }</span>
 <span class="sd">    ```</span>
-<span class="sd">    I am amazed that cx_Oracle does not provide this. Labeling the columns in </span>
+<span class="sd">    I am amazed that cx_Oracle does not provide this. Labeling the columns in</span>
 <span class="sd">    the returned data is so basic. Why doesn&#39;t it do it. I checked the docs.</span>
-<span class="sd">    Oracle thinks this is reasonable. I do not think this is reasonable, but </span>
+<span class="sd">    Oracle thinks this is reasonable. I do not think this is reasonable, but</span>
 <span class="sd">    okay.</span>
 
-<span class="sd">    :param cursor: A cursor that has been .execute[d].</span>
-<span class="sd">    :type cursor: cx_Oracle.Cursor</span>
+<span class="sd">    Args:</span>
+<span class="sd">     - cursor: A cursor that has been .execute[d].</span>
 
-<span class="sd">    :returns: The same cursor with the row factory applied.</span>
+<span class="sd">    Returns: The same cursor with the row factory applied.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">rowfactory</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">cursor</span>
-    
+
+
 <span class="k">def</span> <span class="nf">sanitize_redirects</span><span class="p">(</span><span class="n">redirect_link</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Determines if a given redirect link is a valid relative or absolute path</span>
+<span class="sd">    Determines if a given redirect link is a valid relative or absolute path.</span>
 
-<span class="sd">    :param redirect_link: The link to validate</span>
+<span class="sd">    Args:</span>
+<span class="sd">     - redirect_link: The link to validate</span>
 
-<span class="sd">    :returns: The relative or absolute path if it is valid, &#39;/&#39; if it is not.</span>
+<span class="sd">    Returns: The relative or absolute path if it is valid, `&#39;/&#39;` if it is not.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">re_redirect_link</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">redirect_link</span><span class="p">):</span>
-        <span class="n">c_helper_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Redirect Link is not a valid relative or absolute path.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">re_redirect_link</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">redirect_link</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">c_helper_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Redirect Link &#39;</span><span class="si">{</span><span class="n">redirect_link</span><span class="si">}</span><span class="s2">&#39; is not a valid relative or absolute path.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="s1">&#39;/&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">redirect_link</span>
+
+
+<span class="k">def</span> <span class="nf">has_no_empty_params</span><span class="p">(</span><span class="n">rule</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Checks if a Flask rule has no arguments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     - rule: A Flask rule cast into a dictionary.</span>
+
+<span class="sd">    Returns: True if the rule has no params, False if not.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;defaults&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;defaults&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">()</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;arguments&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;arguments&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">()</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -142,12 +162,12 @@ our app.</p>
 
         
             <span class="def">def</span>
-            <span class="name">allowed_file</span><span class="signature">(filename)</span>:
+            <span class="name">allowed_file</span><span class="signature">(filename) -&gt; bool</span>:
     </div>
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">allowed_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">allowed_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    checks that a file extension is one of the allowed extensions, defined by ALLOWED_EXTENSIONS</span>
 
@@ -188,15 +208,15 @@ our app.</p>
 <span class="sd">        ...</span>
 <span class="sd">    }</span>
 <span class="sd">    ```</span>
-<span class="sd">    I am amazed that cx_Oracle does not provide this. Labeling the columns in </span>
+<span class="sd">    I am amazed that cx_Oracle does not provide this. Labeling the columns in</span>
 <span class="sd">    the returned data is so basic. Why doesn&#39;t it do it. I checked the docs.</span>
-<span class="sd">    Oracle thinks this is reasonable. I do not think this is reasonable, but </span>
+<span class="sd">    Oracle thinks this is reasonable. I do not think this is reasonable, but</span>
 <span class="sd">    okay.</span>
 
-<span class="sd">    :param cursor: A cursor that has been .execute[d].</span>
-<span class="sd">    :type cursor: cx_Oracle.Cursor</span>
+<span class="sd">    Args:</span>
+<span class="sd">     - cursor: A cursor that has been .execute[d].</span>
 
-<span class="sd">    :returns: The same cursor with the row factory applied.</span>
+<span class="sd">    Returns: The same cursor with the row factory applied.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">rowfactory</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
@@ -214,15 +234,18 @@ our app.</p>
 }
 </code></pre>
 
-<p>I am amazed that cx_Oracle does not provide this. Labeling the columns in 
+<p>I am amazed that cx_Oracle does not provide this. Labeling the columns in
 the returned data is so basic. Why doesn't it do it. I checked the docs.
-Oracle thinks this is reasonable. I do not think this is reasonable, but 
+Oracle thinks this is reasonable. I do not think this is reasonable, but
 okay.</p>
 
-<p>:param cursor: A cursor that has been .execute[d].
-:type cursor: cx_Oracle.Cursor</p>
+<p>Args:</p>
 
-<p>:returns: The same cursor with the row factory applied.</p>
+<ul>
+<li>cursor: A cursor that has been .execute[d].</li>
+</ul>
+
+<p>Returns: The same cursor with the row factory applied.</p>
 </div>
 
 
@@ -239,14 +262,15 @@ okay.</p>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">sanitize_redirects</span><span class="p">(</span><span class="n">redirect_link</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Determines if a given redirect link is a valid relative or absolute path</span>
+<span class="sd">    Determines if a given redirect link is a valid relative or absolute path.</span>
 
-<span class="sd">    :param redirect_link: The link to validate</span>
+<span class="sd">    Args:</span>
+<span class="sd">     - redirect_link: The link to validate</span>
 
-<span class="sd">    :returns: The relative or absolute path if it is valid, &#39;/&#39; if it is not.</span>
+<span class="sd">    Returns: The relative or absolute path if it is valid, `&#39;/&#39;` if it is not.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">re_redirect_link</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">redirect_link</span><span class="p">):</span>
-        <span class="n">c_helper_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Redirect Link is not a valid relative or absolute path.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">re_redirect_link</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">redirect_link</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">c_helper_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Redirect Link &#39;</span><span class="si">{</span><span class="n">redirect_link</span><span class="si">}</span><span class="s2">&#39; is not a valid relative or absolute path.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="s1">&#39;/&#39;</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">redirect_link</span>
@@ -254,11 +278,54 @@ okay.</p>
 
         </details>
 
-            <div class="docstring"><p>Determines if a given redirect link is a valid relative or absolute path</p>
+            <div class="docstring"><p>Determines if a given redirect link is a valid relative or absolute path.</p>
 
-<p>:param redirect_link: The link to validate</p>
+<p>Args:</p>
 
-<p>:returns: The relative or absolute path if it is valid, '/' if it is not.</p>
+<ul>
+<li>redirect_link: The link to validate</li>
+</ul>
+
+<p>Returns: The relative or absolute path if it is valid, <code>'/'</code> if it is not.</p>
+</div>
+
+
+                </section>
+                <section id="has_no_empty_params">
+                            <div class="attr function"><a class="headerlink" href="#has_no_empty_params">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">has_no_empty_params</span><span class="signature">(rule: dict) -&gt; bool</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">has_no_empty_params</span><span class="p">(</span><span class="n">rule</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Checks if a Flask rule has no arguments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     - rule: A Flask rule cast into a dictionary.</span>
+
+<span class="sd">    Returns: True if the rule has no params, False if not.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">defaults</span> <span class="o">=</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;defaults&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;defaults&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">()</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;arguments&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">rule</span><span class="p">[</span><span class="s1">&#39;arguments&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">()</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">defaults</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Checks if a Flask rule has no arguments.</p>
+
+<p>Args:</p>
+
+<ul>
+<li>rule: A Flask rule cast into a dictionary.</li>
+</ul>
+
+<p>Returns: True if the rule has no params, False if not.</p>
 </div>
 
 

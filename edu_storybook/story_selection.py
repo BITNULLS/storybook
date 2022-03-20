@@ -23,6 +23,10 @@ if config['production'] == False:
 
 @story_selection.route('/books')
 def gen_books():
+    '''
+    Generate the story selection (books) page.
+    '''
+
     """
     all_books = ''
     user_books = get_users_books()

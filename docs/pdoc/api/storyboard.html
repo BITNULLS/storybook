@@ -55,23 +55,17 @@
                     <h1 class="modulename">
 <a href="./../api.html">api</a><wbr>.storyboard    </h1>
 
-                        <div class="docstring"><p>storyboard.py
-    Routes beginning with /api/storyboard/</p>
+                        <div class="docstring"><p>storyboard.py</p>
 
-<p>Routes:
-    /api/storyboard/page/<int:book_id_in>/<int:page_number_in>
-    /api/storyboard/action</p>
+<p>Routes beginning with <code>/api/storyboard/</code></p>
 </div>
 
                         <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">storyboard.py</span>
-<span class="sd">    Routes beginning with /api/storyboard/</span>
 
-<span class="sd">Routes:</span>
-<span class="sd">    /api/storyboard/page/&lt;int:book_id_in&gt;/&lt;int:page_number_in&gt;</span>
-<span class="sd">    /api/storyboard/action</span>
+<span class="sd">Routes beginning with `/api/storyboard/`</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span>
@@ -117,7 +111,7 @@
     <span class="c1"># sanitize inputs: make sure book_id, page_number are ints</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">book_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">book_id_in</span><span class="p">)</span>
-        <span class="n">page_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page_number_in</span><span class="p">)</span>    
+        <span class="n">page_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page_number_in</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="n">a_storyboard_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;This should not even be possible. &#39;</span> <span class="o">+</span>
             <span class="s1">&#39;A user HTTP GET non-int values to an int endpoint&#39;</span><span class="p">)</span>
@@ -147,7 +141,7 @@
     <span class="c1"># check if this is in write format ; then we have to fix it and ammend it with page number</span>
     <span class="n">fileInput</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">fileInput</span> <span class="o">=</span> <span class="n">fileInput</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">fileInput</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">page_number</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
-    
+
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># get quiz questions and answers and more information about those</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -166,9 +160,9 @@
             <span class="s2">&quot;fail_no&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
             <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;error accessing quiz questions and its answers&quot;</span>
         <span class="p">},</span> <span class="mi">400</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">}</span>
-        
+
     <span class="n">quizQuestions</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span> <span class="c1"># List of Tuples where each Tuple is one record from database and List would include all the records</span>
-     
+
     <span class="c1"># check if current page has any quiz question (this assumes only a single question would be there in a page)</span>
     <span class="c1"># Future concern: What if there are back-to-back questions on a single page?</span>
     <span class="c1"># append options of that question onto a list</span>
@@ -178,7 +172,7 @@
         <span class="k">if</span> <span class="n">page_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">question</span><span class="p">[</span><span class="s1">&#39;PAGE_PREV&#39;</span><span class="p">],</span> <span class="n">question</span><span class="p">[</span><span class="s1">&#39;PAGE_NEXT&#39;</span><span class="p">]):</span>
             <span class="n">quiz_question_info</span> <span class="o">=</span> <span class="n">question</span>
             <span class="n">options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">question</span><span class="p">[</span><span class="s1">&#39;ANSWER&#39;</span><span class="p">])</span>
-    
+
     <span class="c1"># This detects whether we have a quiz question on page or not</span>
     <span class="k">if</span><span class="p">(</span><span class="n">quiz_question_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -188,7 +182,7 @@
             <span class="s2">&quot;options&quot;</span> <span class="p">:</span> <span class="n">options</span><span class="p">,</span>
             <span class="s2">&quot;correct_answer&quot;</span><span class="p">:</span> <span class="n">quiz_question_info</span><span class="p">[</span><span class="s1">&#39;ANSWER&#39;</span><span class="p">]</span>
         <span class="p">}</span>
-    
+
     <span class="c1"># Return page assuming current page has no quiz question</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">send_file</span><span class="p">(</span><span class="n">download_bucket_file</span><span class="p">(</span><span class="n">fileInput</span><span class="p">))</span>
@@ -201,7 +195,7 @@
         <span class="p">},</span> <span class="mi">400</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">}</span>
 
 
-<span class="nd">@a_storyboard</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/storyboard/pagecount/&lt;int:book_id_in&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@a_storyboard</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/storyboard/pagecount/&lt;int:book_id_in&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">storyboard_get_pagecount</span><span class="p">(</span><span class="n">book_id_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
     <span class="c1"># make sure user is authenticated</span>
     <span class="n">auth</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Authorization&#39;</span><span class="p">)</span>
@@ -217,7 +211,7 @@
 
     <span class="c1"># TODO: verify token</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span> <span class="n">jwt_key</span><span class="p">,</span> <span class="n">algorithms</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;jwt_alg&#39;</span><span class="p">])</span>
-    
+
     <span class="c1"># sanitize inputs: make sure book_id, page_number are ints</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">book_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">book_id_in</span><span class="p">)</span>
@@ -251,7 +245,7 @@
     <span class="n">pagecount</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;pagecount&quot;</span><span class="p">:</span> <span class="n">pagecount</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="p">}</span> 
+    <span class="p">}</span>
 
 
 <span class="nd">@a_storyboard</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/storyboard/action&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
@@ -259,8 +253,8 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Code the storyboard_save_user_action() function in the same style as logout()</span>
 <span class="sd">    Screenshot a successful POST request to the /storyboard/action endpoint.</span>
-<span class="sd">    Add to the backend/API.md the relevant documentation for the </span>
-<span class="sd">    /storyboard/action endpoint in the same style as the login/ endpoint </span>
+<span class="sd">    Add to the backend/API.md the relevant documentation for the</span>
+<span class="sd">    /storyboard/action endpoint in the same style as the login/ endpoint</span>
 <span class="sd">    documentation.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="c1"># make sure user is authenticated</span>
@@ -393,7 +387,7 @@
     <span class="c1"># sanitize inputs: make sure book_id, page_number are ints</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">book_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">book_id_in</span><span class="p">)</span>
-        <span class="n">page_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page_number_in</span><span class="p">)</span>    
+        <span class="n">page_number</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">page_number_in</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="n">a_storyboard_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;This should not even be possible. &#39;</span> <span class="o">+</span>
             <span class="s1">&#39;A user HTTP GET non-int values to an int endpoint&#39;</span><span class="p">)</span>
@@ -423,7 +417,7 @@
     <span class="c1"># check if this is in write format ; then we have to fix it and ammend it with page number</span>
     <span class="n">fileInput</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">fileInput</span> <span class="o">=</span> <span class="n">fileInput</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">fileInput</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">page_number</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
-    
+
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># get quiz questions and answers and more information about those</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -442,9 +436,9 @@
             <span class="s2">&quot;fail_no&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
             <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;error accessing quiz questions and its answers&quot;</span>
         <span class="p">},</span> <span class="mi">400</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">}</span>
-        
+
     <span class="n">quizQuestions</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span> <span class="c1"># List of Tuples where each Tuple is one record from database and List would include all the records</span>
-     
+
     <span class="c1"># check if current page has any quiz question (this assumes only a single question would be there in a page)</span>
     <span class="c1"># Future concern: What if there are back-to-back questions on a single page?</span>
     <span class="c1"># append options of that question onto a list</span>
@@ -454,7 +448,7 @@
         <span class="k">if</span> <span class="n">page_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">question</span><span class="p">[</span><span class="s1">&#39;PAGE_PREV&#39;</span><span class="p">],</span> <span class="n">question</span><span class="p">[</span><span class="s1">&#39;PAGE_NEXT&#39;</span><span class="p">]):</span>
             <span class="n">quiz_question_info</span> <span class="o">=</span> <span class="n">question</span>
             <span class="n">options</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">question</span><span class="p">[</span><span class="s1">&#39;ANSWER&#39;</span><span class="p">])</span>
-    
+
     <span class="c1"># This detects whether we have a quiz question on page or not</span>
     <span class="k">if</span><span class="p">(</span><span class="n">quiz_question_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -464,7 +458,7 @@
             <span class="s2">&quot;options&quot;</span> <span class="p">:</span> <span class="n">options</span><span class="p">,</span>
             <span class="s2">&quot;correct_answer&quot;</span><span class="p">:</span> <span class="n">quiz_question_info</span><span class="p">[</span><span class="s1">&#39;ANSWER&#39;</span><span class="p">]</span>
         <span class="p">}</span>
-    
+
     <span class="c1"># Return page assuming current page has no quiz question</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">send_file</span><span class="p">(</span><span class="n">download_bucket_file</span><span class="p">(</span><span class="n">fileInput</span><span class="p">))</span>
@@ -485,7 +479,7 @@
                 <section id="storyboard_get_pagecount">
                             <div class="attr function"><a class="headerlink" href="#storyboard_get_pagecount">#&nbsp;&nbsp</a>
 
-                <div class="decorator">@a_storyboard.route(&#39;/storyboard/pagecount/&lt;int:book_id_in&gt;&#39;, methods=[&#39;GET&#39;])</div>
+                <div class="decorator">@a_storyboard.route(&#39;/api/storyboard/pagecount/&lt;int:book_id_in&gt;&#39;, methods=[&#39;GET&#39;])</div>
 
             <span class="def">def</span>
             <span class="name">storyboard_get_pagecount</span><span class="signature">(book_id_in: int)</span>:
@@ -493,7 +487,7 @@
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@a_storyboard</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/storyboard/pagecount/&lt;int:book_id_in&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@a_storyboard</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/api/storyboard/pagecount/&lt;int:book_id_in&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">storyboard_get_pagecount</span><span class="p">(</span><span class="n">book_id_in</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
     <span class="c1"># make sure user is authenticated</span>
     <span class="n">auth</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Authorization&#39;</span><span class="p">)</span>
@@ -509,7 +503,7 @@
 
     <span class="c1"># TODO: verify token</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">auth</span><span class="p">,</span> <span class="n">jwt_key</span><span class="p">,</span> <span class="n">algorithms</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;jwt_alg&#39;</span><span class="p">])</span>
-    
+
     <span class="c1"># sanitize inputs: make sure book_id, page_number are ints</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">book_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">book_id_in</span><span class="p">)</span>
@@ -543,7 +537,7 @@
     <span class="n">pagecount</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;pagecount&quot;</span><span class="p">:</span> <span class="n">pagecount</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="p">}</span> 
+    <span class="p">}</span>
 </pre></div>
 
         </details>
@@ -567,8 +561,8 @@
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Code the storyboard_save_user_action() function in the same style as logout()</span>
 <span class="sd">    Screenshot a successful POST request to the /storyboard/action endpoint.</span>
-<span class="sd">    Add to the backend/API.md the relevant documentation for the </span>
-<span class="sd">    /storyboard/action endpoint in the same style as the login/ endpoint </span>
+<span class="sd">    Add to the backend/API.md the relevant documentation for the</span>
+<span class="sd">    /storyboard/action endpoint in the same style as the login/ endpoint</span>
 <span class="sd">    documentation.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="c1"># make sure user is authenticated</span>
@@ -671,8 +665,8 @@
 
             <div class="docstring"><p>Code the storyboard_save_user_action() function in the same style as logout()
 Screenshot a successful POST request to the /storyboard/action endpoint.
-Add to the backend/API.md the relevant documentation for the 
-/storyboard/action endpoint in the same style as the login/ endpoint 
+Add to the backend/API.md the relevant documentation for the
+/storyboard/action endpoint in the same style as the login/ endpoint
 documentation.</p>
 </div>
 

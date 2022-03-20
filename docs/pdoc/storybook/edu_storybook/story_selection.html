@@ -83,6 +83,10 @@ storybook<wbr>.edu_storybook<wbr>.story_selection    </h1>
 
 <span class="nd">@story_selection</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/books&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">gen_books</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate the story selection (books) page.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    all_books = &#39;&#39;</span>
 <span class="sd">    user_books = get_users_books()</span>
@@ -128,6 +132,10 @@ storybook<wbr>.edu_storybook<wbr>.story_selection    </h1>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="nd">@story_selection</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/books&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">gen_books</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Generate the story selection (books) page.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    all_books = &#39;&#39;</span>
 <span class="sd">    user_books = get_users_books()</span>
@@ -159,16 +167,7 @@ storybook<wbr>.edu_storybook<wbr>.story_selection    </h1>
 
         </details>
 
-            <div class="docstring"><p>all_books = ''
-user_books = get_users_books()</p>
-
-<p>for b in user_books:
-    all_books += TEMPLATES['story_selection']['book'].substitute(
-        book_title       = b['TITLE'],
-        book_description = b['DESCRIPTION'],
-        book_image       = '...', # TODO: figure out how to get
-        book_link        = b['BOOK_ID']
-    )</p>
+            <div class="docstring"><p>Generate the story selection (books) page.</p>
 </div>
 
 

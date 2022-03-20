@@ -21,7 +21,9 @@ if config['production'] == False:
 
 @register.route("/register")
 def gen_register():
-
+    '''
+    Generate the register page.
+    '''
     register_page = TEMPLATES["_base"].substitute(
         title = "Register an Account",
         description = "Make an account with our website",

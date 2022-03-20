@@ -77,11 +77,15 @@ storybook<wbr>.edu_storybook<wbr>.navbar    </h1>
 <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
     <span class="n">log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">make_navbar</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">make_navbar</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Takes in the authorization header from a user.</span>
 
-<span class="sd">    :param authorization: The authorization cookie from the user</span>
+<span class="sd">    Args:</span>
+<span class="sd">     - authorization: The authorization cookie from the user</span>
+
+<span class="sd">    Returns: The correct navbar based on if the user is a regular user or an</span>
+<span class="sd">    admin.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="n">authorization</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">TEMPLATES</span><span class="p">[</span><span class="s1">&#39;navbar&#39;</span><span class="p">][</span><span class="s1">&#39;logged_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">substitute</span><span class="p">()</span>
@@ -102,16 +106,20 @@ storybook<wbr>.edu_storybook<wbr>.navbar    </h1>
 
         
             <span class="def">def</span>
-            <span class="name">make_navbar</span><span class="signature">(authorization: str)</span>:
+            <span class="name">make_navbar</span><span class="signature">(authorization: str) -&gt; str</span>:
     </div>
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">make_navbar</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">make_navbar</span><span class="p">(</span><span class="n">authorization</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Takes in the authorization header from a user.</span>
 
-<span class="sd">    :param authorization: The authorization cookie from the user</span>
+<span class="sd">    Args:</span>
+<span class="sd">     - authorization: The authorization cookie from the user</span>
+
+<span class="sd">    Returns: The correct navbar based on if the user is a regular user or an</span>
+<span class="sd">    admin.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="n">authorization</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">TEMPLATES</span><span class="p">[</span><span class="s1">&#39;navbar&#39;</span><span class="p">][</span><span class="s1">&#39;logged_out&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">substitute</span><span class="p">()</span>
@@ -128,7 +136,14 @@ storybook<wbr>.edu_storybook<wbr>.navbar    </h1>
 
             <div class="docstring"><p>Takes in the authorization header from a user.</p>
 
-<p>:param authorization: The authorization cookie from the user</p>
+<p>Args:</p>
+
+<ul>
+<li>authorization: The authorization cookie from the user</li>
+</ul>
+
+<p>Returns: The correct navbar based on if the user is a regular user or an
+admin.</p>
 </div>
 
 
