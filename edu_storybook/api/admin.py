@@ -57,15 +57,23 @@ def admin_download_book():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         a_admin_log.debug(
             'Unauthenticated user tried to access admin_download_book'
         )
         return vl
-    
-    # TODO: Missing checking if 'filename' in request.form
+        
+    # check to make sure you have a 'filename'
+    try:
+        assert 'filename' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "filename was not provided."
+        }, 400, {"Content-Type": "application/json"}
 
     # get file name from request
     fileInput = request.form['filename']
@@ -91,15 +99,24 @@ def admin_book_upload():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         a_admin_log.debug(
             'Unauthenticated user tried to access admin_book_upload'
         )
         return vl
-    
-    # TODO: Missing checking if 'book_name' & 'book_description' in request.form
+        
+    # check to make sure you have a 'book_name' and 'book_description
+    try:
+        assert 'book_name' in request.form 
+        assert 'book_description' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_name or book_description was not provided."
+        }, 400, {"Content-Type": "application/json"}
 
     # get parameters for adding to book table
     book_name = (request.form.get('title')).strip() # Gives us the value of 'book name' field from frontend
@@ -289,7 +306,7 @@ def admin_add_book_to_study():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -585,7 +602,7 @@ def admin_download_user_data():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -681,7 +698,7 @@ def admin_download_action_data():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -778,7 +795,7 @@ def admin_get_users():
         Make offset an input parameter (int).
     """
 
-    # validate that user has rights to access books
+    # validate that user has rights to access 
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
