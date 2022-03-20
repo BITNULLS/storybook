@@ -1,5 +1,19 @@
 # `storybook` Documentation
 
+Here are the main helpful links:
+
+ - [How to get started working on this project.](getting_started.md)
+ - Documentation
+     - [Generated documentation of the `edu_storybook` module.](pdocs/index.html)
+     - [Documentation on our bucket helper script.](bucket.md)
+     - [Manually created documentation for our API.](api.md)
+     - [Hard lessons learnt.](hard_lessons.md)
+ - Database
+     - [An explanation of all of the columns and tables in our database.](schema.md)
+     - [A diagram of our database.](Schema_Diagram.png)
+
+## Folder Inventory
+
 This is an explanation of our `docs/` folder:
 
  - [`action_labels.csv`](action_labels.csv): All the user actions that are recorded, their ID numbers, and their description.
