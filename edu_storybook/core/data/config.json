@@ -1,9 +1,12 @@
 {
-    "production": true,
+    "production": false,
+    "_production": "true means live website, false means development mode.",
     "login_duration": 86400,
     "_login_duration": "How many seconds can a user login for before needing to sign in again",
     "buffer_size": 65536, 
     "_buffer_size": "The size of file reading buffer",
+    "temp_folder": "../temp/",
+    "_temp_folder": "Where our temporary files will be saved",
     "temp_file_expire": 300,
     "_temp_file_expire": "How many seconds minimum to keep a temporary download file on the server",
     "sensitives": {

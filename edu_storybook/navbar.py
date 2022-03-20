@@ -4,11 +4,17 @@ Makes navbars for all of the other pages
 '''
 
 import jwt
+import logging
 
 from core.config import config
 from core.sensitive import jwt_key
+from core.config import config
 
 from templates import TEMPLATES
+
+log = logging.getLogger('ssg.navbar')
+if config['production'] == False:
+    log.setLevel(logging.DEBUG)
 
 def make_navbar(authorization: str):
     '''

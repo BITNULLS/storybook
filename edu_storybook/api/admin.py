@@ -26,17 +26,19 @@ import uuid
 import jwt
 import hashlib
 import cx_Oracle
+import logging
 import random
 import string
 import datetime
 import bcrypt
 import time
+import shutil
 
 from core.auth import validate_login, issue_auth_token
-from core.bucket import bucket
+from core.bucket import upload_bucket_file, download_bucket_file
 from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
-from core.config import config
+from core.config import config, temp_folder
 from core.db import connection, conn_lock
 from core.sensitive import jwt_key
 from core.remove_watchdog import future_del_temp
@@ -45,26 +47,45 @@ from core.helper import sanitize_redirects
 
 a_admin = Blueprint('a_admin', __name__)
 
+a_admin_log = logging.getLogger('api.admin')
+if config['production'] == False:
+    a_admin_log.setLevel(logging.DEBUG)
+
 @a_admin.route("/api/admin/book/download", methods=['POST'])
 def admin_download_book():
-
     # validate that user has admin rights to download books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
+        a_admin_log.debug(
+            'Unauthenticated user tried to access admin_download_book'
+        )
         return vl
+        
+    # check to make sure you have a 'filename'
+    try:
+        assert 'filename' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "filename was not provided."
+        }, 400, {"Content-Type": "application/json"}
 
     # get file name from request
     fileInput = request.form['filename']
     try:
         # download file to bucket
-        filepath = bucket.download_bucket_file(fileInput)
+        filepath = download_bucket_file(fileInput)
         # send file back
         return send_file(filepath)
     except:
+        a_admin_log.warning(
+            'Unable to download a file from the bucket, admin_download_book'
+        )
         return {
             "status": "fail",
             "fail_no": 14,
@@ -74,33 +95,37 @@ def admin_download_book():
 
 @a_admin.route("/api/admin/book/upload", methods=['POST'])
 def admin_book_upload():
-
-        # validate that user has admin rights to upload books
+    # validate that user has admin rights to upload books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
+        a_admin_log.debug(
+            'Unauthenticated user tried to access admin_book_upload'
+        )
         return vl
-
-    # get parameters for adding to book table
-    book_name = (request.form.get('book_name')).strip()
-    book_description = (request.form.get('book_description')).strip()
-    # book_id and created_on handled by trigger
-
-    # check that study_id and page_count are ints
+        
+    # check to make sure you have a 'book_name' and 'book_description
     try:
-        study_id = int(request.form['study_id'])
-    except ValueError:
+        assert 'book_name' in request.form 
+        assert 'book_description' in request.form
+    except AssertionError:
         return {
             "status": "fail",
-            "fail_no": 2,
-            "message": "study_id failed a sanitize check. The POSTed field should be an integer."
+            "fail_no": 1,
+            "message": "book_name or book_description was not provided."
         }, 400, {"Content-Type": "application/json"}
+
+    # get parameters for adding to book table
+    book_name = (request.form.get('title')).strip() # Gives us the value of 'book name' field from frontend
+    book_description = (request.form.get('description')).strip() # Gives us the value of 'book description' field from frontend
+    study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
 
     # check if the post request has the file part
     if 'file' not in request.files:
+        a_admin_log.debug('User did not provide a file in admin_book_upload')
         return {
             "status": "fail",
             "fail_no": 10,
@@ -111,51 +136,63 @@ def admin_book_upload():
     file = request.files['file']
 
     if file.filename == '':
+        a_admin_log.debug(
+            'User did not provide a filename for the file in admin_book_upload'
+        )
         return {
             "status": "fail",
             "fail_no": 11,
             "message": "filename is empty string"
         }, 400, {"Content-Type": "application/json"}
-
+        
     if file and allowed_file(file.filename):
-
         # prepend unique uuid for filename
         filename = str(uuid.uuid4()) + "_" + file.filename
 
         # save file to local /temp/file_upload folder
-        filePath = os.path.join("temp/", filename)
-        filePath = filePath.replace('\\', '/')
-        file.save(filePath)
+        file_path = os.path.join( temp_folder, filename )
+        file.save(file_path)
         
         # convert pdf to images
-        book_pngs = convert_from_path("temp/" + filename, 500)
-
-        # remove pdf from temp/file_upload. we don't need it anymore
-        os.remove("temp/" + filename)
+        book_pngs = convert_from_path(file_path, 500)
 
         # remove .pdf extension from filename
         filename = filename.rstrip(".pdf")
 
         # make folder to store images
-        os.makedirs("temp/file_upload/" + filename)
+        upload_temp_folder = os.path.join(temp_folder, 'file_upload/')
+        if not os.path.exists( upload_temp_folder ):
+            os.makedirs( upload_temp_folder )
 
         # 1) insert files into bucket
         try:
             # iterate through length of book
             for i in range(len(book_pngs)):
                 # Save pages as images in the pdf
-                book_pngs[i].save('temp/file_upload/' + filename +
-                                  "/" + filename + "_" + str(i+1) + '.png', 'PNG')
+                file_upload_folder = os.path.join(
+                    upload_temp_folder,
+                    filename
+                )
+                if not os.path.exists( file_upload_folder ):
+                    os.makedirs( file_upload_folder )
+                book_image_name = filename + '_' + str(i+1) + '.png' 
+                file_upload_image_path = os.path.join(
+                    upload_temp_folder,
+                    os.path.join(
+                        filename,
+                        book_image_name
+                    )
+                )
+                book_pngs[i].save(file_upload_image_path, 'PNG')
+                print('path exists: ' + str(os.path.exists(file_upload_image_path)))
                 # upload images to a folder in bucket
-                bucket.upload_bucket_file('temp/file_upload/' + filename + "/" + filename + "_" + str(
-                    i+1) + '.png', filename + "/" + filename + "_" + str(i+1) + '.png')
+                upload_bucket_file(file_upload_image_path, filename + '/' + book_image_name)
                 # remove img file
-                os.remove('temp/file_upload/' + filename + "/" +
-                          filename + "_" + str(i+1) + '.png')
+                os.remove(file_upload_image_path)
 
             # remove temp dir
-            os.rmdir("temp/file_upload/" + filename)
-
+            shutil.rmtree( upload_temp_folder )
+            
         except Exception as e:
             return {
                 "status": "fail",
@@ -166,17 +203,17 @@ def admin_book_upload():
 
         # connect to database
         cursor = connection.cursor()
-
-        # 2) insert book into table
+        
+        # 2) insert book into 'book' table
         try:
             conn_lock.acquire()
 
-            cursor.execute("INSERT into BOOK (book_name, description, study_id, folder, page_count) VALUES ('"
+            cursor.execute("INSERT into BOOK (book_name, description, folder, page_count) VALUES ('"
                            + book_name + "', '"
                            + book_description + "', '"
-                           + str(study_id) + "', '"
                            + filename + "', "
                            + str(len(book_pngs)) + ")")
+        
             # commit to database
             connection.commit()
 
@@ -185,6 +222,58 @@ def admin_book_upload():
                 "status": "fail",
                 "fail_no": 4,
                 "message": "Error when querying database. 1159",
+                "database_message": str(e)
+            }
+        finally:
+            conn_lock.release()
+        
+        # 3) Get book_id from 'book' table (given book name and its description) to insert entries in 'book_study' later
+        try:
+            conn_lock.acquire()
+            
+            cursor.execute("SELECT BOOK_ID FROM BOOK " +
+                           "WHERE BOOK_NAME='" + book_name + "' AND DESCRIPTION='" + book_description + "'")
+            
+            label_results_from(cursor)
+            
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database. 1160",
+                "database_message": str(e)
+            }
+        finally:
+            conn_lock.release()
+            
+        book_id = cursor.fetchone()
+        if book_id is None:
+            print('Book ID not found from the parameter values upon querying database')
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "book id not found upon querying database"
+            }, 400, {"Content-Type": "application/json"}
+            
+        
+        # 4) insert studies assigned to a book in 'book_study' table
+        try:
+            conn_lock.acquire()
+
+            # Iterate through all study ids and insert them one-by-one to a 'book_study' table
+            for study_id in study_ids:
+                cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
+                               + str(book_id['BOOK_ID']) + ", "
+                               + str(study_id) + ")")
+        
+            # commit to database
+            connection.commit()
+
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
         finally:
@@ -198,21 +287,26 @@ def admin_book_upload():
             res = make_response({
                 "status": "ok"
             })
-
-    return {
-        "status": "fail",
-        "fail_no": 13,
-        "message": "invalid file format or file"
-    }, 400, {"Content-Type": "application/json"}
+            print(res)
+        
+        return res
+    else:
+        a_admin_log.debug(
+            'User uploaded a file with an invalid extension in admin_book_upload'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 13,
+            "message": "invalid file format or file"
+        }, 400, {"Content-Type": "application/json"}
 
 @a_admin.route("/api/admin/book/grant", methods=['POST'])
 def admin_add_book_to_study():
-
     # validate that user can access data
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -239,8 +333,9 @@ def admin_add_book_to_study():
                        )
         # commit to database
         connection.commit()
-
     except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -467,6 +562,8 @@ def admin_page_handler():
             connection.commit()
 
         except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing database')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 4,
@@ -477,9 +574,18 @@ def admin_page_handler():
         return {
             "status": "ok"
         }
-
     else:
-        return "Invalid Operation"
+        a_admin_log.warning(
+            'This error should not even be possible in admin_page_handler, as' +
+            'it would require the user using an HTTP method that is not GET, ' +
+            'POST, PUT, or DELETE, but somehow allowed by Flask; even though ' +
+            'this endpoint specifically only allows those HTTP methods.'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Invalid HTTP operation, not GET, POST, PUT, or DELETE"
+        }, 400, {"Content-Type": "application/json"}
 
 
 @a_admin.route("/api/admin/download/user", methods=['POST'])
@@ -496,7 +602,7 @@ def admin_download_user_data():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -516,8 +622,9 @@ def admin_download_user_data():
         study.study_name from user_profile \
         inner join school on user_profile.school_id = school.school_id \
         inner join study on user_profile.study_id = study.study_id")
-
     except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -543,7 +650,7 @@ def admin_download_user_data():
     filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
-    with open(filename, "w", newline="") as csvfile:
+    with open(filename, 'w', newline="") as csvfile:
         # init csv writer
         writer = csv.writer(csvfile)
         # add headers
@@ -564,10 +671,11 @@ def admin_download_user_data():
     # queue the file to be removed
     future_del_temp(filename)
 
-    try:
-        # return response
+    try: # return response
         return send_file(filename, mimetype="text/csv", attachment_filename="user.csv", as_attachment=True, etag=sha1.hexdigest())
     except Exception as e:
+        a_admin_log.warning('Was unable to CSV data file back to user')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 9,
@@ -590,7 +698,7 @@ def admin_download_action_data():
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
-        permission=0
+        permission=1
     )
     if vl != True:
         return vl
@@ -611,8 +719,9 @@ def admin_download_action_data():
         inner join book on action.book_id = book.book_id \
         inner join action_detail on action_detail.detail_id = action.detail_id \
         inner join action_key on action_detail.action_id = action_key.action_id")
-
     except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -658,10 +767,11 @@ def admin_download_action_data():
     # queue the file to be removed
     future_del_temp(filename)
 
-    try:
-        # return response
+    try: # return response
         return send_file(filename, mimetype="text/csv", attachment_filename="action.csv", as_attachment=True, etag=sha1.hexdigest())
     except Exception as e:
+        a_admin_log.warning('Error when sending CSV data file to user')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 9,
@@ -680,6 +790,83 @@ def admin_get_users():
     - Computes a select query to get user data
     - return USER_ID, USERNAME (full), STUDY that they currently belong to. 
         Important: Sort by join date, or login date, or something. We want fresh users first.
+    - Allow an admin to retrieve a JSON list of all of the users. 
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
+        Make offset an input parameter (int).
+    """
+
+    # validate that user has rights to access 
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # check to make sure you have a offset
+    try:
+        assert 'offset' in request.form
+    except AssertionError:
+        a_admin_log.debug('User requested list of users without an offset param')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "offset was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # sanitize inputs: make sure offset is int
+    try:
+        offset = int(request.form['offset'])
+    except ValueError:
+        a_admin_log.debug(
+            'User requested list of users with a non-int offset param'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "offset failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(
+            "SELECT USER_ID, EMAIL, STUDY_ID FROM USER_PROFILE ORDER BY CREATED_ON DESC OFFSET " +
+            request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    users = cursor.fetchall()
+
+    return {
+        "status": "ok",
+        "users": users
+    }
+
+@a_admin.route("/api/admin/get/book", methods=['GET'])
+def admin_get_books():
+    """
+    Exports book data to a json
+
+    - Connects to database
+    - Computes a select query to get book data
+    - return BOOK_ID, BOOKNAME , DESCRIPTION 
     - Allow an admin to retrieve a JSON list of all of the users. 
         LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
         Make offset an input parameter (int).
@@ -724,8 +911,8 @@ def admin_get_users():
 
     try:
         cursor.execute(
-            "SELECT USER_ID, EMAIL, STUDY_ID FROM USER_PROFILE ORDER BY CREATED_ON DESC OFFSET " +
-            request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK OFFSET "+ 
+            request.form["offset"] +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
@@ -736,9 +923,8 @@ def admin_get_users():
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
 
-    users = cursor.fetchall()
+    books = cursor.fetchall()
 
     return {
-        "status": "ok",
-        "users": users
+        "books": books
     }

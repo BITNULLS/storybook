@@ -3,8 +3,15 @@ templates.py
     Initializes all of the templates used in the web app.
 """
 
+import logging
+from core.config import config
+
 from string import Template
 import os
+
+log = logging.getLogger('templates')
+if config['production'] == False:
+    log.setLevel(logging.DEBUG)
 
 
 class EduTemplate(Template):
@@ -19,7 +26,7 @@ def load_template(filepath):
     t = None
     # TODO ASSERT FILEPATH IS LEGIT FILE
     #assert os.path.isfile(filepath), `Provided template '
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding='utf-8') as f:
         t = EduTemplate('\n'.join(f.readlines()))
     return t
 
