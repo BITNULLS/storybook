@@ -10,8 +10,10 @@ Routes:
     /api/admin/download/user
     /api/admin/download/action
     /api/admin/get/user
+    /api/admin/study/user
 """
 
+from crypt import methods
 from pydoc import Helper
 from flask import request
 from flask import make_response
@@ -910,4 +912,89 @@ def admin_get_books():
 
     return {
         "books": books
+    }
+
+@a_admin.route("/api/admin/study/user", methods=['POST', 'DELETE'])
+def admin_study_user():
+     # validate that user has rights
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    #check for study_id and user_id 
+    try:
+        assert 'study_id' in request.form
+        assert 'user_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "study_id or user_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    #make sure study_id is an int 
+    try:
+        study_id = int(request.form['study_id'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "study_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # do the right method 
+
+    if request.method =='POST':
+        cursor = connection.cursor()
+
+        try:
+            #need to change this!!!!!!
+            #need to make new procedures for inserting and deleting into the adding and removing users to studies
+            conn_lock.acquire()
+            cursor.callproc("insert_question_proc",\
+                [request.form['study_id'],\
+                    request.form['user_id']])
+                
+            # commit changes to db
+            connection.commit()
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+
+    elif request.method == 'DELETE':
+        cursor = connection.cursor()
+
+        try:
+            #needs to fix this ~!!!!!
+            cursor.callproc("insert_question_proc",\
+                [request.form['study_id'],\
+                    request.form['user_id']])
+    
+
+            connection.commit()
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+
+    return{
+        'status':  'ok'
     }
