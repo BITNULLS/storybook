@@ -1,14 +1,7 @@
 """
 index.py
-    Handles all top level routes of the API.
 
-Routes:
-    /api/
-    /api/book
-    /api/schools
-    /api/login
-    /api/logout
-    /api/register
+Handles all top level routes of the API.
 """
 
 from flask import request

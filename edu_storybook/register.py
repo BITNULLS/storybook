@@ -1,10 +1,7 @@
 """
 register.py
-    This lets a user register for the website.
 
-Routes:
-
-    /register
+This lets a user register for the website.
 """
 
 import logging

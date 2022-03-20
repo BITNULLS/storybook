@@ -1,15 +1,7 @@
 """
 admin.py
-    Routes beginning with /api/admin/
 
-Routes:
-    /api/admin/book/download
-    /api/admin/book/upload
-    /api/admin/book/grant
-    /api/admin/page
-    /api/admin/download/user
-    /api/admin/download/action
-    /api/admin/get/user
+Routes beginning with `/api/admin/`.
 """
 
 from pydoc import Helper
@@ -53,6 +45,15 @@ if config['production'] == False:
 
 @a_admin.route("/api/admin/book/download", methods=['POST'])
 def admin_download_book():
+    """
+    Endpoint to allow the administrator download a book.
+
+    Expects:
+     - `filename`: The filename of the book.
+
+    Fails:
+     - `14`: Unable to download and/or send file.
+    """
     # validate that user has admin rights to download books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -64,7 +65,7 @@ def admin_download_book():
             'Unauthenticated user tried to access admin_download_book'
         )
         return vl
-    
+
     # TODO: Missing checking if 'filename' in request.form
 
     # get file name from request
@@ -87,6 +88,20 @@ def admin_download_book():
 
 @a_admin.route("/api/admin/book/upload", methods=['POST'])
 def admin_book_upload():
+    """
+    Endpint to allow an administrator to upload a book.
+
+    Expects:
+     - `book_name`: The name of the book.
+     - `book_description`: The description of the book.
+     - `study_ids`: HTML checkbox list of selected study IDs to add the book to.
+
+    Fails:
+     - `10`: No file uploaded.
+     - `11`: Filename was an empty string.
+     - `12`: Error when uploading file to server data bucket.
+     - `13`: Error when querying database
+    """
     # validate that user has admin rights to upload books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -202,7 +217,7 @@ def admin_book_upload():
         except cx_Oracle.Error as e:
             return {
                 "status": "fail",
-                "fail_no": 4,
+                "fail_no": 13,
                 "message": "Error when querying database. 1159",
                 "database_message": str(e)
             }
@@ -221,7 +236,7 @@ def admin_book_upload():
         except cx_Oracle.Error as e:
             return {
                 "status": "fail",
-                "fail_no": 4,
+                "fail_no": 14,
                 "message": "Error when querying database. 1160",
                 "database_message": str(e)
             }
@@ -233,7 +248,7 @@ def admin_book_upload():
             print('Book ID not found from the parameter values upon querying database')
             return {
                 "status": "fail",
-                "fail_no": 4,
+                "fail_no": 15,
                 "message": "book id not found upon querying database"
             }, 400, {"Content-Type": "application/json"}
             
@@ -254,7 +269,7 @@ def admin_book_upload():
         except cx_Oracle.Error as e:
             return {
                 "status": "fail",
-                "fail_no": 4,
+                "fail_no": 16,
                 "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
@@ -278,7 +293,7 @@ def admin_book_upload():
         )
         return {
             "status": "fail",
-            "fail_no": 13,
+            "fail_no": 17,
             "message": "invalid file format or file"
         }, 400, {"Content-Type": "application/json"}
 

@@ -1,10 +1,7 @@
 """
 password.py
-    Generates the webpages for the "/password/" pages.
 
-Routes:
-    /password/forgot
-    /password/reset
+Generates the webpages for the `/password/*` pages.
 """
 
 import logging

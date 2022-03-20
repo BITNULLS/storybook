@@ -1,9 +1,7 @@
 """
 index.py
-    Generates the homepage of the website.
 
-Routes:
-    /
+Generates the homepage of the website.
 """
 
 from flask import request

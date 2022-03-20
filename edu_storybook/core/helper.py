@@ -1,12 +1,8 @@
 """
 helper.py
-    Helper functions not distinctly part of auth, bucket, db, or other "parts"
-    of our app.
 
-Functions:
-    allowed_file(...)
-    label_results_from(...)
-    send_email(...)
+Helper functions not distinctly part of auth, bucket, db, or other "parts" of 
+our app.
 """
 
 import cx_Oracle
@@ -23,6 +19,7 @@ c_helper_log = logging.getLogger('core.helper')
 if config['production'] == False:
     c_helper_log.setLevel(logging.DEBUG)
 
+
 def allowed_file(filename):
     """
     checks that a file extension is one of the allowed extensions, defined by ALLOWED_EXTENSIONS
@@ -36,36 +33,46 @@ def allowed_file(filename):
 
 def label_results_from(cursor: cx_Oracle.Cursor):
     """
-    Labels results from a cursor into a dictionary where like
+    Labels results from a cursor into a dictionary where like:
+    ```
     {
         "column1": "value1",
         "col2":    "val2",
         ...
     }
-    I am amazed that cx_Oracle does not provide this. Labeling the columns in 
+    ```
+    I am amazed that cx_Oracle does not provide this. Labeling the columns in
     the returned data is so basic. Why doesn't it do it. I checked the docs.
-    Oracle thinks this is reasonable. I do not think this is reasonable, but 
+    Oracle thinks this is reasonable. I do not think this is reasonable, but
     okay.
 
-    :param cursor: A cursor that has been .execute[d].
-    :type cursor: cx_Oracle.Cursor
+    Args:
+     - cursor: A cursor that has been .execute[d].
 
-    :returns: The same cursor with the row factory applied.
+    Returns: The same cursor with the row factory applied.
     """
     columns = [col[0] for col in cursor.description]
     cursor.rowfactory = lambda *args: dict(zip(columns, args))
     return cursor
-    
+
+
 def sanitize_redirects(redirect_link: str) -> str:
     """
-    Determines if a given redirect link is a valid relative or absolute path
+    Determines if a given redirect link is a valid relative or absolute path.
 
-    :param redirect_link: The link to validate
+    Args:
+     - redirect_link: The link to validate
 
-    :returns: The relative or absolute path if it is valid, '/' if it is not.
+    Returns: The relative or absolute path if it is valid, `'/'` if it is not.
     """
-    if re_redirect_link.match(redirect_link):
-        c_helper_log.warning("Redirect Link is not a valid relative or absolute path.")
+    if re_redirect_link.match(redirect_link) is None:
+        c_helper_log.warning(f"Redirect Link '{redirect_link}' is not a valid relative or absolute path.")
         return '/'
     else:
         return redirect_link
+
+
+def has_no_empty_params(rule):
+    defaults = rule['defaults'] if rule['defaults'] is not None else ()
+    arguments = rule['arguments'] if rule['arguments'] is not None else ()
+    return len(defaults) >= len(arguments)

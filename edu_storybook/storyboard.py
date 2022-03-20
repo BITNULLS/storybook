@@ -1,10 +1,8 @@
 """
 storyboard.py
-    This handles displaying the pages of the book, storing user actions, and
-    receiving quiz question responses from the user.
 
-Routes:
-    /storyboard/page/<int:book_id_in>/<int:page_number_in>
+This handles displaying the pages of the book, storing user actions, and
+receiving quiz question responses from the user.
 """
 
 import logging

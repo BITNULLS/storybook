@@ -1,13 +1,8 @@
 """
 bucket.py
-    Launches connection to Oracle Bucket, where we store large data files.
-    Provides simple functions for accessing the bucket.
 
-Functions:
-    upload_bucket_file(...)
-    download_bucket_file(...)
-    delete_bucket_file(...)
-    list_bucket_files(...)
+Launches connection to Oracle Bucket, where we store large data files.
+Provides simple functions for accessing the bucket.
 """
 
 import oci
@@ -18,7 +13,7 @@ from tempfile import TemporaryDirectory
 from typing import List
 from .config import config
 
-import logging 
+import logging
 
 c_bucket_log = logging.getLogger('core.bucket')
 if config['production'] == False:

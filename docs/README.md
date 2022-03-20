@@ -14,17 +14,10 @@ This is an explanation of our `docs/` folder:
 From the root of the repo (outside of this directory):
 
 ```
-python -m venv .venv
-source .venv/bin/activate
-(.venv) $ python -m pip install sphinx
+make docs
 ```
 
-and then:
-
-```
-cd docs
-make html
-```
+Ensure that you have installed the Python requirements, which includes `pdoc` used for generating the documentation.
 
 ## Notes
 

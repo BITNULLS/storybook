@@ -14,7 +14,7 @@ This website is entirely server-side generated.
 
 ## Goals
 
- - Have a fully functioning web app 
+ - Have a fully functioning web app
  - A user can register, sign in, read a book, answer questions, and sign out
  - An admin can download all useful metadata about a user's progress and performance
  - 100% code coverage on backend API testing

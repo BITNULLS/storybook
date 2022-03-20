@@ -21,9 +21,11 @@ from navbar import make_navbar
 admin = Blueprint('admin', __name__)
 
 
-
 @admin.route("/admin/")
 def gen_admin_index():
+    """
+    Generate the /admin/ index page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
@@ -40,6 +42,9 @@ def gen_admin_index():
 
 @admin.route("/admin/book_manager")
 def gen_admin_book_mananger():
+    """
+    Generate the /admin/book_manager page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
@@ -56,6 +61,9 @@ def gen_admin_book_mananger():
 
 @admin.route("/admin/edit_book")
 def gen_admin_edit_book():
+    """
+    Generate the /admin/edit_book page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
@@ -72,6 +80,9 @@ def gen_admin_edit_book():
 
 @admin.route("/admin/upload_book")
 def gen_admin_upload_book():
+    """
+    Generate the /admin/upload_book page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
@@ -88,6 +99,9 @@ def gen_admin_upload_book():
 
 @admin.route("/admin/study_manager")
 def gen_admin_study_manager():
+    """
+    Generate the /admin/study_manager page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:

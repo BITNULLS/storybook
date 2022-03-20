@@ -1,6 +1,7 @@
 '''
 navbar.py
-Makes navbars for all of the other pages
+
+Makes navbars for all of the other pages.
 '''
 
 import jwt
@@ -19,7 +20,7 @@ if config['production'] == False:
 def make_navbar(authorization: str):
     '''
     Takes in the authorization header from a user.
-    
+
     :param authorization: The authorization cookie from the user
     '''
     if authorization == None:

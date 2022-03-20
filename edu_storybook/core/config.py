@@ -1,6 +1,7 @@
 """
 config.py
-    Just loads the configuration file in.
+
+Just loads the configuration file (`data/config.json`) in.
 """
 
 from .filepath import fix_filepath

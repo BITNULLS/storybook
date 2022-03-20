@@ -63,14 +63,13 @@ def validate_login(auth: str, permission: int=0):
     NOTE:  For creating sequential "fail_no" (fail numbers), start at 8, as this
     function may produce fail numbers 1 through 7.
 
-    :param auth:       The Authorization cookie given to the user.
-    :param permission: Minimum permission level required (0=user, 1=admin)
+    Args:
+     - auth (str): The Authorization cookie given to the user.
+     - permission (int): Minimum permission level required (0=user, 1=admin)
 
-    :type auth:       str
-    :type permission: int
-
-    :returns: True if login was authenticated, and if False, a dictionary with 
-        the reason why authentication failed.
+    Returns:
+        True if login was authenticated, and if False, a dictionary with the 
+        reason why authentication failed.
     """
     # TODO: later maybe track Origin header?
     try:

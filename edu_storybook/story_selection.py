@@ -1,9 +1,7 @@
 """
 story_selection.py
-    This will display all of the books that a user can look at.
 
-Routes:
-    /books
+This will display all of the books that a user can look at.
 """
 
 import logging
