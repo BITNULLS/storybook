@@ -41,7 +41,8 @@ TEMPLATES = {
         "edit_book": load_template("templates/admin/edit_book.html"),
         "index": load_template("templates/admin/index.html"),
         "study_manager": load_template("templates/admin/study_manager.html"),
-        "upload_book": load_template("templates/admin/upload_book.html")
+        "upload_book": load_template("templates/admin/upload_book.html"), 
+        "book": load_template("templates/admin/book.html")
     },
     "navbar": {
         "logged_admin": load_template("templates/navbar/logged_admin.html"),

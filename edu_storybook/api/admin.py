@@ -860,7 +860,7 @@ def admin_get_users():
     }
 
 @a_admin.route("/api/admin/get/book", methods=['GET'])
-def admin_get_books():
+def admin_get_books(offset: int):
     """
     Exports book data to a json
 
@@ -887,14 +887,14 @@ def admin_get_books():
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
     # check to make sure you have a offset
-    try:
+    """try:
         assert 'offset' in request.form
     except AssertionError:
         return {
             "status": "fail",
             "fail_no": 1,
             "message": "offset was not provided."
-        }, 400, {"Content-Type": "application/json"}
+        }, 400, {"Content-Type": "application/json"} 
 
     # sanitize inputs: make sure offset is int
     try:
@@ -905,14 +905,16 @@ def admin_get_books():
             "fail_no": 2,
             "message": "offset failed a sanitize check. The POSTed field should be an integer."
         }, 400, {"Content-Type": "application/json"}
+        """
 
     # connect to database
     cursor = connection.cursor()
 
+    stringOffset = str(offset)
     try:
         cursor.execute(
             "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK OFFSET "+ 
-            request.form["offset"] +" ROWS FETCH NEXT 50 ROWS ONLY"
+            stringOffset +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:

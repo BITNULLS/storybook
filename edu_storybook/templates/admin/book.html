@@ -1,0 +1,29 @@
+<script>
+    function displaySelectedBook() {
+        //TODO: have function get the book that was selected
+        storyboard_get_page(122, 1) //hard coded one of the books in for now
+    }
+</script>
+
+<!--Displays a list of the books to select from-->
+<div>
+    <div class="row mt-5">
+        <div class="col-md-1 col-sm-1"></div>
+            <div class="col-md-10 col-sm-10">
+                <div class="container" style="max-height: 100px !important; min-height: 100px !important">
+                    <div class="row">
+                        <div class="col-sm">
+                            <h5 class="card-title">~book_title</h5>
+                            <p class="card-text">~book_description</p>
+                        </div>
+                        <div class="col-sm">
+                            <button class="btn btn-atts btn-info" data-dismiss="modal" onclick="displaySelectedBook">Edit this book</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
