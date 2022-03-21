@@ -15,9 +15,9 @@ import cx_Oracle
 import bcrypt
 import time
 import logging
+import json
 
 from core.auth import validate_login, issue_auth_token
-from core.bucket import bucket
 from core.helper import allowed_file, label_results_from, sanitize_redirects
 from core.email import send_email
 from core.config import config
@@ -55,9 +55,52 @@ def api_index():
         "status": "ok"
     }
 
+@a_index.route("/api/book/<int:book_id_in>", methods=['GET'])
+def get_book_info(book_id_in: int):
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
 
-@a_index.route("/api/book", methods=['GET'])
-def get_users_books():
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    # parsing book_id from string to integer
+    book_id = int(book_id_in)
+
+    # connect to database
+    cursor = connection.cursor()
+    
+    # Removing Column "CREATED_ON" since that would create a problem for converting to JSON
+    try:
+        cursor.execute(
+            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK "+
+            "WHERE book_id= '"+ str(book_id) +"'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing a book.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchone()
+    # This would hold info about a book based on book_id in List format
+    label_results_from(cursor)
+    data = cursor.fetchone()
+    
+    # Converts data from List to a JSON
+    return json.dumps(data)
+    
+
+@a_index.route("/api/book_old", methods=['GET'])
+def get_users_books_old():
+    # TODO: may delete in future
     # validate that user has rights to access books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -107,6 +150,18 @@ def get_schools():
     Return a list of schools in the same style/format/convention that 
     admin_get_users() returns a list of users.
     '''
+
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
 
     # check to make sure you have a offset
     try:
@@ -290,7 +345,7 @@ def login():
     return res
 
 @a_index.route("/api/logout", methods=['POST'])
-def logout(auth):
+def logout():
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -436,3 +491,50 @@ def register():
             "status": "ok"
         })
     return res
+
+
+@a_index.route("/api/book", methods=['GET'])
+def get_users_books():
+
+    # validate that user has rights to access books
+
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # connect to database
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute(
+            "SELECT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
+            "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
+            "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
+            "INNER JOIN LAST_PAGE ON last_page.book_id = book.book_id "+
+            "WHERE user_study.user_id= '"+ token['sub'] +"'"
+        )
+    except cx_Oracle.Error as e:
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing books.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall()
+    label_results_from(cursor)
+    data = cursor.fetchall()
+
+    return {
+       "books": data
+    }
+   

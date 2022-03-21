@@ -27,29 +27,27 @@ def gen_books():
     Generate the story selection (books) page.
     '''
 
-    """
-    all_books = ''
-    user_books = get_users_books()
-
-    for b in user_books:
-        all_books += TEMPLATES['story_selection']['book'].substitute(
-            book_title       = b['TITLE'],
-            book_description = b['DESCRIPTION'],
-            book_image       = '...', # TODO: figure out how to get
-            book_link        = b['BOOK_ID']
-        )
-    """
-
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-
+    
+    all_books = ""
+    for b in get_users_books()['books']:
+        all_books += TEMPLATES['story_selection']['book'].substitute(
+            book_title = b['BOOK_NAME'],
+            book_description = b['DESCRIPTION'],
+            book_id = b["BOOK_ID"], 
+            book_cover = '/api/storyboard/cover/' + str(b['BOOK_ID']), 
+            last_page=b['LAST_PAGE'], #if last_page is null then 0 
+            book_url = '/storyboard/' + str(b['BOOK_ID'])+ '/' + str(b['LAST_PAGE'])
+        )          
+        
     story_selection_page = TEMPLATES["_base"].substitute(
         title = 'Book Selection',
         description = 'Select a book to read',
         body = TEMPLATES['story_selection']['index'].substitute(
-            books='',
-            navbar = make_navbar( auth )
+            navbar = make_navbar( auth ),
+            book= all_books 
         )
     )
 

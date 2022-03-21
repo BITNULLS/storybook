@@ -61,22 +61,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
     # goes into bucket and then says I want this image from this folder.
     cursor = connection.cursor()
 
-    try:
-        # get folder that holds that book's images
-        cursor.execute(
-            "SELECT folder FROM BOOK where book_id =" + str(book_id))
-    except cx_Oracle.Error as e:
-        a_storyboard_log.warning('Error when accessing database')
-        a_storyboard_log.warning(e)
-        return {"status": "fail",
-                "fail_no": 3,
-                "message": "Error when updating database action",
-                "database_message": str(e)
-                }, 400, {"Content-Type": "application/json"}
-
-    # check if this is in write format ; then we have to fix it and ammend it with page number
-    fileInput = cursor.fetchone()[0]
-    fileInput = fileInput + '/' + fileInput + '_' + str(page_number) + '.png'
+    fileInput = get_book_image_path(book_id, page_number)
 
     try:
         # get quiz questions and answers and more information about those
@@ -287,3 +272,50 @@ def storyboard_save_user_action():
     return {
         "status": "ok"
     }
+
+
+def get_book_image_path(book_id, page_number):
+    cursor = connection.cursor()
+
+    try:
+        # get folder that holds that book's images
+        cursor.execute(
+            "SELECT folder FROM BOOK where book_id =" + str(book_id))
+    except cx_Oracle.Error as e:
+        return {"status": "fail",
+                "fail_no": 3,
+                "message": "Error when updating database action",
+                "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+
+    # check if this is in write format ; then we have to fix it and ammend it with page number
+    fileInput = cursor.fetchone()[0]
+    return (fileInput + '_images/' + fileInput + '_' + str(page_number) + '.png')
+
+    
+@a_storyboard.route("/api/storyboard/cover/<int:book_id_in>", methods=['GET'])
+def storyboard_get_cover_image(book_id_in):
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    try:
+        book_id_in = int( book_id_in)
+        
+    
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id or page_number failed a sanitize check. The POSTed fields should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    return send_file(download_bucket_file(get_book_image_path(book_id_in, 1)))

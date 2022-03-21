@@ -31,6 +31,17 @@ def get_studies():
     Return a list of studies in the same style/format/convention that
     admin_get_schools() returns a list of users.
     '''
+    # validate that user has rights to access
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
 
     # check to make sure you have a offset
     try:

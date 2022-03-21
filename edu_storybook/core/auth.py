@@ -83,11 +83,11 @@ def validate_login(auth: str, permission: int=0):
             "fail_no": 1,
             "message": "The Authorization header was not provided."
         }
-
+    
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
-
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+   
+    token = jwt.decode(auth, jwt_key, algorithms=config["jwt_alg"])
     t = int(time.time())
 
     if token['iat'] + config['login_duration'] < t:
@@ -110,5 +110,5 @@ def validate_login(auth: str, permission: int=0):
             "fail_no": "3",
             "message": "You do not have high enough permissions to view this endpoint."
         }, 403, {"Content-Type": "application/json"}
-
+    
     return True
