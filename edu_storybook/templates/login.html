@@ -21,11 +21,12 @@
  
               <label for="password"> Password:</label>
 
+              <!-- fix the password minimum requirements to include 1 lowercase letter and 1 number-->
               <i class="fa-solid fa-circle-info" 
               title="Must contain at least:&#013;- 8 characters,&#013;- 1 capital letter,&#013;- 1 special character (@$_*)"></i>
             
-              <!-- password not working regex?-->
-              <input id="password" type="password" name="password" class="form-control" required minLength="8" pattern="[a-zA-Z0-9]{8,}" >
+              <input id="password" type="password" name="password" class="form-control" required minLength="8" 
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" >
 
           </div>
 
