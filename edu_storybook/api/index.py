@@ -356,7 +356,7 @@ def login():
     return res
 
 @a_index.route("/api/logout", methods=['POST'])
-def logout(auth):
+def logout():
     # make sure the user is authenticated first
     auth = request.cookies.get('Authorization')
     vl = validate_login(
