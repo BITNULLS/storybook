@@ -30,6 +30,12 @@ This website is entirely server-side generated with some AJAX elements.
 
  - `Python >= 3.x`
 
+## Primary Dependencies
+
+ - `cx_Oracle` database driver.
+ - `oci` data bucket interface.
+ - `pdoc` documentation generator.
+
 ## Helpful Links
 
  - Documentation
