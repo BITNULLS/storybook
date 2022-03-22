@@ -12,7 +12,7 @@ import logging
 from flask import request
 from flask import Blueprint
 
-from templates import TEMPLATES
+from templates import Templates
 from navbar import make_navbar
 from core.config import config
 
@@ -24,10 +24,10 @@ if config['production'] == False:
 
 @password.route("/password/forgot")
 def gen_password_forgot():
-    password_forgot_page = TEMPLATES["_base"].substitute(
+    password_forgot_page = Templates._base.substitute(
         title = "Password Forgot",
         description = "Enter your email to request a password reset",
-        body = TEMPLATES["password"]["forgot"].substitute(
+        body = Templates.password_forgot.substitute(
             navbar = make_navbar( None )
         )
     )
@@ -35,10 +35,10 @@ def gen_password_forgot():
 
 @password.route("/password/reset")
 def gen_password_reset():
-    password_reset_page = TEMPLATES["_base"].substitute(
+    password_reset_page = Templates._base.substitute(
         title = "Password Reset",
         description = "Reset your password",
-        body = TEMPLATES["password"]["reset"].substitute(
+        body = Templates.password_reset.substitute(
             navbar = make_navbar( None )
         )
     )

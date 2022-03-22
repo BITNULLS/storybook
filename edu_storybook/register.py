@@ -12,7 +12,7 @@ import logging
 from flask import request
 from flask import Blueprint
 
-from templates import TEMPLATES
+from templates import Templates
 from navbar import make_navbar
 from core.config import config
 
@@ -25,10 +25,10 @@ if config['production'] == False:
 @register.route("/register")
 def gen_register():
 
-    register_page = TEMPLATES["_base"].substitute(
+    register_page = Templates._base.substitute(
         title = "Register an Account",
         description = "Make an account with our website",
-        body = TEMPLATES["register"].substitute(
+        body = Templates.register.substitute(
              navbar = make_navbar( None )
         )
     )

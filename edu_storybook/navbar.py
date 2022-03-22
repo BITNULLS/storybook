@@ -10,7 +10,7 @@ from core.config import config
 from core.sensitive import jwt_key
 from core.config import config
 
-from templates import TEMPLATES
+from templates import Templates
 
 log = logging.getLogger('ssg.navbar')
 if config['production'] == False:
@@ -23,12 +23,12 @@ def make_navbar(authorization: str):
     :param authorization: The authorization cookie from the user
     '''
     if authorization == None:
-        return TEMPLATES['navbar']['logged_out'].substitute()
+        return Templates.navbar_logged_out.substitute()
 
     token = jwt.decode(authorization.replace('Bearer ', ''), jwt_key, config['jwt_alg'])
 
     if token['permission'] > 0: # have admin
-        return TEMPLATES['navbar']['logged_admin'].substitute()
+        return Templates.navbar_logged_admin.substitute()
     else: # do not have admin
-        return TEMPLATES['navbar']['logged_user'].substitute()
+        return Templates.navbar_logged_user.substitute()
 
