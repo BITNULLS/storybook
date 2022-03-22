@@ -55,7 +55,8 @@
                 <i class="fa-solid fa-circle-info" 
                 title="Must contain at least:&#013;- 8 characters,&#013;- a lowercase letter,&#013;- a capital letter,&#013;- a number,&#013;- a special character (@$_*)"></i>
                 
-                <input id="password" type="password" name="password" class="form-control" required></input>
+                <input id="password" type="password" name="password" class="form-control" required minLength="8" 
+                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"></input>
               </div>
             </div>
             <div class="col-12 col-sm-6">
@@ -66,12 +67,12 @@
                 title="Must contain at least:&#013;- 8 characters,&#013;- a lowercase letter,&#013;- a capital letter,&#013;- a number,&#013;- a special character (@$_*)"></i>
                
                 <input id="confirm_password" type="password" name="confirm_password"
-                  class="form-control" required></input>
+                  class="form-control" required minLength="8" 
+                  pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"></input>
               </div>
             </div>      
           </div>
 
-          <!-- Sign in button-->
           <div class="form-group text-center">
             <a href="/register">
               <button id="button_signUp" type="submit" class="btn btn-primary">Sign In</button>
