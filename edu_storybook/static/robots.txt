@@ -1,0 +1,10 @@
+User-agent: Googlebot
+User-agent: AdsBot-Google
+Disallow: /api
+Disallow: /admin
+
+User-agent: *
+Disallow: /api
+Disallow: /admin
+
+Sitemap: https://www.edustorybooks.tk/sitemap.xml

@@ -1,3 +1,3 @@
 """
-This directory contains the core components needed to run the server
+This directory contains the core components needed to run the server.
 """

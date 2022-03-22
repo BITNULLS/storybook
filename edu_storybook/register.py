@@ -1,10 +1,7 @@
 """
 register.py
-    This lets a user register for the website.
 
-Routes:
-
-    /register
+This lets a user register for the website.
 """
 
 import logging
@@ -24,7 +21,9 @@ if config['production'] == False:
 
 @register.route("/register")
 def gen_register():
-
+    '''
+    Generate the register page.
+    '''
     register_page = Templates._base.substitute(
         title = "Register an Account",
         description = "Make an account with our website",

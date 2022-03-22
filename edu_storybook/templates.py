@@ -1,6 +1,7 @@
 """
 templates.py
-    Initializes all of the templates used in the web app.
+
+Initializes all of the templates used in the web app.
 """
 
 import logging

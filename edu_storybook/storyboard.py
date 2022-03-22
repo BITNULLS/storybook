@@ -1,10 +1,8 @@
 """
 storyboard.py
-    This handles displaying the pages of the book, storing user actions, and
-    receiving quiz question responses from the user.
 
-Routes:
-    /storyboard/page/<int:book_id_in>/<int:page_number_in>
+This handles displaying the pages of the book, storing user actions, and
+receiving quiz question responses from the user.
 """
 
 import logging
@@ -29,6 +27,9 @@ if config['production'] == False:
 
 @storyboard.route("/storyboard/<int:book_id_in>/<int:page_number_in>")
 def gen_storyboard_page(book_id_in: int, page_number_in: int):
+    '''
+    Generate the storyboard viewer page.
+    '''
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']

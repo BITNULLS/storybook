@@ -21,38 +21,20 @@ This Python module is organized in the following manner:
 
 ## index.py
 
-Routes:
-
- - `/api/`
- - `/api/book`
- - `/api/schools`
- - `/api/login`
- - `/api/logout`
- - `/api/register`
+...
 
 ## admin.py
 
-Routes:
-
- - `/api/admin/book/download`
- - `/api/admin/book/upload`
- - `/api/admin/book/grant`
- - `/api/admin/page`
- - `/api/admin/download/user`
- - `/api/admin/download/action`
- - `/api/admin/get/book`
- - `/api/admin/get/user`
+...
 
 ## password.py
 
- - `/api/password/forgot`
- - `/api/password/reset`
+...
 
 ## quiz.py
 
- - `/api/quiz/submit`
+...
 
 ## storyboard.py
 
- - `/api/storyboard/page/<int:book_id_in>/<int:page_number_in>`
- - `/api/storyboard/action`
+...

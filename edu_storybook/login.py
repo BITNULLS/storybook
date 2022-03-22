@@ -1,9 +1,7 @@
 """
 login.py
 
-Routes:
-
-    /login
+Generates the login page.
 """
 
 from flask import request
@@ -22,7 +20,9 @@ if config['production'] == False:
 
 @login.route("/login")
 def gen_login():
-    
+    '''
+    Generates the login page.
+    '''
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']

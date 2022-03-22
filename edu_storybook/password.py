@@ -1,10 +1,7 @@
 """
 password.py
-    Generates the webpages for the "/password/" pages.
 
-Routes:
-    /password/forgot
-    /password/reset
+Generates the webpages for the `/password/*` pages.
 """
 
 import logging
@@ -24,6 +21,9 @@ if config['production'] == False:
 
 @password.route("/password/forgot")
 def gen_password_forgot():
+    '''
+    Generate the password forgot page.
+    '''
     password_forgot_page = Templates._base.substitute(
         title = "Password Forgot",
         description = "Enter your email to request a password reset",
@@ -35,6 +35,9 @@ def gen_password_forgot():
 
 @password.route("/password/reset")
 def gen_password_reset():
+    '''
+    Generate the password reset page.
+    '''
     password_reset_page = Templates._base.substitute(
         title = "Password Reset",
         description = "Reset your password",
