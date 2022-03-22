@@ -16,7 +16,7 @@ img{
     height: 400px;
 }
 
-/*
+/* fix to only when invalid credentials submitted
 input:invalid:required {
   border: 2px solid red;
 } */

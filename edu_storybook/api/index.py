@@ -239,7 +239,7 @@ def login():
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
     if re_email.match(request.form['email']) is None or \
-            re_alphanumeric8.match(request.form['password']) is None:
+            re_password.match(request.form['password']) is None:
         a_index_log.debug(
             'User provided malformed email or password when logging in')
         return {
@@ -422,7 +422,7 @@ def register():
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
     if re_email.match(request.form['email']) is None or \
-            re_alphanumeric8.match(request.form['password']) is None or \
+            re_password.match(request.form['password']) is None or \
             re_alphanumeric2.match(request.form['first_name']) is None or \
             re_alphanumeric2.match(request.form['last_name']) is None:
         a_index_log.warning('User provided a malformed field when registering')

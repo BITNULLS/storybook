@@ -144,8 +144,8 @@ def password_reset():
         }, 400, {"Content-Type": "application/json"}
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    if re_alphanumeric8.match(request.form['new_pass']) is None or \
-            re_alphanumeric8.match(request.form['confirm_pass']) is None:
+    if re_password.match(request.form['new_pass']) is None or \
+            re_password.match(request.form['confirm_pass']) is None:
         a_password_log.debug('User tried to reset password with invalid password')
         return {
             "status": "fail",
