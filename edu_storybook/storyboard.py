@@ -11,7 +11,7 @@ import json
 from flask import Blueprint
 from flask import request
 
-from templates import TEMPLATES
+from templates import Templates
 from core.config import config
 
 from api.storyboard import storyboard_get_pagecount
@@ -56,10 +56,10 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
         next_link_visibility = "display: block"
 
     # Generate Storyboard Viewer page
-    storyboard_page = TEMPLATES['_base'].substitute(
+    storyboard_page = Templates._base.substitute(
         title = 'Storyboard Page',
         description = 'Make an account with our website',
-        body = TEMPLATES['storyboard']['viewer'].substitute(
+        body = Templates.storyboard_viewer.substitute(
             navbar = make_navbar( auth ),
             book_name = name,
             current_page = "/api/storyboard/page/" + str(book_id) + "/" + str(page_number),
