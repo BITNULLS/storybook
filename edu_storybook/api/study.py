@@ -1,9 +1,7 @@
 """
 study.py
-    Handle all study related GET, POST, PUT, DELETE
 
-Route:
-    /api/studies
+Handle all study related GET, POST, PUT, DELETE operations.
 """
 
 from flask import request
@@ -11,7 +9,7 @@ from flask import Blueprint
 from flask import send_file
 
 import cx_Oracle
-import logging 
+import logging
 
 from core.auth import validate_login
 from core.bucket import bucket
@@ -30,7 +28,7 @@ if config['production'] == False:
 @a_study.route("/api/studies", methods=['GET'])
 def get_studies():
     '''
-    Return a list of studies in the same style/format/convention that 
+    Return a list of studies in the same style/format/convention that
     admin_get_schools() returns a list of users.
     '''
     # validate that user has rights to access

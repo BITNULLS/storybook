@@ -1,6 +1,7 @@
 '''
 navbar.py
-Makes navbars for all of the other pages
+
+Makes navbars for all of the other pages.
 '''
 
 import jwt
@@ -16,11 +17,15 @@ log = logging.getLogger('ssg.navbar')
 if config['production'] == False:
     log.setLevel(logging.DEBUG)
 
-def make_navbar(authorization: str):
+def make_navbar(authorization: str) -> str:
     '''
     Takes in the authorization header from a user.
-    
-    :param authorization: The authorization cookie from the user
+
+    Args:
+     - authorization: The authorization cookie from the user
+
+    Returns: The correct navbar based on if the user is a regular user or an
+    admin.
     '''
     if authorization == None:
         return TEMPLATES['navbar']['logged_out'].substitute()

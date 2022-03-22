@@ -1,9 +1,7 @@
 """
 story_selection.py
-    This will display all of the books that a user can look at.
 
-Routes:
-    /books
+This will display all of the books that a user can look at.
 """
 
 import logging
@@ -24,7 +22,10 @@ if config['production'] == False:
     log.setLevel(logging.DEBUG)
 
 @story_selection.route('/books')
-def gen_books():    
+def gen_books():
+    '''
+    Generate the story selection (books) page.
+    '''
 
     auth = None
     if 'Authorization' in request.cookies:
