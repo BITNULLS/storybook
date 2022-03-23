@@ -19,11 +19,11 @@ import datetime
 import bcrypt
 import logging
 
-from core.email import send_email
-from core.db import connection, conn_lock
-from core.reg_exps import *
-from core.helper import sanitize_redirects
-from core.config import config
+from edu_storybook.core.email import send_email
+from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.reg_exps import *
+from edu_storybook.core.helper import sanitize_redirects
+from edu_storybook.core.config import config
 
 a_password = Blueprint('a_password', __name__)
 

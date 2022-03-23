@@ -13,13 +13,13 @@ import json
 from flask import Blueprint
 from flask import request
 
-from templates import TEMPLATES
-from core.config import config
+from edu_storybook.templates import TEMPLATES
+from edu_storybook.core.config import config
 
-from api.storyboard import storyboard_get_pagecount
-from api.index import get_book_info
+from edu_storybook.api.storyboard import storyboard_get_pagecount
+from edu_storybook.api.index import get_book_info
 
-from navbar import make_navbar
+from edu_storybook.navbar import make_navbar
 
 storyboard = Blueprint('storyboard', __name__)
 

@@ -10,9 +10,9 @@ from flask import request
 from flask import Blueprint
 import logging
 
-from templates import TEMPLATES
-from navbar import make_navbar
-from core.config import config
+from edu_storybook.templates import TEMPLATES
+from edu_storybook.navbar import make_navbar
+from edu_storybook.core.config import config
 
 login = Blueprint('login', __name__)
 

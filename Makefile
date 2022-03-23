@@ -10,7 +10,7 @@ setup:
 	pip3 install -r requirements.txt
 test:
 	cd test_edu_storybook/
-	python -m unittest \
+	python3 -m unittest \
 	test_edu_storybook.test_edu_storybook \
 	test_edu_storybook.test_api \
 	test_edu_storybook.test_core \

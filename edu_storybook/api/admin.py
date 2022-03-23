@@ -34,16 +34,16 @@ import bcrypt
 import time
 import shutil
 
-from core.auth import validate_login, issue_auth_token
-from core.bucket import upload_bucket_file, download_bucket_file
-from core.helper import allowed_file, label_results_from, sanitize_redirects
-from core.email import send_email
-from core.config import config, temp_folder
-from core.db import connection, conn_lock
-from core.sensitive import jwt_key
-from core.remove_watchdog import future_del_temp
-from core.reg_exps import *
-from core.helper import sanitize_redirects
+from edu_storybook.core.auth import validate_login, issue_auth_token
+from edu_storybook.core.bucket import upload_bucket_file, download_bucket_file
+from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
+from edu_storybook.core.email import send_email
+from edu_storybook.core.config import config, temp_folder
+from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.remove_watchdog import future_del_temp
+from edu_storybook.core.reg_exps import *
+from edu_storybook.core.helper import sanitize_redirects
 
 a_admin = Blueprint('a_admin', __name__)
 

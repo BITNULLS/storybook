@@ -11,11 +11,11 @@ Functions:
 
 import cx_Oracle
 import smtplib
-from . import sensitive as sensitive
+from edu_storybook.core import sensitive as sensitive
 import os
 import logging
-from core.reg_exps import re_redirect_link
-from .config import config
+from edu_storybook.core.reg_exps import re_redirect_link
+from edu_storybook.core.config import config
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 

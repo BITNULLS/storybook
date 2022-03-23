@@ -17,13 +17,13 @@ import jwt
 import cx_Oracle
 import logging
 
-from core.auth import validate_login
-from core.bucket import download_bucket_file
-from core.config import config
-from core.db import connection, conn_lock
-from core.helper import label_results_from
-from core.sensitive import jwt_key
-from core.reg_exps import *
+from edu_storybook.core.auth import validate_login
+from edu_storybook.core.bucket import download_bucket_file
+from edu_storybook.core.config import config
+from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.helper import label_results_from
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.reg_exps import *
 
 a_storyboard = Blueprint('a_storyboard', __name__)
 
