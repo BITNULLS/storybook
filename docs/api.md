@@ -5,17 +5,17 @@ conditions and returns.
 
 Table of Contents:
  - [Meta Notes](#meta_notes)
- - [`book`](#book)
- - [`login`](#login)
- - [`password/forgot/`](#password-forgot)
- - [`password/reset/`](#password-reset)
- - [`admin/download/user/`](#admin-download-user)
- - [`admin/download/action/`](#admin-download-action)
- - [`admin/book/upload/`](#admin-book-upload)
- - [`admin/book/download/`](#admin-book-download)
- - [`admin/page/`](#admin-page)
- - [`/admin/book/grant/`](#admin-book-grant)
- - [`quiz/submit`](#quiz-submit)
+ - [`/book`](#book)
+ - [`/login`](#login)
+ - [`/password/forgot`](#password-forgot)
+ - [`/password/reset`](#password-reset)
+ - [`/admin/download/user`](#admin-download-user)
+ - [`/admin/download/action`](#admin-download-action)
+ - [`/admin/book/upload`](#admin-book-upload)
+ - [`/admin/book/download`](#admin-book-download)
+ - [`/admin/page`](#admin-page)
+ - [`/admin/book/grant`](#admin-book-grant)
+ - [`/quiz/submit`](#quiz-submit)
 
 ## Meta Notes
 

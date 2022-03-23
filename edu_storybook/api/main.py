@@ -1,6 +1,7 @@
 """
 main.py
-    Imports the routes of all other scripts in this module.
+
+Imports the routes of all other scripts in this module.
 """
 
 from flask import Blueprint

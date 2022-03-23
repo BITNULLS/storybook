@@ -1,10 +1,8 @@
 """
 storyboard.py
-    This handles displaying the pages of the book, storing user actions, and
-    receiving quiz question responses from the user.
 
-Routes:
-    /storyboard/page/<int:book_id_in>/<int:page_number_in>
+This handles displaying the pages of the book, storing user actions, and
+receiving quiz question responses from the user.
 """
 
 import logging
@@ -13,7 +11,7 @@ import json
 from flask import Blueprint
 from flask import request
 
-from edu_storybook.templates import TEMPLATES
+from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
 
 from edu_storybook.api.storyboard import storyboard_get_pagecount
@@ -29,6 +27,9 @@ if config['production'] == False:
 
 @storyboard.route("/storyboard/<int:book_id_in>/<int:page_number_in>")
 def gen_storyboard_page(book_id_in: int, page_number_in: int):
+    '''
+    Generate the storyboard viewer page.
+    '''
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
@@ -55,10 +56,10 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
         next_link_visibility = "display: block"
 
     # Generate Storyboard Viewer page
-    storyboard_page = TEMPLATES['_base'].substitute(
+    storyboard_page = Templates._base.substitute(
         title = 'Storyboard Page',
         description = 'Make an account with our website',
-        body = TEMPLATES['storyboard']['viewer'].substitute(
+        body = Templates.storyboard_viewer.substitute(
             navbar = make_navbar( auth ),
             book_name = name,
             current_page = "/api/storyboard/page/" + str(book_id) + "/" + str(page_number),

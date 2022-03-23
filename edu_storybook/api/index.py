@@ -1,16 +1,7 @@
 """
 index.py
-    Handles all top level routes of the API.
 
-Routes:
-    /api/
-    /api/book
-    /api/book/<int:book_id_in>
-    /api/book_old
-    /api/schools
-    /api/login
-    /api/logout
-    /api/register
+Handles all top level routes of the API.
 """
 
 from flask import request
@@ -105,54 +96,6 @@ def get_book_info(book_id_in: int):
     
     # Converts data from List to a JSON
     return json.dumps(data)
-    
-
-@a_index.route("/api/book_old", methods=['GET'])
-def get_users_books_old():
-    # TODO: may delete in future
-    # validate that user has rights to access books
-    auth = request.cookies.get('Authorization')
-    vl = validate_login(
-        auth,
-        permission=0
-    )
-    if vl != True:
-        return vl
-
-    if 'Bearer ' in auth:
-        auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-
-    # connect to database
-    cursor = connection.cursor()
-
-    try:
-        cursor.execute(
-            "SELECT b.BOOK_ID FROM BOOK b "
-            + "INNER JOIN STUDY s ON s.STUDY_ID = b.STUDY_ID "
-            + "INNER JOIN USER_PROFILE u ON s.STUDY_ID = u.STUDY_ID "
-            + "WHERE u.user_id='"
-            + token['sub'] + "'"
-        )
-        label_results_from(cursor)
-    except cx_Oracle.Error as e:
-        a_index_log.warning('Error when accessing database')
-        a_index_log.warning(e)
-        return {
-            "status": "fail",
-            "fail_no": 4,
-            "message": "Error when accessing books.",
-            "database_message": str(e)
-        }
-
-    # assign variable data to cursor.fetchall()
-    data = cursor.fetchall()
-
-    print(data)
-
-    return {
-        "status": "ok"
-    }
 
 
 @a_index.route("/api/schools", methods=['GET'])

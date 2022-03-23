@@ -1,16 +1,14 @@
 """
 login.py
 
-Routes:
-
-    /login
+Generates the login page.
 """
 
 from flask import request
 from flask import Blueprint
 import logging
 
-from edu_storybook.templates import TEMPLATES
+from edu_storybook.templates import Templates
 from edu_storybook.navbar import make_navbar
 from edu_storybook.core.config import config
 
@@ -22,15 +20,17 @@ if config['production'] == False:
 
 @login.route("/login")
 def gen_login():
-    
+    '''
+    Generates the login page.
+    '''
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
 
-    login_page = TEMPLATES["_base"].substitute(
+    login_page = Templates._base.substitute(
         title = "Admin: Book Manager",
         description = "A motivational storybook that helps students learn.",
-        body = TEMPLATES["login"].substitute(
+        body = Templates.login.substitute(
             navbar = make_navbar( auth )
         )
     )

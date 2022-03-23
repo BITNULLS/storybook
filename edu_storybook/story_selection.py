@@ -1,9 +1,7 @@
 """
 story_selection.py
-    This will display all of the books that a user can look at.
 
-Routes:
-    /books
+This will display all of the books that a user can look at.
 """
 
 import logging
@@ -13,7 +11,7 @@ from flask import Blueprint
 from edu_storybook.api.index import get_users_books
 from edu_storybook.core.config import config
 
-from edu_storybook.templates import TEMPLATES
+from edu_storybook.templates import Templates
 
 from edu_storybook.navbar import make_navbar
 
@@ -24,7 +22,10 @@ if config['production'] == False:
     log.setLevel(logging.DEBUG)
 
 @story_selection.route('/books')
-def gen_books():    
+def gen_books():
+    '''
+    Generate the story selection (books) page.
+    '''
 
     auth = None
     if 'Authorization' in request.cookies:
@@ -32,7 +33,7 @@ def gen_books():
     
     all_books = ""
     for b in get_users_books()['books']:
-        all_books += TEMPLATES['story_selection']['book'].substitute(
+        all_books += Templates.story_selection_book.substitute(
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
             book_id = b["BOOK_ID"], 
@@ -41,10 +42,10 @@ def gen_books():
             book_url = '/storyboard/' + str(b['BOOK_ID'])+ '/' + str(b['LAST_PAGE'])
         )          
         
-    story_selection_page = TEMPLATES["_base"].substitute(
+    story_selection_page = Templates._base.substitute(
         title = 'Book Selection',
         description = 'Select a book to read',
-        body = TEMPLATES['story_selection']['index'].substitute(
+        body = Templates.story_selection_index.substitute(
             navbar = make_navbar( auth ),
             book= all_books 
         )
