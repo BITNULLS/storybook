@@ -2,10 +2,7 @@
 app.py
     Main launch point for our web server.
 """
-import os
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import sys
-sys.path.append(ROOT_DIR) # Adds higher directory to python modules path.
 
 from flask import Flask
 

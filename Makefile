@@ -6,6 +6,8 @@ windows-run:
 	$Env:FLASK_APP = "app.py"
 	$Env:FLASK_ENV = "development"
 	python3 -m flask run
+real-run:
+	python3 -m edu_storybook.app
 setup:
 	pip3 install -r requirements.txt
 test:
