@@ -9,13 +9,13 @@ from flask import Flask, url_for, Response
 
 from edu_storybook.core.config import config
 from edu_storybook.api import main
-import admin
-import index
-import login
-import password
-import register
-import story_selection
-import storyboard
+from edu_storybook import admin
+from edu_storybook import index
+from edu_storybook import login
+from edu_storybook import password
+from edu_storybook import register
+from edu_storybook import story_selection
+from edu_storybook import storyboard
 from edu_storybook.core.helper import has_no_empty_params
 from edu_storybook.core.config import config
 
