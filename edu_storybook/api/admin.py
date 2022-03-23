@@ -626,16 +626,12 @@ def admin_download_user_data():
 
     # select query
     try:
-        cursor.execute("select\
-        user_profile.email, \
-        user_profile.first_name, \
-        user_profile.last_name, \
-        user_profile.created_on, \
-        user_profile.last_login, \
-        school.school_name, \
-        study.study_name from user_profile \
-        inner join school on user_profile.school_id = school.school_id \
-        inner join study on user_profile.study_id = study.study_id")
+        cursor.execute("SELECT USER_PROFILE.EMAIL, USER_PROFILE.USER_ID, USER_PROFILE.FIRST_NAME, USER_PROFILE.LAST_NAME, USER_PROFILE.CREATED_ON, USER_PROFILE.LAST_LOGIN, SCHOOL.SCHOOL_NAME, LISTAGG(STUDY.STUDY_NAME, ';') WITHIN GROUP(ORDER BY STUDY.STUDY_NAME) AS STUDIES "
+                       "FROM USER_PROFILE "
+                       "INNER JOIN SCHOOL ON USER_PROFILE.SCHOOL_ID = SCHOOL.SCHOOL_ID "
+                       "INNER JOIN USER_STUDY ON USER_PROFILE.USER_ID = USER_STUDY.USER_ID "
+                       "INNER JOIN STUDY ON USER_STUDY.STUDY_ID = STUDY.STUDY_ID "
+                       "GROUP BY USER_PROFILE.EMAIL, USER_PROFILE.USER_ID, USER_PROFILE.FIRST_NAME, USER_PROFILE.LAST_NAME, USER_PROFILE.CREATED_ON, USER_PROFILE.LAST_LOGIN, SCHOOL.SCHOOL_NAME")
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)
@@ -652,12 +648,14 @@ def admin_download_user_data():
     # column headers for csv
     headers = [
         "Username",
+        "User ID",
         "Email",
         "First Name",
         "Last Name",
         "Created On",
         "Last Login",
-        "School"
+        "School",
+        "Studies"
     ]
 
     # create filename with unique guid to prevent duplicates
