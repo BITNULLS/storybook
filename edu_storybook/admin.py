@@ -13,22 +13,44 @@ Routes:
 from flask import request
 from flask import send_file
 from flask import Blueprint
+from flask import abort
+import logging
+from core.auth import validate_login
 
 from templates import Templates
 
 from navbar import make_navbar
+from core.config import config
 
 admin = Blueprint('admin', __name__)
+
+log = logging.getLogger('ssg.admin')
+if config['production'] == False:
+    log.setLevel(logging.DEBUG)
 
 @admin.route("/admin/")
 def gen_admin_index():
     """
-    Generate the /admin/ index page.
+    Generate the `/admin/` index page.
     """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/ page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/ page.'
+        )
+        abort(403)
 
     the_index_page = Templates._base.substitute(
         title = "Admin Homepage",
@@ -42,12 +64,26 @@ def gen_admin_index():
 @admin.route("/admin/book_manager")
 def gen_admin_book_mananger():
     """
-    Generate the /admin/book_manager page.
+    Generate the `/admin/book_manager` page.
     """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/book_manager page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/book_manager page.'
+        )
+        abort(403)
 
     book_manager_page = Templates._base.substitute(
         title = "Admin: Book Manager",
@@ -61,12 +97,26 @@ def gen_admin_book_mananger():
 @admin.route("/admin/edit_book")
 def gen_admin_edit_book():
     """
-    Generate the /admin/edit_book page.
+    Generate the `/admin/edit_book` page.
     """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/edit_book page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/edit_book page.'
+        )
+        abort(403)
 
     edit_book_page = Templates._base.substitute(
         title = "Admin: Edit Book",
@@ -80,12 +130,26 @@ def gen_admin_edit_book():
 @admin.route("/admin/upload_book")
 def gen_admin_upload_book():
     """
-    Generate the /admin/upload_book page.
+    Generate the `/admin/upload_book` page.
     """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/upload_book page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/upload_book page.'
+        )
+        abort(403)
 
     upload_book_page = Templates._base.substitute(
         title = "Admin: Upload Book",
@@ -99,12 +163,26 @@ def gen_admin_upload_book():
 @admin.route("/admin/study_manager")
 def gen_admin_study_manager():
     """
-    Generate the /admin/study_manager page.
+    Generate the `/admin/study_manager` page.
     """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/study_manager page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/study_manager page.'
+        )
+        abort(403)
 
     study_manager_page = Templates._base.substitute(
         title = "Admin: Study Manager",

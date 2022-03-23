@@ -10,9 +10,11 @@ import json
 
 from flask import Blueprint
 from flask import request
+from flask import abort
 
 from templates import Templates
 from core.config import config
+from core.auth import validate_login
 
 from api.storyboard import storyboard_get_pagecount
 from api.index import get_book_info
@@ -33,22 +35,36 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-    
+        vl = validate_login(
+            auth,
+            permission=0
+        )
+        if vl != True:
+            log.debug(
+                f'A non-admin user tried to access the /storyboard/{book_id_in}/{page_number_in} page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            f'An unauthorized, logged out user tried to access the /storyboard/{book_id_in}/{page_number_in} page.'
+        )
+        abort(403)
+
     book_id = int(book_id_in)
     page_number = int(page_number_in)
-    
+
     page_count = storyboard_get_pagecount(book_id)['pagecount'] # Get the number of pages based on book_id
-    
+
     # Get book_info based on book_id from latest api endpoint /api/book/book_id
     book_info = json.loads(get_book_info(book_id))
     name = book_info['BOOK_NAME']
-            
+
     # Display/Hide "Previous" link based on current page number
     if page_number == 1:
         prev_link_visibility = "display: none"
     else:
         prev_link_visibility = "display: block"
-    
+
     # Display/Hide "Next" link based on current page number
     if page_number == page_count:
         next_link_visibility = "display: none"
