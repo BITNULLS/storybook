@@ -8,12 +8,12 @@ import logging
 
 from flask import request
 from flask import Blueprint
-from api.index import get_users_books
-from core.config import config
+from edu_storybook.api.index import get_users_books
+from edu_storybook.core.config import config
 
-from templates import Templates
+from edu_storybook.templates import Templates
 
-from navbar import make_navbar
+from edu_storybook.navbar import make_navbar
 
 story_selection = Blueprint('story_selection', __name__)
 

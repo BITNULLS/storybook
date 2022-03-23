@@ -11,16 +11,15 @@ windows-run:
 	$Env:FLASK_APP = "app.py"
 	$Env:FLASK_ENV = "development"
 	python3 -m flask run
-foolproof-run:
-	cd edu_storybook/
-	python3 app.py
+real-run:
+	python3 -m edu_storybook.app
 setup:
 	pip3 install -r requirements.txt
 count-lines-o-code:
 	find . -name '*.py' | xargs wc -l
 test:
 	cd test_edu_storybook/
-	python -m unittest \
+	python3 -m unittest \
 	test_edu_storybook.test_edu_storybook \
 	test_edu_storybook.test_api \
 	test_edu_storybook.test_core \

@@ -14,9 +14,9 @@ from flask import request
 from flask import send_file
 from flask import Blueprint
 
-from templates import Templates
+from edu_storybook.templates import Templates
 
-from navbar import make_navbar
+from edu_storybook.navbar import make_navbar
 
 admin = Blueprint('admin', __name__)
 

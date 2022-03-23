@@ -7,11 +7,11 @@ Makes navbars for all of the other pages.
 import jwt
 import logging
 
-from core.config import config
-from core.sensitive import jwt_key
-from core.config import config
+from edu_storybook.core.config import config
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.config import config
 
-from templates import Templates
+from .templates import Templates
 
 log = logging.getLogger('ssg.navbar')
 if config['production'] == False:
