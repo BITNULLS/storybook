@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - runTest
+
+env:
+  JSON: ${{ secrets.STORYBOOK_FILES_JSON }}
+  PEM: ${{ secrets.STORYBOOK_FILES_PEM }}
       
 jobs:
   build:
@@ -30,8 +34,8 @@ jobs:
         echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
-        echo ${{ secrets.STORYBOOK_FILES_JSON }} >> edu_storybook/core/data/StorybookFiles.json
-        echo ${{ secrets.STORYBOOK_FILES_PEM }} >> edu_storybook/core/data/StorybookFiles.pem
+        echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
+        echo "$PEM" >> edu_storybook/core/data/StorybookFiles.pem
     - name: Run Tests
       run: |
         make test
