@@ -15,7 +15,7 @@ from flask import send_file
 from flask import Blueprint
 from flask import abort
 import logging
-from core.auth import validate_login
+from edu_storybook.core.auth import validate_login
 
 from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
