@@ -10,10 +10,10 @@ jobs:
     name: Install Oracle and Run Tests
     runs-on: ubuntu-latest
     steps:
+    - name: Set Up Python
       - uses: actions/setup-python@v2
           with:
             python-version: '3.9'
-        - name: Set Up Python
     - name: Download Oracle Instant Client
       run: |
         wget https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
