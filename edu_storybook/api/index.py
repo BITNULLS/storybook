@@ -354,6 +354,8 @@ def register():
         assert 'first_name'in request.form
         assert 'last_name' in request.form
         assert 'school_id'in request.form
+        assert 'study_invite_code' in request.form
+
     except AssertionError:
         a_index_log.debug(
             'User did not provide a required field when registering')
@@ -380,6 +382,8 @@ def register():
     first_name = (request.form['first_name']).strip()
     last_name = (request.form['last_name']).strip()
     school_id = (request.form['school_id']).lower().strip()
+    study_code = (request.form['study_invite_code']).lower().strip()
+
 
     cursor = connection.cursor()
     try:
