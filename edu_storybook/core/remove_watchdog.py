@@ -1,15 +1,11 @@
 """
 remove_watchdog.py
-    Simple script for managing the removal of temporary files in a separate 
-    process.
 
-Functions:
-    remove_watchdog(...)
-    future_del_temp(...) - The function you use to mark a file for deletion.
+Simple script for managing the removal of temporary files in a separate process.
 """
 
 import os
-import time 
+import time
 import sys
 import logging
 from multiprocessing import Process, Queue
@@ -25,6 +21,7 @@ def remove_watchdog(remove_queue):
     the remove queue is a list of dicts, with each dict containing "expiration"
     and "filepath". It looks like
 
+    ```
     [
         {
             "expiration": 129941234,
@@ -32,6 +29,7 @@ def remove_watchdog(remove_queue):
         },
         ...
     ]
+    ```
 
     Where "expiration" is epoch time of file to be deleted.
     """
@@ -60,13 +58,13 @@ def future_del_temp(filepath: str = '', files: list = []) -> None:
     Marks the temporary files that should be removed later by the Remove 
     Watchdog in the future.
 
-    NOTE: Only filepath or files args should be valued, not both (XOR).
+    **NOTE:** Only filepath or files args should be valued, not both (XOR).
 
-    :param filepath: The path to a file that should be removed.
-    :param files: A list of files that should be removed.
-    :type filepath: str
-    :type files: str
-    :returns: None.
+    Args:
+     - filepath: The path to a file that should be removed.
+     - files: A list of files that should be removed.
+
+    Returns: None.
     """
     assert not (filepath == '' and len(files) ==
                 0), 'filepath and files args cannot both be empty'

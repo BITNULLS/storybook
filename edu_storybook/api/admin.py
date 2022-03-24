@@ -1,15 +1,7 @@
 """
 admin.py
-    Routes beginning with /api/admin/
 
-Routes:
-    /api/admin/book/download
-    /api/admin/book/upload
-    /api/admin/book/grant
-    /api/admin/page
-    /api/admin/download/user
-    /api/admin/download/action
-    /api/admin/get/user
+Routes beginning with `/api/admin/`.
 """
 
 from pydoc import Helper
@@ -34,16 +26,16 @@ import bcrypt
 import time
 import shutil
 
-from core.auth import validate_login, issue_auth_token
-from core.bucket import upload_bucket_file, download_bucket_file
-from core.helper import allowed_file, label_results_from, sanitize_redirects
-from core.email import send_email
-from core.config import config, temp_folder
-from core.db import connection, conn_lock
-from core.sensitive import jwt_key
-from core.remove_watchdog import future_del_temp
-from core.reg_exps import *
-from core.helper import sanitize_redirects
+from edu_storybook.core.auth import validate_login, issue_auth_token
+from edu_storybook.core.bucket import upload_bucket_file, download_bucket_file
+from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
+from edu_storybook.core.email import send_email
+from edu_storybook.core.config import config, temp_folder
+from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.remove_watchdog import future_del_temp
+from edu_storybook.core.reg_exps import *
+from edu_storybook.core.helper import sanitize_redirects
 
 a_admin = Blueprint('a_admin', __name__)
 
@@ -53,6 +45,15 @@ if config['production'] == False:
 
 @a_admin.route("/api/admin/book/download", methods=['POST'])
 def admin_download_book():
+    """
+    Endpoint to allow the administrator download a book.
+
+    Expects:
+     - `filename`: The filename of the book.
+
+    Fails:
+     - `14`: Unable to download and/or send file.
+    """
     # validate that user has admin rights to download books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -95,6 +96,20 @@ def admin_download_book():
 
 @a_admin.route("/api/admin/book/upload", methods=['POST'])
 def admin_book_upload():
+    """
+    Endpint to allow an administrator to upload a book.
+
+    Expects:
+     - `book_name`: The name of the book.
+     - `book_description`: The description of the book.
+     - `study_ids`: HTML checkbox list of selected study IDs to add the book to.
+
+    Fails:
+     - `10`: No file uploaded.
+     - `11`: Filename was an empty string.
+     - `12`: Error when uploading file to server data bucket.
+     - `13`: Error when querying database
+    """
     # validate that user has admin rights to upload books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -184,7 +199,6 @@ def admin_book_upload():
                     )
                 )
                 book_pngs[i].save(file_upload_image_path, 'PNG')
-                print('path exists: ' + str(os.path.exists(file_upload_image_path)))
                 # upload images to a folder in bucket
                 upload_bucket_file(file_upload_image_path, filename + '/' + book_image_name)
                 # remove img file
@@ -220,7 +234,7 @@ def admin_book_upload():
         except cx_Oracle.Error as e:
             return {
                 "status": "fail",
-                "fail_no": 4,
+                "fail_no": 13,
                 "message": "Error when querying database. 1159",
                 "database_message": str(e)
             }
@@ -239,7 +253,7 @@ def admin_book_upload():
         except cx_Oracle.Error as e:
             return {
                 "status": "fail",
-                "fail_no": 4,
+                "fail_no": 14,
                 "message": "Error when querying database. 1160",
                 "database_message": str(e)
             }
@@ -251,7 +265,7 @@ def admin_book_upload():
             print('Book ID not found from the parameter values upon querying database')
             return {
                 "status": "fail",
-                "fail_no": 4,
+                "fail_no": 15,
                 "message": "book id not found upon querying database"
             }, 400, {"Content-Type": "application/json"}
             
@@ -272,7 +286,7 @@ def admin_book_upload():
         except cx_Oracle.Error as e:
             return {
                 "status": "fail",
-                "fail_no": 4,
+                "fail_no": 16,
                 "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
@@ -296,7 +310,7 @@ def admin_book_upload():
         )
         return {
             "status": "fail",
-            "fail_no": 13,
+            "fail_no": 17,
             "message": "invalid file format or file"
         }, 400, {"Content-Type": "application/json"}
 
@@ -588,7 +602,7 @@ def admin_page_handler():
         }, 400, {"Content-Type": "application/json"}
 
 
-@a_admin.route("/api/admin/download/user", methods=['POST'])
+@a_admin.route("/api/admin/download/user", methods=['GET'])
 def admin_download_user_data():
     """
     Exports user profile data to a csv file
@@ -612,16 +626,12 @@ def admin_download_user_data():
 
     # select query
     try:
-        cursor.execute("select\
-        user_profile.email, \
-        user_profile.first_name, \
-        user_profile.last_name, \
-        user_profile.created_on, \
-        user_profile.last_login, \
-        school.school_name, \
-        study.study_name from user_profile \
-        inner join school on user_profile.school_id = school.school_id \
-        inner join study on user_profile.study_id = study.study_id")
+        cursor.execute("SELECT USER_PROFILE.EMAIL, USER_PROFILE.USER_ID, USER_PROFILE.FIRST_NAME, USER_PROFILE.LAST_NAME, USER_PROFILE.CREATED_ON, USER_PROFILE.LAST_LOGIN, SCHOOL.SCHOOL_NAME, LISTAGG(STUDY.STUDY_NAME, ';') WITHIN GROUP(ORDER BY STUDY.STUDY_NAME) AS STUDIES "
+                       "FROM USER_PROFILE "
+                       "INNER JOIN SCHOOL ON USER_PROFILE.SCHOOL_ID = SCHOOL.SCHOOL_ID "
+                       "INNER JOIN USER_STUDY ON USER_PROFILE.USER_ID = USER_STUDY.USER_ID "
+                       "INNER JOIN STUDY ON USER_STUDY.STUDY_ID = STUDY.STUDY_ID "
+                       "GROUP BY USER_PROFILE.EMAIL, USER_PROFILE.USER_ID, USER_PROFILE.FIRST_NAME, USER_PROFILE.LAST_NAME, USER_PROFILE.CREATED_ON, USER_PROFILE.LAST_LOGIN, SCHOOL.SCHOOL_NAME")
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)
@@ -638,12 +648,14 @@ def admin_download_user_data():
     # column headers for csv
     headers = [
         "Username",
+        "User ID",
         "Email",
         "First Name",
         "Last Name",
         "Created On",
         "Last Login",
-        "School"
+        "School",
+        "Studies"
     ]
 
     # create filename with unique guid to prevent duplicates
@@ -684,7 +696,7 @@ def admin_download_user_data():
         }
 
 
-@a_admin.route("/api/admin/download/action", methods=['POST'])
+@a_admin.route("/api/admin/download/action", methods=['GET'])
 def admin_download_action_data():
     """
     Exports user action data to a csv file
@@ -718,7 +730,7 @@ def admin_download_action_data():
         inner join action on user_profile.user_id = action.user_id \
         inner join book on action.book_id = book.book_id \
         inner join action_detail on action_detail.detail_id = action.detail_id \
-        inner join action_key on action_detail.action_id = action_key.action_id")
+        inner join action_key on action_detail.action_key_id = action_key.action_key_id")
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)

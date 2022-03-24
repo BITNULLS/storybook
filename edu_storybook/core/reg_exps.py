@@ -1,6 +1,7 @@
 """
 reg_exps.py
-    Contains all the regular expressions used in the app.
+
+Contains all the regular expressions used in the app.
 """
 import re
 
