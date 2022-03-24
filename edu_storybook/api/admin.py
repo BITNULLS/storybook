@@ -26,16 +26,16 @@ import bcrypt
 import time
 import shutil
 
-from core.auth import validate_login, issue_auth_token
-from core.bucket import upload_bucket_file, download_bucket_file
-from core.helper import allowed_file, label_results_from, sanitize_redirects
-from core.email import send_email
-from core.config import config, temp_folder
-from core.db import connection, conn_lock
-from core.sensitive import jwt_key
-from core.remove_watchdog import future_del_temp
-from core.reg_exps import *
-from core.helper import sanitize_redirects
+from edu_storybook.core.auth import validate_login, issue_auth_token
+from edu_storybook.core.bucket import upload_bucket_file, download_bucket_file
+from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
+from edu_storybook.core.email import send_email
+from edu_storybook.core.config import config, temp_folder
+from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.remove_watchdog import future_del_temp
+from edu_storybook.core.reg_exps import *
+from edu_storybook.core.helper import sanitize_redirects
 
 a_admin = Blueprint('a_admin', __name__)
 
@@ -626,16 +626,12 @@ def admin_download_user_data():
 
     # select query
     try:
-        cursor.execute("select\
-        user_profile.email, \
-        user_profile.first_name, \
-        user_profile.last_name, \
-        user_profile.created_on, \
-        user_profile.last_login, \
-        school.school_name, \
-        study.study_name from user_profile \
-        inner join school on user_profile.school_id = school.school_id \
-        inner join study on user_profile.study_id = study.study_id")
+        cursor.execute("SELECT USER_PROFILE.EMAIL, USER_PROFILE.USER_ID, USER_PROFILE.FIRST_NAME, USER_PROFILE.LAST_NAME, USER_PROFILE.CREATED_ON, USER_PROFILE.LAST_LOGIN, SCHOOL.SCHOOL_NAME, LISTAGG(STUDY.STUDY_NAME, ';') WITHIN GROUP(ORDER BY STUDY.STUDY_NAME) AS STUDIES "
+                       "FROM USER_PROFILE "
+                       "INNER JOIN SCHOOL ON USER_PROFILE.SCHOOL_ID = SCHOOL.SCHOOL_ID "
+                       "INNER JOIN USER_STUDY ON USER_PROFILE.USER_ID = USER_STUDY.USER_ID "
+                       "INNER JOIN STUDY ON USER_STUDY.STUDY_ID = STUDY.STUDY_ID "
+                       "GROUP BY USER_PROFILE.EMAIL, USER_PROFILE.USER_ID, USER_PROFILE.FIRST_NAME, USER_PROFILE.LAST_NAME, USER_PROFILE.CREATED_ON, USER_PROFILE.LAST_LOGIN, SCHOOL.SCHOOL_NAME")
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)
@@ -652,12 +648,14 @@ def admin_download_user_data():
     # column headers for csv
     headers = [
         "Username",
+        "User ID",
         "Email",
         "First Name",
         "Last Name",
         "Created On",
         "Last Login",
-        "School"
+        "School",
+        "Studies"
     ]
 
     # create filename with unique guid to prevent duplicates

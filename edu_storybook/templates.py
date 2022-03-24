@@ -5,7 +5,8 @@ Initializes all of the templates used in the web app.
 """
 
 import logging
-from core.config import config
+from edu_storybook.core.config import config
+from edu_storybook.core.filepath import fix_filepath
 
 from string import Template
 import os
@@ -36,6 +37,7 @@ def load_template(filepath: str) -> EduTemplate:
     t = None
     # TODO ASSERT FILEPATH IS LEGIT FILE
     #assert os.path.isfile(filepath), `Provided template '
+    filepath = fix_filepath(__file__, filepath)
     with open(filepath, 'r', encoding='utf-8') as f:
         t = EduTemplate('\n'.join(f.readlines()))
     return t

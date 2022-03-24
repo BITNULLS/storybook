@@ -17,10 +17,9 @@ from flask import abort
 import logging
 from core.auth import validate_login
 
-from templates import Templates
-
-from navbar import make_navbar
-from core.config import config
+from edu_storybook.templates import Templates
+from edu_storybook.core.config import config
+from edu_storybook.navbar import make_navbar
 
 admin = Blueprint('admin', __name__)
 
