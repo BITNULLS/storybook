@@ -14,6 +14,7 @@ jobs:
     name: Install Oracle and Run Tests
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
     - name: Download Oracle Instant Client
       run: |
         wget https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
@@ -21,9 +22,7 @@ jobs:
         unzip instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
         cd instantclient_21_5
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
-        pwd
         cd ..
-    - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
