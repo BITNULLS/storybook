@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for March 17, 2022
+-- Updated Schema for March 24, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -40,7 +40,7 @@
 --  DDL for Sequence STUDY_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 41 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 61 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 
 --------------------------------------------------------
 --  TABLES
@@ -197,6 +197,7 @@
 	"STUDY_ID" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 
+
 --------------------------------------------------------
 --  DDL for Table ACTION
 --------------------------------------------------------
@@ -250,6 +251,7 @@
 	"FOLDER" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 
+
 --------------------------------------------------------
 --  INDEXES
 --------------------------------------------------------
@@ -264,7 +266,7 @@
 --------------------------------------------------------
 
   CREATE UNIQUE INDEX "ACTION_KEY_PK" ON "ACTION_KEY" ("ACTION_KEY_ID") 
-  ;  
+  ;
 --------------------------------------------------------
 --  DDL for Index ANSWER_PK
 --------------------------------------------------------
@@ -864,10 +866,27 @@ set define off;
 ) AS 
 BEGIN
 
+      DELETE FROM USER_RESPONSE WHERE QUESTION_ID = QUESTION_ID_IN;
       DELETE FROM ANSWER WHERE QUESTION_ID = QUESTION_ID_IN;
       DELETE FROM QUESTION WHERE QUESTION_ID = QUESTION_ID_IN;
 
 END DELETE_QUESTION_ANSWER_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure DELETE_USER_STUDY_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "DELETE_USER_STUDY_PROC" 
+(
+  USER_ID_IN IN VARCHAR2,
+  STUDY_ID_IN IN NUMBER 
+) AS 
+BEGIN
+    DELETE FROM USER_STUDY WHERE USER_ID = USER_ID_IN AND STUDY_ID = STUDY_ID_IN;
+
+END DELETE_USER_STUDY_PROC;
 
 /
 --------------------------------------------------------
@@ -981,6 +1000,51 @@ BEGIN
 
     END;
 END insert_question_proc;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure INSERT_USER_STUDY_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "INSERT_USER_STUDY_PROC" 
+(
+  USER_ID_IN IN user_study.user_id%TYPE, 
+  STUDY_ID_IN IN user_study.study_id%TYPE 
+) AS 
+
+BEGIN
+    DECLARE
+        check_study_id user_study.study_id%TYPE;
+    BEGIN
+        dbms_output.put_line('Hello Reader!');
+        BEGIN
+            SELECT
+                study_id
+            INTO check_study_id
+            FROM
+                user_study
+            WHERE
+                user_id = user_id_in;
+
+        EXCEPTION
+            WHEN no_data_found THEN
+                check_study_id := NULL;
+        END;
+
+        IF check_study_id is NULL THEN
+            INSERT INTO user_study (
+                user_id,
+                study_id
+            ) VALUES (
+                user_id_in,
+                study_id_in
+            );
+
+        END IF;
+
+    END;
+END insert_user_study_proc;
 
 /
 
@@ -1260,6 +1324,9 @@ END check_detail_id_fcn;
   ALTER TABLE "BOOK" MODIFY ("DESCRIPTION" NOT NULL ENABLE);
   ALTER TABLE "BOOK" ADD CONSTRAINT "BOOK_PK" PRIMARY KEY ("BOOK_ID")
   USING INDEX  ENABLE;
+--------------------------------------------------------
+--  REFERENTIAL CONSTRAINTS
+--------------------------------------------------------
 --------------------------------------------------------
 --  Ref Constraints for Table ACTION
 --------------------------------------------------------
