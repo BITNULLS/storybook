@@ -38,4 +38,4 @@ jobs:
         echo "$PEM" >> edu_storybook/core/data/StorybookFiles.pem
     - name: Run Tests
       run: |
-        make test
+        pwd
