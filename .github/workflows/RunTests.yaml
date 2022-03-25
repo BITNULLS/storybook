@@ -31,11 +31,11 @@ jobs:
         pip3 install -r requirements.txt
     - name: Create oracle_dir.txt
       run: |
-        echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
+        echo $INSTANT_DIR >> /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
         echo "$PEM" >> edu_storybook/core/data/StorybookFiles.pem
     - name: Run Tests
       run: |
-        pwd
+        make test
