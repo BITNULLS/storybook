@@ -21,6 +21,8 @@ jobs:
         unzip instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
         cd instantclient_21_5
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
+        pwd
+        cd ..
     - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v3
