@@ -17,11 +17,12 @@ jobs:
     - uses: actions/checkout@v3
     - name: Download Oracle Instant Client
       run: |
+        cd ../..
         wget https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
         sudo apt install unzip
         unzip instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
         cd instantclient_21_5
-        echo "INSTANT_DIR=instantclient_21_5" >> $GITHUB_ENV
+        echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd ..
     - name: Set up Python
       uses: actions/setup-python@v3
