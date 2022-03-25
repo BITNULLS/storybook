@@ -39,7 +39,9 @@ jobs:
         pip3 install -r requirements.txt
     - name: Checking Directory
       run: |
-        if [ -d "$INSTANT_DIR" ]; then echo "Directory Exists! Running Tests" fi
+        if [ -d "/home/runner/work/storybook/storybook/instantclient_21_5" ]; then 
+          echo "Directory Exists! Running Tests"
+        fi
     - name: Run Tests
       run: |
         make test
