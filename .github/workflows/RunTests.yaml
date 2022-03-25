@@ -17,13 +17,19 @@ jobs:
     - uses: actions/checkout@v3
     - name: Download Oracle Instant Client
       run: |
-        cd ../..
-        wget https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
+        wget https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basiclite-linux.x64-21.5.0.0.0dbru.zip
         sudo apt install unzip
         unzip instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
         cd instantclient_21_5
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd ..
+    - name: Create oracle_dir.txt
+      run: |
+        echo $INSTANT_DIR > /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
+    - name: Create StorybookFiles Files
+      run: |
+        echo "$JSON" > edu_storybook/core/data/StorybookFiles.json
+        echo "$PEM" > edu_storybook/core/data/StorybookFiles.pem
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
@@ -31,13 +37,6 @@ jobs:
     - name: Install Requirements
       run: |
         pip3 install -r requirements.txt
-    - name: Create oracle_dir.txt
-      run: |
-        echo $INSTANT_DIR >> /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
-    - name: Create StorybookFiles Files
-      run: |
-        echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
-        echo "$PEM" >> edu_storybook/core/data/StorybookFiles.pem
     - name: Run Tests
       run: |
         make test
