@@ -333,6 +333,23 @@ def admin_add_book_to_study():
     if vl != True:
         return vl
 
+    # check input params
+    try:
+        assert 'book_name' in request.form
+        assert 'book_url' in request.form
+        assert 'book_description' in request.form
+        assert 'study_id' in request.form
+    except AssertionError:
+        a_admin_log.debug(
+            'An admin did not provided one or more fields when adding a book' +\
+                'to a study'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_name, book_url, book_description, and/or study_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
     # get parameters
     book_name = (request.form.get('book_name')).lower().strip()
     book_url = (request.form.get('book_url')).lower().strip()
