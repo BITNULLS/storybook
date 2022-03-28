@@ -54,7 +54,8 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "The book_id or page_number failed a sanitize check. The POSTed fields should be an integer."
+            "message": "The book_id or page_number failed a sanitize check." +\
+                "The POSTed fields should be an integer."
         }, 400, {"Content-Type": "application/json"}
 
     # goes into database and gets the bucket folder.

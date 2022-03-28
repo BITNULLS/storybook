@@ -1,8 +1,6 @@
 docs:
-	cd edu_storybook/
-	rosetta_python3 -m pdoc -o ../docs/pdoc/ app.py admin.py index.py login.py \
-	navbar.py password.py register.py story_selection.py storyboard.py \
-	templates.py api core
+	python3 -m pdoc -o docs/pdoc/ edu_storybook.app edu_storybook.api \
+	edu_storybook.core
 run:
 	export FLASK_APP=edu_storybook/app.py
 	export FLASK_ENV=development

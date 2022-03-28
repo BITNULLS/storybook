@@ -133,7 +133,8 @@ def password_reset():
         assert 'confirm_pass' in request.form
         assert 'reset_key' in request.form
     except AssertionError:
-        a_password_log.debug('User tried to reset a password without providing a new password, or reset key')
+        a_password_log.debug('User tried to reset a password without' +\
+            'providing a new password, or reset key')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -147,7 +148,8 @@ def password_reset():
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "Either one or both passwords failed sanitization check of more than 8 characters &/or alphanumeric."
+            "message": "Either one or both passwords failed sanitization" +\
+                " check of more than 8 characters &/or alphanumeric."
         }, 400, {"Content-Type": "application/json"}
 
     # check if both passwords match

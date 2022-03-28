@@ -59,11 +59,11 @@ def quiz_submit_answer():
             "fail_no": 2,
             "message": "Either the answer_id or the question_id contained invalid characters."
         }, 400, {"Content-Type": "application/json"}
-    
+
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-    
+
     cursor = connection.cursor()
-    
+
     try:
         conn_lock.acquire()
         cursor.execute(
@@ -83,7 +83,7 @@ def quiz_submit_answer():
         }, 400, {"Content-Type": "application/json"}
     finally:
         conn_lock.release()
-        
+
     try:
        conn_lock.acquire()
        cursor.execute(

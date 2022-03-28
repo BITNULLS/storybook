@@ -31,3 +31,4 @@ class Config:
     buffer_size: int = config['buffer_size']
     temp_folder: str = config['temp_folder']
     temp_file_expire: int = config['temp_file_expire']
+    jwt_alg: str = config['jwt_alg']

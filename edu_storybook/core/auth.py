@@ -26,6 +26,7 @@ c_auth_log = logging.getLogger('core.auth')
 if config['production'] == False:
     c_auth_log.setLevel(logging.DEBUG)
 
+
 def issue_auth_token(res, token):
     """
     Reissues Authorization token for the user.

@@ -74,7 +74,7 @@ def get_book_info(book_id_in: int):
 
     # connect to database
     cursor = connection.cursor()
-    
+
     # Removing Column "CREATED_ON" since that would create a problem for converting to JSON
     try:
         cursor.execute(
@@ -82,6 +82,8 @@ def get_book_info(book_id_in: int):
             "WHERE book_id= '"+ str(book_id) +"'"
         )
     except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -93,7 +95,7 @@ def get_book_info(book_id_in: int):
     # This would hold info about a book based on book_id in List format
     label_results_from(cursor)
     data = cursor.fetchone()
-    
+
     # Converts data from List to a JSON
     return json.dumps(data)
 
@@ -101,7 +103,7 @@ def get_book_info(book_id_in: int):
 @a_index.route("/api/schools", methods=['GET'])
 def get_schools():
     '''
-    Return a list of schools in the same style/format/convention that 
+    Return a list of schools in the same style/format/convention that
     admin_get_users() returns a list of users.
     '''
 
@@ -134,6 +136,7 @@ def get_schools():
     try:
         offset = int(request.form['offset'])
     except ValueError:
+        a_index_log.debug('A user provided a non-int value for offset')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -368,7 +371,7 @@ def register():
             re_password.match(request.form['password']) is None or \
             re_alphanumeric2.match(request.form['first_name']) is None or \
             re_alphanumeric2.match(request.form['last_name']) is None:
-        a_index_log.warning('User provided a malformed field when registering')
+        a_index_log.debug('User provided a malformed field when registering')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -467,7 +470,7 @@ def get_users_books():
 
     # connect to database
     cursor = connection.cursor()
-    
+
     try:
         cursor.execute(
             "SELECT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
@@ -477,6 +480,8 @@ def get_users_books():
             "WHERE user_study.user_id= '"+ token['sub'] +"'"
         )
     except cx_Oracle.Error as e:
+        a_index_log.warning('Error when acessing database')
+        a_index_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
@@ -491,4 +496,4 @@ def get_users_books():
     return {
        "books": data
     }
-   
+

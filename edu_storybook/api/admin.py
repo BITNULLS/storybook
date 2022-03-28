@@ -65,11 +65,14 @@ def admin_download_book():
             'Unauthenticated user tried to access admin_download_book'
         )
         return vl
-        
+
     # check to make sure you have a 'filename'
     try:
         assert 'filename' in request.form
     except AssertionError:
+        a_admin_log.debug(
+            'The filename of the file to download was not provided by the admin'
+        )
         return {
             "status": "fail",
             "fail_no": 1,
@@ -121,12 +124,16 @@ def admin_book_upload():
             'Unauthenticated user tried to access admin_book_upload'
         )
         return vl
-        
+
     # check to make sure you have a 'book_name' and 'book_description
     try:
-        assert 'book_name' in request.form 
+        assert 'book_name' in request.form
         assert 'book_description' in request.form
     except AssertionError:
+        a_admin_log.debug(
+            'An admin did not provided either book_name or book_description ' +\
+                'when uploading a book'
+        )
         return {
             "status": "fail",
             "fail_no": 1,
@@ -159,7 +166,7 @@ def admin_book_upload():
             "fail_no": 11,
             "message": "filename is empty string"
         }, 400, {"Content-Type": "application/json"}
-        
+
     if file and allowed_file(file.filename):
         # prepend unique uuid for filename
         filename = str(uuid.uuid4()) + "_" + file.filename
@@ -167,7 +174,7 @@ def admin_book_upload():
         # save file to local /temp/file_upload folder
         file_path = os.path.join( temp_folder, filename )
         file.save(file_path)
-        
+
         # convert pdf to images
         book_pngs = convert_from_path(file_path, 500)
 
@@ -190,7 +197,7 @@ def admin_book_upload():
                 )
                 if not os.path.exists( file_upload_folder ):
                     os.makedirs( file_upload_folder )
-                book_image_name = filename + '_' + str(i+1) + '.png' 
+                book_image_name = filename + '_' + str(i+1) + '.png'
                 file_upload_image_path = os.path.join(
                     upload_temp_folder,
                     os.path.join(
@@ -206,8 +213,11 @@ def admin_book_upload():
 
             # remove temp dir
             shutil.rmtree( upload_temp_folder )
-            
+
         except Exception as e:
+            a_admin_log.warning('There was an error when trying to upload a ' +\
+                'book to the bucket')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 12,
@@ -217,7 +227,7 @@ def admin_book_upload():
 
         # connect to database
         cursor = connection.cursor()
-        
+
         # 2) insert book into 'book' table
         try:
             conn_lock.acquire()
@@ -227,11 +237,12 @@ def admin_book_upload():
                            + book_description + "', '"
                            + filename + "', "
                            + str(len(book_pngs)) + ")")
-        
+
             # commit to database
             connection.commit()
-
         except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 13,
@@ -240,17 +251,16 @@ def admin_book_upload():
             }
         finally:
             conn_lock.release()
-        
+
         # 3) Get book_id from 'book' table (given book name and its description) to insert entries in 'book_study' later
         try:
             conn_lock.acquire()
-            
             cursor.execute("SELECT BOOK_ID FROM BOOK " +
                            "WHERE BOOK_NAME='" + book_name + "' AND DESCRIPTION='" + book_description + "'")
-            
             label_results_from(cursor)
-            
         except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 14,
@@ -259,31 +269,30 @@ def admin_book_upload():
             }
         finally:
             conn_lock.release()
-            
+
         book_id = cursor.fetchone()
         if book_id is None:
-            print('Book ID not found from the parameter values upon querying database')
+            a_admin_log.debug('Book ID not found from the parameter values ' +\
+                'upon querying database')
             return {
                 "status": "fail",
                 "fail_no": 15,
                 "message": "book id not found upon querying database"
             }, 400, {"Content-Type": "application/json"}
-            
-        
+
         # 4) insert studies assigned to a book in 'book_study' table
         try:
             conn_lock.acquire()
-
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
                                + str(book_id['BOOK_ID']) + ", "
                                + str(study_id) + ")")
-        
             # commit to database
             connection.commit()
-
         except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 16,
@@ -301,8 +310,7 @@ def admin_book_upload():
             res = make_response({
                 "status": "ok"
             })
-            print(res)
-        
+
         return res
     else:
         a_admin_log.debug(
@@ -386,8 +394,9 @@ def admin_page_handler():
             assert 'page_prev_in' in request.form
             assert 'page_next_in' in request.form
             assert 'answers_in' in request.form
-
         except AssertionError:
+            a_admin_log.debug('An admin did not provide all of the form ' +\
+                'fields when creating a question')
             return {
                 "status": "fail",
                 "fail_no": 1,
@@ -396,13 +405,13 @@ def admin_page_handler():
 
         # sanitize inputs: check ints
         try:
-            
             book_id_in = int(request.form['book_id_in'])
             school_id_in = int(request.form['school_id_in'])
             page_prev_in = int(request.form['page_prev_in'])
             page_next_in = int(request.form['page_next_in'])
-
         except ValueError:
+            a_admin_log.debug('An admin provided non-int form data when ' +\
+                'creating a question')
             return {
                 "status": "fail",
                 "fail_no": 2,
@@ -423,18 +432,17 @@ def admin_page_handler():
                     request.form['page_prev_in'],\
                     request.form['page_next_in'],\
                     request.form['answers_in']])
-                
             # commit changes to db
             connection.commit()
-
         except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 3,
                 "message": "Error when querying database. line 889",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        
         finally:
             conn_lock.release()
 
@@ -444,11 +452,13 @@ def admin_page_handler():
 
     elif request.method == 'GET':  # Get = get (retrieve pages)
         cursor = connection.cursor()
-        
+
         # check to make sure you have a book_id
         try:
             assert 'book_id' in request.form
         except AssertionError:
+            a_admin_log.debug('An admin did not provide the book_id of ' +\
+                'the book when getting a question')
             return {
                 "status": "fail",
                 "fail_no": 1,
@@ -458,6 +468,8 @@ def admin_page_handler():
         try:
             book_id = int(request.form['book_id'])
         except ValueError:
+            a_admin_log.debug('An admin provided non-int form data when ' +\
+                'getting a question')
             return {
                 "status": "fail",
                 "fail_no": 2,
@@ -473,8 +485,9 @@ def admin_page_handler():
                 "WHERE BOOK_ID=" + request.form["book_id"]
             )
             label_results_from(cursor)
-
         except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 3,
@@ -483,7 +496,6 @@ def admin_page_handler():
             }, 400, {"Content-Type": "application/json"}
         finally:
             conn_lock.release()
-        
 
         # fetching all the questions and storing them in questions array
         questions = []
@@ -494,6 +506,8 @@ def admin_page_handler():
                 break
             questions.append(result)
         if len(questions) == 0:
+            a_admin_log.debug('An admin provided an invalid book_id when ' +\
+                'getting the questions for a book.')
             return {
                 "status": "fail",
                 "fail_no": 4,
@@ -510,8 +524,9 @@ def admin_page_handler():
             assert 'question_id_in' in request.form
             assert 'question_in' in request.form
             assert 'answers_in' in request.form
-
         except AssertionError:
+            a_admin_log.debug('An admin did not provide all of the form ' +\
+                'fields when updating a question')
             return {
                 "status": "fail",
                 "fail_no": 1,
@@ -521,8 +536,9 @@ def admin_page_handler():
         # check that question id is an int
         try:
             question_id = int(request.form['question_id_in'])
-
         except ValueError:
+            a_admin_log.debug('An admin provided non-int form data when ' +\
+                'getting a question')
             return {
                 "status": "fail",
                 "fail_no": 2,
@@ -537,18 +553,17 @@ def admin_page_handler():
                 [request.form['question_id_in'],\
                     request.form['question_in'],\
                     request.form['answers_in']])
-                
             # commit changes to db
             connection.commit()
-
         except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
             return {
                 "status": "fail",
                 "fail_no": 3,
                 "message": "Error when querying database. line 889",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-
         finally:
             conn_lock.release()
 
@@ -557,10 +572,23 @@ def admin_page_handler():
         }
 
     elif request.method == 'DELETE':  # DELETE = delete a page
+        # check correct inputs
+        try:
+            assert 'question_id_in' in request.form
+        except AssertionError:
+            a_admin_log.debug('An admin did not provide all of the form ' +\
+                'fields (question_id_in) when deleting a question.')
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "question_id_in was not provided"
+            }, 400, {"Content-Type": "application/json"}
+
         try:
             question_id_in = int(request.form['question_id_in'])
-
         except ValueError:
+            a_admin_log.debug('An admin did not provide all of the form ' +\
+                'fields when deleting a question')
             return {
                 "status": "fail",
                 "fail_no": 2,
@@ -572,9 +600,7 @@ def admin_page_handler():
         try:
             cursor.callproc('delete_question_answer_proc', [
                             request.form['question_id_in']])
-
             connection.commit()
-
         except cx_Oracle.Error as e:
             a_admin_log.warning('Error when accessing database')
             a_admin_log.warning(e)
@@ -800,14 +826,14 @@ def admin_get_users():
 
     - Connects to database
     - Computes a select query to get user data
-    - return USER_ID, USERNAME (full), STUDY that they currently belong to. 
+    - return USER_ID, USERNAME (full), STUDY that they currently belong to.
         Important: Sort by join date, or login date, or something. We want fresh users first.
-    - Allow an admin to retrieve a JSON list of all of the users. 
-        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
+    - Allow an admin to retrieve a JSON list of all of the users.
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows.
         Make offset an input parameter (int).
     """
 
-    # validate that user has rights to access 
+    # validate that user has rights to access
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,
@@ -878,9 +904,9 @@ def admin_get_books():
 
     - Connects to database
     - Computes a select query to get book data
-    - return BOOK_ID, BOOKNAME , DESCRIPTION 
-    - Allow an admin to retrieve a JSON list of all of the users. 
-        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
+    - return BOOK_ID, BOOKNAME , DESCRIPTION
+    - Allow an admin to retrieve a JSON list of all of the users.
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows.
         Make offset an input parameter (int).
     """
 
@@ -902,6 +928,8 @@ def admin_get_books():
     try:
         assert 'offset' in request.form
     except AssertionError:
+        a_admin_log.debug('An admin did not provide the offset when ' +\
+            'getting data for a book')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -912,6 +940,7 @@ def admin_get_books():
     try:
         offset = int(request.form['offset'])
     except ValueError:
+        a_admin_log.debug('An admin provided a non-int value for offset')
         return {
             "status": "fail",
             "fail_no": 2,
@@ -923,11 +952,13 @@ def admin_get_books():
 
     try:
         cursor.execute(
-            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK OFFSET "+ 
+            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK OFFSET "+
             request.form["offset"] +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 3,
