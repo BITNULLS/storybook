@@ -30,7 +30,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install unzip
         unzip instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
-        sudo apt-get install libaio
+        sudo apt-get install libaio1
         cd instantclient_21_5
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         export LD_LIBRARY_PATH=/opt/oracle/instantclient_21_5:$LD_LIBRARY_PATH
