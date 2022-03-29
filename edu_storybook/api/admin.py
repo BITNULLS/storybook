@@ -13,7 +13,6 @@ Routes:
     /api/admin/study/user
 """
 
-from crypt import methods
 from pydoc import Helper
 from flask import request
 from flask import make_response
@@ -916,6 +915,9 @@ def admin_get_books():
 
 @a_admin.route("/api/admin/study/user", methods=['POST', 'DELETE'])
 def admin_study_user():
+    '''
+    'POST' and 'DELETE' methods for admin adding and removing users from studies
+    '''
      # validate that user has rights
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -930,7 +932,7 @@ def admin_study_user():
 
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
-    #check for study_id and user_id 
+    #check for study_id and user_id
     try:
         assert 'study_id' in request.form
         assert 'user_id' in request.form
@@ -941,7 +943,8 @@ def admin_study_user():
             "message": "study_id or user_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
-    #make sure study_id is an int 
+    #make sure study_id is an int
+    
     try:
         study_id = int(request.form['study_id'])
     except ValueError:
@@ -951,19 +954,20 @@ def admin_study_user():
             "message": "study_id failed a sanitize check. The POSTed field should be an integer."
         }, 400, {"Content-Type": "application/json"}
 
-    # do the right method 
+    # do the right method
 
     if request.method =='POST':
         cursor = connection.cursor()
 
         try:
-            #need to change this!!!!!!
-            #need to make new procedures for inserting and deleting into the adding and removing users to studies
-            conn_lock.acquire()
-            cursor.callproc("insert_question_proc",\
-                [request.form['study_id'],\
-                    request.form['user_id']])
-                
+            #cursor.execute(
+             #   "INSERT INTO user_study(user_id, study_id) VALUES( '"
+              #      + request.form['user_id']+ "', '" +request.form[study_id]+"')")
+
+            print(request.form['study_id'], request.form['user_id'])
+            cursor.callproc("INSERT_USER_STUDY_PROC",\
+                [request.form['user_id'], int(request.form['study_id'])])
+
             # commit changes to db
             connection.commit()
         except cx_Oracle.Error as e:
@@ -979,11 +983,8 @@ def admin_study_user():
         cursor = connection.cursor()
 
         try:
-            #needs to fix this ~!!!!!
-            cursor.callproc("insert_question_proc",\
-                [request.form['study_id'],\
-                    request.form['user_id']])
-    
+            cursor.callproc("delete_user_study_proc",\
+                [request.form['user_id'], int(request.form['study_id'])])
 
             connection.commit()
         except cx_Oracle.Error as e:
