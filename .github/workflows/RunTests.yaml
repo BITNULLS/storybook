@@ -27,7 +27,6 @@ jobs:
         sudo apt-get install unzip
         unzip instantclient-basic-linux.x64-21.5.0.0.0dbru.zip -d /opt/oracle
         sudo apt-get install libaio1
-        cd instantclient_21_5
         echo "INSTANT_DIR=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
         echo "/opt/oracle/instantclient_21_5" >> $GITHUB_PATH
