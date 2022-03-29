@@ -17,13 +17,23 @@ jobs:
     - uses: actions/checkout@v3
     - name: Download Oracle Instant Client
       run: |
-        wget https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basiclite-linux.x64-21.5.0.0.0dbru.zip
-        sudo apt install unzip
-        unzip instantclient-basiclite-linux.x64-21.5.0.0.0dbru.zip
+        echo "START_DIR=$(pwd)" >> $GITHUB_ENV
+        if [ -d "/opt/oracle" ]; then 
+          echo "Oracle Directory Exist"
+          cd /opt/oracle
+        else
+          echo "Oracle Directory Does not Exist, Creating"
+          mkdir /opt/oracle
+          cd /opt/oracle
+        fi
+        wget https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
+        sudo apt-get install unzip
+        unzip instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
+        sudo apt-get install libaio
         cd instantclient_21_5
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
-        ls
-        cd ..
+        export LD_LIBRARY_PATH=/opt/oracle/instantclient_21_5:$LD_LIBRARY_PATH
+        cd $START_DIR
     - name: Create oracle_dir.txt
       run: |
         echo $INSTANT_DIR > /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
@@ -38,11 +48,6 @@ jobs:
     - name: Install Requirements
       run: |
         pip3 install -r requirements.txt
-    - name: Checking Directory
-      run: |
-        if [ -f "/home/runner/work/storybook/storybook/instantclient_21_5/libclntsh.so" ]; then 
-          echo "File Exists! Running Tests"
-        fi
     - name: Run Tests
       run: |
         make test
