@@ -1,10 +1,7 @@
 """
 password.py
-    Routes beginning with /api/password/
 
-Routes:
-    /api/password/forgot
-    /api/password/reset
+Routes beginning with /api/password/
 """
 
 from flask import request
@@ -19,11 +16,11 @@ import datetime
 import bcrypt
 import logging
 
-from core.email import send_email
-from core.db import connection, conn_lock
-from core.reg_exps import *
-from core.helper import sanitize_redirects
-from core.config import config
+from edu_storybook.core.email import send_email
+from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.reg_exps import *
+from edu_storybook.core.helper import sanitize_redirects
+from edu_storybook.core.config import config
 
 a_password = Blueprint('a_password', __name__)
 
@@ -136,7 +133,8 @@ def password_reset():
         assert 'confirm_pass' in request.form
         assert 'reset_key' in request.form
     except AssertionError:
-        a_password_log.debug('User tried to reset a password without providing a new password, or reset key')
+        a_password_log.debug('User tried to reset a password without' +\
+            'providing a new password, or reset key')
         return {
             "status": "fail",
             "fail_no": 1,
@@ -144,13 +142,14 @@ def password_reset():
         }, 400, {"Content-Type": "application/json"}
 
     # sanitize inputs: make sure they're all alphanumeric, longer than 8 chars
-    if re_alphanumeric8.match(request.form['new_pass']) is None or \
-            re_alphanumeric8.match(request.form['confirm_pass']) is None:
+    if re_password.match(request.form['new_pass']) is None or \
+            re_password.match(request.form['confirm_pass']) is None:
         a_password_log.debug('User tried to reset password with invalid password')
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "Either one or both passwords failed sanitization check of more than 8 characters &/or alphanumeric."
+            "message": "Either one or both passwords failed sanitization" +\
+                " check of more than 8 characters &/or alphanumeric."
         }, 400, {"Content-Type": "application/json"}
 
     # check if both passwords match

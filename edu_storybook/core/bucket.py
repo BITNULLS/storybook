@@ -1,13 +1,8 @@
 """
 bucket.py
-    Launches connection to Oracle Bucket, where we store large data files.
-    Provides simple functions for accessing the bucket.
 
-Functions:
-    upload_bucket_file(...)
-    download_bucket_file(...)
-    delete_bucket_file(...)
-    list_bucket_files(...)
+Launches connection to Oracle Bucket, where we store large data files.
+Provides simple functions for accessing the bucket.
 """
 
 import oci
@@ -18,7 +13,7 @@ from tempfile import TemporaryDirectory
 from typing import List
 from .config import config
 
-import logging 
+import logging
 
 c_bucket_log = logging.getLogger('core.bucket')
 if config['production'] == False:
@@ -26,8 +21,6 @@ if config['production'] == False:
 
 # Sen_Files Downloader setup - Only used to download project configuration files
 # Chum-Bucket Downloader will be set up after config files have been downloaded
-
-#print(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/StorybookFiles.json'))
 
 with open(fix_filepath(__file__, 'data/StorybookFiles.json')) as sb_files:
     bucket = json.load(sb_files)
@@ -86,6 +79,7 @@ def delete_bucket_file(filename: str) -> bool:
     except oci.exceptions.ServiceError as e:
         c_bucket_log.warning("The object '" + filename + "' does not exist in bucket.")
         return False
+
 
 def list_bucket_files() -> List[str]:
     """
