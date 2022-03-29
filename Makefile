@@ -20,7 +20,7 @@ count-lines-o-code:
 	find . -name '*.py' | xargs wc -l
 test:
 	cd test_edu_storybook/
-	python -m unittest \
+	python3 -m unittest \
 	test_edu_storybook.test_edu_storybook \
 	test_edu_storybook.test_api \
 	test_edu_storybook.test_core \
