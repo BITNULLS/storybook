@@ -1,7 +1,16 @@
 """
 admin.py
+    Routes beginning with /api/admin/
 
-Routes beginning with `/api/admin/`.
+Routes:
+    /api/admin/book/download
+    /api/admin/book/upload
+    /api/admin/book/grant
+    /api/admin/page
+    /api/admin/download/user
+    /api/admin/download/action
+    /api/admin/get/user
+    /api/admin/study/user
 """
 
 from pydoc import Helper
@@ -970,4 +979,91 @@ def admin_get_books():
 
     return {
         "books": books
+    }
+
+@a_admin.route("/api/admin/study/user", methods=['POST', 'DELETE'])
+def admin_study_user():
+    '''
+    'POST' and 'DELETE' methods for admin adding and removing users from studies
+    '''
+     # validate that user has rights
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    #check for study_id and user_id
+    try:
+        assert 'study_id' in request.form
+        assert 'user_id' in request.form
+    except AssertionError:
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "study_id or user_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    #make sure study_id is an int
+    
+    try:
+        study_id = int(request.form['study_id'])
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "study_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # do the right method
+
+    if request.method =='POST':
+        cursor = connection.cursor()
+
+        try:
+            #cursor.execute(
+             #   "INSERT INTO user_study(user_id, study_id) VALUES( '"
+              #      + request.form['user_id']+ "', '" +request.form[study_id]+"')")
+
+            print(request.form['study_id'], request.form['user_id'])
+            cursor.callproc("INSERT_USER_STUDY_PROC",\
+                [request.form['user_id'], int(request.form['study_id'])])
+
+            # commit changes to db
+            connection.commit()
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+
+    elif request.method == 'DELETE':
+        cursor = connection.cursor()
+
+        try:
+            cursor.callproc("delete_user_study_proc",\
+                [request.form['user_id'], int(request.form['study_id'])])
+
+            connection.commit()
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+
+    return{
+        'status':  'ok'
     }
