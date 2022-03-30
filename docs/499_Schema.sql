@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for March 24, 2022
+-- Updated Schema for March 29, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -111,7 +111,8 @@
   CREATE TABLE "LAST_PAGE" 
    (	"USER_ID" VARCHAR2(36 BYTE) COLLATE "USING_NLS_COMP", 
 	"BOOK_ID" NUMBER, 
-	"LAST_PAGE" NUMBER
+	"LAST_PAGE" NUMBER, 
+	"FURTHEST_READ" NUMBER(5,0)
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table PASSWORD_RESET
@@ -142,6 +143,19 @@
   CREATE TABLE "SCHOOL" 
    (	"SCHOOL_ID" NUMBER, 
 	"SCHOOL_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP"
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table STATIC_PAGE
+--------------------------------------------------------
+
+  CREATE TABLE "STATIC_PAGE" 
+   (	"PERMANENT" NUMBER(1,0), 
+	"URL" VARCHAR2(256 BYTE) COLLATE "USING_NLS_COMP", 
+	"NAME" VARCHAR2(256 BYTE) COLLATE "USING_NLS_COMP", 
+	"SHORT_DESCRIPTION" VARCHAR2(256 BYTE) COLLATE "USING_NLS_COMP", 
+	"CREATED_ON" DATE, 
+	"LAST_UPDATE" DATE, 
+	"CONTENT" VARCHAR2(10000 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table STUDY
@@ -520,6 +534,27 @@ BEGIN
 END;
 /
 ALTER TRIGGER "SCHOOL_TRG" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger STATIC_PAGE_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "STATIC_PAGE_TRG" 
+BEFORE INSERT OR UPDATE OR DELETE ON STATIC_PAGE 
+FOR EACH ROW 
+BEGIN
+  IF INSERTING THEN
+    :NEW.CREATED_ON := SYSDATE;
+    :NEW.LAST_UPDATE := SYSDATE;
+  END IF;
+  IF UPDATING THEN
+    :NEW.LAST_UPDATE := SYSDATE;
+  END IF;
+  IF DELETING AND :OLD.PERMANENT = 1 THEN
+    raise_application_error(-20000,'DELETE Action cannot be performed on a page with a PERMANENT status on!');
+  END IF;
+END;
+/
+ALTER TRIGGER "STATIC_PAGE_TRG" ENABLE;
 --------------------------------------------------------
 --  DDL for Trigger STUDY_TRG
 --------------------------------------------------------
@@ -1009,15 +1044,14 @@ set define off;
 
   CREATE OR REPLACE EDITIONABLE PROCEDURE "INSERT_USER_STUDY_PROC" 
 (
-  USER_ID_IN IN user_study.user_id%TYPE, 
-  STUDY_ID_IN IN user_study.study_id%TYPE 
+  USER_ID_IN IN VARCHAR2, 
+  STUDY_ID_IN IN NUMBER 
 ) AS 
 
 BEGIN
     DECLARE
         check_study_id user_study.study_id%TYPE;
     BEGIN
-        dbms_output.put_line('Hello Reader!');
         BEGIN
             SELECT
                 study_id
@@ -1032,7 +1066,7 @@ BEGIN
                 check_study_id := NULL;
         END;
 
-        IF check_study_id is NULL THEN
+        IF check_study_id is NULL or check_study_id != study_id_in THEN
             INSERT INTO user_study (
                 user_id,
                 study_id
@@ -1201,6 +1235,8 @@ END check_detail_id_fcn;
   ALTER TABLE "LAST_PAGE" MODIFY ("BOOK_ID" NOT NULL ENABLE);
   ALTER TABLE "LAST_PAGE" MODIFY ("LAST_PAGE" NOT NULL ENABLE);
   ALTER TABLE "LAST_PAGE" MODIFY ("USER_ID" NOT NULL ENABLE);
+  ALTER TABLE "LAST_PAGE" ADD CONSTRAINT "LAST_PAGE_CHK1" CHECK (LAST_PAGE <= FURTHEST_READ) ENABLE;
+  ALTER TABLE "LAST_PAGE" MODIFY ("FURTHEST_READ" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table PASSWORD_RESET
 --------------------------------------------------------
@@ -1229,6 +1265,17 @@ END check_detail_id_fcn;
   ALTER TABLE "SCHOOL" MODIFY ("SCHOOL_NAME" NOT NULL ENABLE);
   ALTER TABLE "SCHOOL" ADD CONSTRAINT "SCHOOL_PK" PRIMARY KEY ("SCHOOL_ID")
   USING INDEX  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table STATIC_PAGE
+--------------------------------------------------------
+
+  ALTER TABLE "STATIC_PAGE" MODIFY ("PERMANENT" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("URL" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("NAME" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("SHORT_DESCRIPTION" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("CREATED_ON" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("LAST_UPDATE" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("CONTENT" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table STUDY
 --------------------------------------------------------
@@ -1389,8 +1436,6 @@ END check_detail_id_fcn;
 
   ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_SCHOOL_ID_FK" FOREIGN KEY ("SCHOOL_ID")
 	  REFERENCES "SCHOOL" ("SCHOOL_ID") ENABLE;
-    ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
-	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;
 --------------------------------------------------------
 --  Ref Constraints for Table USER_RESPONSE
 --------------------------------------------------------
@@ -1433,9 +1478,3 @@ END check_detail_id_fcn;
 
   ALTER TABLE "ANSWER" ADD CONSTRAINT "ANSWER_QUESTION_FK" FOREIGN KEY ("QUESTION_ID")
 	  REFERENCES "QUESTION" ("QUESTION_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table BOOK
---------------------------------------------------------
-
-  ALTER TABLE "BOOK" ADD CONSTRAINT "BOOK_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
-	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;

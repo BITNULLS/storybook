@@ -18,6 +18,7 @@ Table of Contents:
  - [`USER_STUDY`](#USER_STUDY)
  - [`BOOK_STUDY`](#BOOK_STUDY)
  - [`LAST_PAGE`](#LAST_PAGE)
+ - [`STATIC_PAGE`](#STATIC_PAGE)
 
 <br>
 
@@ -214,3 +215,20 @@ This table provides the information of the last page that a user was accessing o
 | USER_ID | ID to uniquely identify a user | 
 | BOOK_ID | Unique number ID to uniquely identify the book |
 | LAST_PAGE | Last page number that a user was on in their book |
+| FURTHEST_READ | Indicates how far a user has gotten in a book (LAST_PAGE <= FURTHEST_READ) |
+
+<br>
+
+# STATIC_PAGE
+
+This table stores static pages (e.g. about page, data disclosure, consent, etc.) that the administrator will want to create, update, and delete
+
+| column name | description |
+|---|---|
+| PERMANENT | Either 0 or 1 where 0 indicates that the page is not permanent and thus can be safely deleted and 1 indicates that the page is permanent and thus should not be deleted |
+| URL | Full URL of the static page |
+| NAME | Full name of the static page |
+| SHORT_DESCRIPTION | Short description about the static page |
+| CREATED_ON | Date when the static page is created on|
+| LAST_UPDATE | Date when the static page is last updated on|
+| CONTENT | Full content that the static page holds |
