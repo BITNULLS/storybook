@@ -48,12 +48,12 @@ To develop in this app, there are few things to understand that are unique to th
  5. Next, let the *Database Type* be *Oracle*. 
  6. Next, given two tabs (*User Info* and *Proxy User*), click on the *User Info* tab.
  7. Now we would fill out some fields under the *User Info* Tab. First, let the *Authentication Type* and *Role* be set to *Default*.
- 8. Second, fill out the *Username* field as *kpelster* (all lowercase).
- 9. And third, fill out the *Password* field as *KaraPelster1234* (both password and username should be written as provided) .
- 10. Optionally, if you want, you can also put checkmark on *Save Password* field if you want password to be remembered whenever you disconnect and then re-connect your DB connection. 
- 11. We are basically done with *User Info* tab and will now fill out the last section, *Connection Type*, to create our new DB connection successfully.
- 12. First off, change the *Connection Type* from *Basic* to *Cloud Wallet*. 
- 13. Next, given three tabs (*Details*, *Advanced*, and *Proxy*), click on the *Details* tab if you are not already on that tab.
+ 8. And then, for *Username* and *Password*, use the [given link](https://drive.google.com/file/d/1TnW19V-mGAMlyyqNii-5hxPx_5jHXTpf/view?usp=sharing) to retrieve values for both fields.
+ 9. Optionally, if you want, you can also put checkmark on *Save Password* field if you want password to be remembered whenever you disconnect and then re-connect your DB connection. 
+ 10. We are basically done with *User Info* tab and will now fill out the last section, *Connection Type*, to create our new DB connection successfully.
+ 11. First off, change the *Connection Type* from *Basic* to *Cloud Wallet*. 
+ 12. Next, given three tabs (*Details*, *Advanced*, and *Proxy*), click on the *Details* tab if you are not already on that tab.
+ 13. Before you start filling out values for this section, make sure you download *Wallet_EDUStorybook.zip* file from the [given link](https://drive.google.com/file/d/15tEPQTOutgKm5h2kJP3hRE4VO8czimP4/view?usp=sharing)
  14. Now, for the *Configuration File* field, we need to make sure that we point to where our *Wallet_EDUStorybook.zip* file is on our system. We need to make sure that *Wallet_EDUStorybook.zip* file is placed securely on our system. Deletion of this file could result in our DB connection not working properly or maybe completely. 
  15. Once we point to the location of *Wallet_EDUStorybook.zip* file for *Configuration File* field, the *Service* field (below *Configuration File* field) automatically fills to *edustorybook_high* value. DON'T CHANGE THAT VALUE AND KEEP IT AS IT IS.
  16. Similarly, we don't need to do anything with *Configure OSS Classic* and can just ignore it.
