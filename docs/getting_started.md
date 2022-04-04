@@ -5,7 +5,7 @@ This file details how to setup, and understand the "flow" of this project.
 Table of Contents:
  - [Setup](#setup)
  - [Developing](#developing)
- - [Setting up SQL Developer DB Connection](#setting up sql developer db connection)
+ - [Setting up SQL Developer DB Connection](#setting-up-sql-developer-db-connection)
 
 ## Setup
 
