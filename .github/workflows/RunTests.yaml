@@ -24,12 +24,12 @@ jobs:
           mkdir /opt/oracle
         fi
         wget -q https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
-        sudo apt-get install unzip
+        sudo apt-get install unzip libaio1 libaio-dev
         unzip -q instantclient-basic-linux.x64-21.5.0.0.0dbru.zip -d /opt/oracle
-        sudo apt-get install libaio1
         echo "INSTANT_DIR=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
         echo "/opt/oracle/instantclient_21_5" >> $GITHUB_PATH
+        export LD_LIBRARY_PATH=/opt/oracle/instantclient_21_5:$LD_LIBRARY_PATH
     - name: Create oracle_dir.txt
       run: |
         echo $INSTANT_DIR > /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
