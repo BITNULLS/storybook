@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for March 9, 2022
+-- Updated Schema for March 29, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -20,7 +20,7 @@
 --  DDL for Sequence BOOK_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "BOOK_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 141 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "BOOK_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 181 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence DETAILS_SEQ
 --------------------------------------------------------
@@ -40,7 +40,7 @@
 --  DDL for Sequence STUDY_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 61 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 
 --------------------------------------------------------
 --  TABLES
@@ -111,7 +111,8 @@
   CREATE TABLE "LAST_PAGE" 
    (	"USER_ID" VARCHAR2(36 BYTE) COLLATE "USING_NLS_COMP", 
 	"BOOK_ID" NUMBER, 
-	"LAST_PAGE" NUMBER
+	"LAST_PAGE" NUMBER, 
+	"FURTHEST_READ" NUMBER(5,0)
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table PASSWORD_RESET
@@ -144,13 +145,27 @@
 	"SCHOOL_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
+--  DDL for Table STATIC_PAGE
+--------------------------------------------------------
+
+  CREATE TABLE "STATIC_PAGE" 
+   (	"PERMANENT" NUMBER(1,0), 
+	"URL" VARCHAR2(256 BYTE) COLLATE "USING_NLS_COMP", 
+	"NAME" VARCHAR2(256 BYTE) COLLATE "USING_NLS_COMP", 
+	"SHORT_DESCRIPTION" VARCHAR2(256 BYTE) COLLATE "USING_NLS_COMP", 
+	"CREATED_ON" DATE, 
+	"LAST_UPDATE" DATE, 
+	"CONTENT" VARCHAR2(10000 BYTE) COLLATE "USING_NLS_COMP"
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
 --  DDL for Table STUDY
 --------------------------------------------------------
 
   CREATE TABLE "STUDY" 
    (	"STUDY_ID" NUMBER, 
 	"SCHOOL_ID" NUMBER, 
-	"STUDY_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP"
+	"STUDY_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP", 
+	"STUDY_INVITE_CODE" VARCHAR2(64 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table USER_PROFILE
@@ -195,6 +210,8 @@
    (	"USER_ID" VARCHAR2(32 BYTE) COLLATE "USING_NLS_COMP", 
 	"STUDY_ID" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
+
+
 --------------------------------------------------------
 --  DDL for Table ACTION
 --------------------------------------------------------
@@ -230,7 +247,7 @@
   CREATE TABLE "ANSWER" 
    (	"ANSWER_ID" NUMBER, 
 	"QUESTION_ID" NUMBER, 
-	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP"
+	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP",
   "CORRECT" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
@@ -248,10 +265,10 @@
 	"FOLDER" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 
+
 --------------------------------------------------------
 --  INDEXES
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Index ACTION_DETAIL_PK
 --------------------------------------------------------
@@ -394,7 +411,6 @@
 --------------------------------------------------------
 --  TRIGGERS
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Trigger ANSWER_TRG
 --------------------------------------------------------
@@ -518,6 +534,27 @@ BEGIN
 END;
 /
 ALTER TRIGGER "SCHOOL_TRG" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger STATIC_PAGE_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "STATIC_PAGE_TRG" 
+BEFORE INSERT OR UPDATE OR DELETE ON STATIC_PAGE 
+FOR EACH ROW 
+BEGIN
+  IF INSERTING THEN
+    :NEW.CREATED_ON := SYSDATE;
+    :NEW.LAST_UPDATE := SYSDATE;
+  END IF;
+  IF UPDATING THEN
+    :NEW.LAST_UPDATE := SYSDATE;
+  END IF;
+  IF DELETING AND :OLD.PERMANENT = 1 THEN
+    raise_application_error(-20000,'DELETE Action cannot be performed on a page with a PERMANENT status on!');
+  END IF;
+END;
+/
+ALTER TRIGGER "STATIC_PAGE_TRG" ENABLE;
 --------------------------------------------------------
 --  DDL for Trigger STUDY_TRG
 --------------------------------------------------------
@@ -761,11 +798,11 @@ BEGIN
 END;
 /
 ALTER TRIGGER "BOOK_TRG" ENABLE;
+
 
 --------------------------------------------------------
 --  PROCEDURES
 --------------------------------------------------------
-
 --------------------------------------------------------
 --  DDL for Procedure CHECK_DETAIL_ID_PROC
 --------------------------------------------------------
@@ -864,10 +901,27 @@ set define off;
 ) AS 
 BEGIN
 
+      DELETE FROM USER_RESPONSE WHERE QUESTION_ID = QUESTION_ID_IN;
       DELETE FROM ANSWER WHERE QUESTION_ID = QUESTION_ID_IN;
       DELETE FROM QUESTION WHERE QUESTION_ID = QUESTION_ID_IN;
 
 END DELETE_QUESTION_ANSWER_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure DELETE_USER_STUDY_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "DELETE_USER_STUDY_PROC" 
+(
+  USER_ID_IN IN VARCHAR2,
+  STUDY_ID_IN IN NUMBER 
+) AS 
+BEGIN
+    DELETE FROM USER_STUDY WHERE USER_ID = USER_ID_IN AND STUDY_ID = STUDY_ID_IN;
+
+END DELETE_USER_STUDY_PROC;
 
 /
 --------------------------------------------------------
@@ -981,6 +1035,50 @@ BEGIN
 
     END;
 END insert_question_proc;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure INSERT_USER_STUDY_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "INSERT_USER_STUDY_PROC" 
+(
+  USER_ID_IN IN VARCHAR2, 
+  STUDY_ID_IN IN NUMBER 
+) AS 
+
+BEGIN
+    DECLARE
+        check_study_id user_study.study_id%TYPE;
+    BEGIN
+        BEGIN
+            SELECT
+                study_id
+            INTO check_study_id
+            FROM
+                user_study
+            WHERE
+                user_id = user_id_in;
+
+        EXCEPTION
+            WHEN no_data_found THEN
+                check_study_id := NULL;
+        END;
+
+        IF check_study_id is NULL or check_study_id != study_id_in THEN
+            INSERT INTO user_study (
+                user_id,
+                study_id
+            ) VALUES (
+                user_id_in,
+                study_id_in
+            );
+
+        END IF;
+
+    END;
+END insert_user_study_proc;
 
 /
 
@@ -1137,6 +1235,8 @@ END check_detail_id_fcn;
   ALTER TABLE "LAST_PAGE" MODIFY ("BOOK_ID" NOT NULL ENABLE);
   ALTER TABLE "LAST_PAGE" MODIFY ("LAST_PAGE" NOT NULL ENABLE);
   ALTER TABLE "LAST_PAGE" MODIFY ("USER_ID" NOT NULL ENABLE);
+  ALTER TABLE "LAST_PAGE" ADD CONSTRAINT "LAST_PAGE_CHK1" CHECK (LAST_PAGE <= FURTHEST_READ) ENABLE;
+  ALTER TABLE "LAST_PAGE" MODIFY ("FURTHEST_READ" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table PASSWORD_RESET
 --------------------------------------------------------
@@ -1165,6 +1265,17 @@ END check_detail_id_fcn;
   ALTER TABLE "SCHOOL" MODIFY ("SCHOOL_NAME" NOT NULL ENABLE);
   ALTER TABLE "SCHOOL" ADD CONSTRAINT "SCHOOL_PK" PRIMARY KEY ("SCHOOL_ID")
   USING INDEX  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table STATIC_PAGE
+--------------------------------------------------------
+
+  ALTER TABLE "STATIC_PAGE" MODIFY ("PERMANENT" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("URL" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("NAME" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("SHORT_DESCRIPTION" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("CREATED_ON" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("LAST_UPDATE" NOT NULL ENABLE);
+  ALTER TABLE "STATIC_PAGE" MODIFY ("CONTENT" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table STUDY
 --------------------------------------------------------
@@ -1261,6 +1372,45 @@ END check_detail_id_fcn;
   ALTER TABLE "BOOK" ADD CONSTRAINT "BOOK_PK" PRIMARY KEY ("BOOK_ID")
   USING INDEX  ENABLE;
 --------------------------------------------------------
+--  REFERENTIAL CONSTRAINTS
+--------------------------------------------------------
+--------------------------------------------------------
+--  Ref Constraints for Table ACTION
+--------------------------------------------------------
+
+  ALTER TABLE "ACTION" ADD CONSTRAINT "ACTION_BOOK_FK" FOREIGN KEY ("BOOK_ID")
+	  REFERENCES "BOOK" ("BOOK_ID") ENABLE;
+  ALTER TABLE "ACTION" ADD CONSTRAINT "ACTION_DETAIL_ID" FOREIGN KEY ("DETAIL_ID")
+	  REFERENCES "ACTION_DETAIL" ("DETAIL_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table ACTION_DETAIL
+--------------------------------------------------------
+
+  ALTER TABLE "ACTION_DETAIL" ADD CONSTRAINT "ACTION_DETAIL_ACTION_ID_FK" FOREIGN KEY ("ACTION_KEY_ID")
+	  REFERENCES "ACTION_KEY" ("ACTION_KEY_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table ANSWER
+--------------------------------------------------------
+
+  ALTER TABLE "ANSWER" ADD CONSTRAINT "ANSWER_QUESTION_FK" FOREIGN KEY ("QUESTION_ID")
+	  REFERENCES "QUESTION" ("QUESTION_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table BOOK_STUDY
+--------------------------------------------------------
+
+  ALTER TABLE "BOOK_STUDY" ADD CONSTRAINT "BOOK_STUDY_FK1" FOREIGN KEY ("BOOK_ID")
+	  REFERENCES "BOOK" ("BOOK_ID") ENABLE;
+  ALTER TABLE "BOOK_STUDY" ADD CONSTRAINT "BOOK_STUDY_FK2" FOREIGN KEY ("STUDY_ID")
+	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table LAST_PAGE
+--------------------------------------------------------
+
+  ALTER TABLE "LAST_PAGE" ADD CONSTRAINT "LAST_PAGE_FK1" FOREIGN KEY ("USER_ID")
+	  REFERENCES "USER_PROFILE" ("USER_ID") ENABLE;
+  ALTER TABLE "LAST_PAGE" ADD CONSTRAINT "LAST_PAGE_FK2" FOREIGN KEY ("BOOK_ID")
+	  REFERENCES "BOOK" ("BOOK_ID") ENABLE;
+--------------------------------------------------------
 --  Ref Constraints for Table PASSWORD_RESET
 --------------------------------------------------------
 
@@ -1286,8 +1436,6 @@ END check_detail_id_fcn;
 
   ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_SCHOOL_ID_FK" FOREIGN KEY ("SCHOOL_ID")
 	  REFERENCES "SCHOOL" ("SCHOOL_ID") ENABLE;
-  ALTER TABLE "USER_PROFILE" ADD CONSTRAINT "USER_PROFILE_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
-	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;
 --------------------------------------------------------
 --  Ref Constraints for Table USER_RESPONSE
 --------------------------------------------------------
@@ -1330,9 +1478,3 @@ END check_detail_id_fcn;
 
   ALTER TABLE "ANSWER" ADD CONSTRAINT "ANSWER_QUESTION_FK" FOREIGN KEY ("QUESTION_ID")
 	  REFERENCES "QUESTION" ("QUESTION_ID") ENABLE;
---------------------------------------------------------
---  Ref Constraints for Table BOOK
---------------------------------------------------------
-
-  ALTER TABLE "BOOK" ADD CONSTRAINT "BOOK_STUDY_ID_FK" FOREIGN KEY ("STUDY_ID")
-	  REFERENCES "STUDY" ("STUDY_ID") ENABLE;

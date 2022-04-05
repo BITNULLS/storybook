@@ -28,6 +28,8 @@ backend/data/StorybookFiles.pem
 # file uploads
 backend/bucket_files
 backend/temp/
+temp/
+edu_storybook/temp/
 
 # === Node JS ===
 
@@ -162,7 +164,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/

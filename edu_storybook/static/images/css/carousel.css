@@ -16,23 +16,19 @@
 .carousel {
     overflow: hidden;
     border-radius: 5px;
-    width: 50%;
     margin: 1em;
     touch-action: cross-slide-x
-    
-}
-  
-.carousel-item img{
-    width: 381px;
-    height: 215px;
-    max-height: 225px;
 }
 
-.carousel-inner{
-    width: 50%;
-    align-items: center;
-}
+.carousel-inner > .item > img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    height: 339 px;
+    width: 509 px
 
+  }
 .carousel-indicators li {
     width: 10px;
     height: 10px;

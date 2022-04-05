@@ -6,3 +6,4 @@ oci             # Interface for Oracle Cloud Infrastrcture Object Storage (bucke
 pyjwt           # For making JWT cookies to authorize users
 flask_cors      # CORS access policy for Flask (to allow requests from anywhere)
 pdf2image       # For converting PDFs to PNGs
+pdoc            # For generating documentation for the project

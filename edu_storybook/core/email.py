@@ -1,6 +1,7 @@
 """
 email.py
-    Initialization and interface for email functions.
+
+Initialization and interface for email functions.
 """
 
 from .config import config
@@ -8,16 +9,30 @@ from . import sensitive as sensitive
 
 import smtplib
 
-def send_email(user_name: str, user_email: str, admin_name: str, admin_email: str, subject: str, body: str) -> bool:
+import logging
+
+c_email_log = logging.getLogger('core.email')
+if config['production'] == False:
+    c_email_log.setLevel(logging.DEBUG)
+
+def send_email(user_name: str,
+               user_email: str,
+               admin_name: str,
+               admin_email: str,
+               subject: str,
+               body: str) -> bool:
     """
-    Creates and sends an email to a user
-    :param user_name: The name of the user
-    :param to_email: The email of the user
-    :param admin_name: Admin of user's study
-    :param admin_email: Admin's email
-    :param subject: Subject of the email
-    :param body: Body of the email; where actual text is placed
-    :return: Boolean on whether or not the email was sent.
+    Creates and sends an email to a user.
+
+    Args:
+     - user_name: The name of the user.
+     - to_email: The email of the user.
+     - admin_name: Admin of user's study.
+     -  admin_email: Admin's email.
+     - subject: Subject of the email.
+     -  body: Body of the email; where actual text is placed.
+
+    Returns: Boolean on whether or not the email was sent.
     """
     if config['production'] == False:
         return True
@@ -36,8 +51,9 @@ def send_email(user_name: str, user_email: str, admin_name: str, admin_email: st
         server.starttls(context=sensitive.context)
         server.login('edustorybooks@gmail.com', sensitive.email_password)
         server.sendmail("edustorybooks@gmail.com", user_email, email_text)
-    except:
-        print("Exception in Email Process")
+    except Exception as e:
+        c_email_log.error('Exception in send_email')
+        c_email_log.error(e)
         return False
     finally:
         del to_line

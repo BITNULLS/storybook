@@ -8,4 +8,4 @@ class TestEduStorybookCore(unittest.TestCase):
     """
 
     def test_setup(self):
-        self.assertEqual()
+        self.assertEqual(True, True, "True should be equal to itself")

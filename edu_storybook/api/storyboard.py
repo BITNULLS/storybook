@@ -1,10 +1,7 @@
 """
 storyboard.py
-    Routes beginning with /api/storyboard/
 
-Routes:
-    /api/storyboard/page/<int:book_id_in>/<int:page_number_in>
-    /api/storyboard/action
+Routes beginning with `/api/storyboard/`
 """
 
 from flask import request
@@ -12,30 +9,26 @@ from flask import Blueprint
 from flask import send_file
 
 from pdf2image import convert_from_path
-import os
-import csv
-import uuid
 import jwt
-import hashlib
 import cx_Oracle
-import random
-import string
-import datetime
-import bcrypt
-import time
+import logging
 
-from core.auth import validate_login
-from core.bucket import bucket
-from core.config import config
-from core.db import connection, conn_lock
-from core.helper import label_results_from
-from core.sensitive import jwt_key
-from core.reg_exps import *
+from edu_storybook.core.auth import validate_login
+from edu_storybook.core.bucket import download_bucket_file
+from edu_storybook.core.config import config
+from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.helper import label_results_from
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.reg_exps import *
 
 a_storyboard = Blueprint('a_storyboard', __name__)
 
+a_storyboard_log = logging.getLogger('api.storyboard')
+if config['production'] == False:
+    a_storyboard_log.setLevel(logging.DEBUG)
+
 @a_storyboard.route("/api/storyboard/page/<int:book_id_in>/<int:page_number_in>", methods=['GET'])
-def storyboard_get_page(book_id_in, page_number_in):
+def storyboard_get_page(book_id_in: int, page_number_in: int):
     # make sure user is authenticated
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -48,39 +41,29 @@ def storyboard_get_page(book_id_in, page_number_in):
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
+    # TODO: Token is not checked
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
     # sanitize inputs: make sure book_id, page_number are ints
     try:
-        book_id = int( book_id_in)
+        book_id = int(book_id_in)
         page_number = int(page_number_in)
-        
     except ValueError:
+        a_storyboard_log.warning('This should not even be possible. ' +
+            'A user HTTP GET non-int values to an int endpoint')
         return {
             "status": "fail",
             "fail_no": 2,
-            "message": "The book_id or page_number failed a sanitize check. The POSTed fields should be an integer."
+            "message": "The book_id or page_number failed a sanitize check." +\
+                "The POSTed fields should be an integer."
         }, 400, {"Content-Type": "application/json"}
 
     # goes into database and gets the bucket folder.
     # goes into bucket and then says I want this image from this folder.
     cursor = connection.cursor()
 
-    try:
-        # get folder that holds that book's images
-        cursor.execute(
-            "SELECT folder FROM BOOK where book_id =" + str(book_id))
-    except cx_Oracle.Error as e:
-        return {"status": "fail",
-                "fail_no": 3,
-                "message": "Error when updating database action",
-                "database_message": str(e)
-                }, 400, {"Content-Type": "application/json"}
+    fileInput = get_book_image_path(book_id, page_number)
 
-    # check if this is in write format ; then we have to fix it and ammend it with page number
-    fileInput = cursor.fetchone()[0]
-    fileInput = fileInput + '/' + fileInput + '_' + str(page_number) + '.png'
-    
     try:
         # get quiz questions and answers and more information about those
         cursor.execute(
@@ -92,15 +75,16 @@ def storyboard_get_page(book_id_in, page_number_in):
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
-        print(str(e))
+        a_storyboard_log.warning('Error when acessing database')
+        a_storyboard_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 4,
             "message": "error accessing quiz questions and its answers"
         }, 400, {"Content-Type": "application/json"}
-        
+
     quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
-     
+
     # check if current page has any quiz question (this assumes only a single question would be there in a page)
     # Future concern: What if there are back-to-back questions on a single page?
     # append options of that question onto a list
@@ -110,20 +94,22 @@ def storyboard_get_page(book_id_in, page_number_in):
         if page_number in range(question['PAGE_PREV'], question['PAGE_NEXT']):
             quiz_question_info = question
             options.append(question['ANSWER'])
-    
+
     # This detects whether we have a quiz question on page or not
     if(quiz_question_info is not None):
         return {
+            "status": "ok",
             "question_id" : quiz_question_info['QUESTION_ID'],
             "question" : quiz_question_info['QUESTION'],
             "options" : options,
             "correct_answer": quiz_question_info['ANSWER']
         }
-    
+
     # Return page assuming current page has no quiz question
     try:
-        return send_file(bucket.download_bucket_file(fileInput))
+        return send_file(download_bucket_file(fileInput))
     except:
+        a_storyboard_log.warning('Could not load bucket file for some unknown reason')
         return {
             "status": "fail",
             "fail_no": 5,
@@ -131,13 +117,67 @@ def storyboard_get_page(book_id_in, page_number_in):
         }, 400, {"Content-Type": "application/json"}
 
 
+@a_storyboard.route("/api/storyboard/pagecount/<int:book_id_in>", methods=['GET'])
+def storyboard_get_pagecount(book_id_in: int):
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    # TODO: verify token
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # sanitize inputs: make sure book_id, page_number are ints
+    try:
+        book_id = int(book_id_in)
+    except ValueError:
+        a_storyboard_log.warning(
+            'User provided an invalid book_id for storyboard_get_pagecount'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id failed a sanitize check. The POSTed fields should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # goes into database and gets the bucket folder.
+    # goes into bucket and then says I want this image from this folder.
+    cursor = connection.cursor()
+
+    try:
+        # get folder that holds that book's images
+        cursor.execute(
+            "SELECT page_count FROM BOOK where book_id =" + str(book_id) )
+    except cx_Oracle.Error as e:
+        a_storyboard_log.warning('Error when accessing database')
+        a_storyboard_log.warning(e)
+        return {"status": "fail",
+                "fail_no": 3,
+                "message": "Error when updating database action",
+                "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+
+    pagecount = cursor.fetchone()
+    return {
+        "pagecount": pagecount[0]
+    }
+
+
 @a_storyboard.route("/api/storyboard/action", methods=['POST'])
 def storyboard_save_user_action():
     '''
     Code the storyboard_save_user_action() function in the same style as logout()
     Screenshot a successful POST request to the /storyboard/action endpoint.
-    Add to the backend/API.md the relevant documentation for the /storyboard/action endpoint
-    in the same style as the login/ endpoint documentation.
+    Add to the backend/API.md the relevant documentation for the
+    /storyboard/action endpoint in the same style as the login/ endpoint
+    documentation.
     '''
     # make sure user is authenticated
     auth = request.cookies.get('Authorization')
@@ -151,6 +191,7 @@ def storyboard_save_user_action():
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
+    # TODO: verify token
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
     # check that all expected inputs are received
@@ -161,6 +202,9 @@ def storyboard_save_user_action():
         assert 'action_start' in request.form
         assert 'action_stop' in request.form
     except AssertionError:
+        a_storyboard_log.warning(
+            'User did not provide one of the form values for storyboard_save_user_action'
+        )
         return {
             "status": "fail",
             "fail_no": 1,
@@ -182,6 +226,7 @@ def storyboard_save_user_action():
     if re_timestamp.match(request.form["action_start"]) is None or \
             re_timestamp.match(request.form["action_stop"]) is None or \
             re_alphanumeric.match(request.form["detail_description"]) is None:
+        a_storyboard_log.warning('User provided an invalid action data')
         return {
             "status": "fail",
             "fail_no": 3,
@@ -217,6 +262,8 @@ def storyboard_save_user_action():
         )
         connection.commit()
     except cx_Oracle.Error as e:
+        a_storyboard_log.warning('Error when accessing database')
+        a_storyboard_log.warning(e)
         return{
             "status": "fail",
             "fail_no": 4,
@@ -226,3 +273,48 @@ def storyboard_save_user_action():
     return {
         "status": "ok"
     }
+
+
+def get_book_image_path(book_id, page_number):
+    cursor = connection.cursor()
+
+    try:
+        # get folder that holds that book's images
+        cursor.execute(
+            "SELECT folder FROM BOOK where book_id =" + str(book_id))
+    except cx_Oracle.Error as e:
+        return {"status": "fail",
+                "fail_no": 3,
+                "message": "Error when updating database action",
+                "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+
+    # check if this is in write format ; then we have to fix it and ammend it with page number
+    fileInput = cursor.fetchone()[0]
+    return (fileInput + '_images/' + fileInput + '_' + str(page_number) + '.png')
+
+
+@a_storyboard.route("/api/storyboard/cover/<int:book_id_in>", methods=['GET'])
+def storyboard_get_cover_image(book_id_in):
+    # make sure user is authenticated
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    try:
+        book_id_in = int(book_id_in)
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "The book_id or page_number failed a sanitize check. The POSTed fields should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    return send_file(download_bucket_file(get_book_image_path(book_id_in, 1)))

@@ -1,18 +1,27 @@
+docs:
+	python3 -m pdoc -o docs/pdoc/ edu_storybook.app edu_storybook.api \
+	edu_storybook.core
 run:
-	export FLASK_APP=edu_storybook/app.py
+	export FLASK_APP=edu_storybook.app
 	export FLASK_ENV=development
 	flask run
 windows-run:
 	$Env:FLASK_APP = "app.py"
 	$Env:FLASK_ENV = "development"
-	python -m flask run
+	python3 -m flask run
+real-run:
+	python3 -m edu_storybook.app
 setup:
-	rm -r temp/
-	mkdir temp/
-	mkdir temp/file_upload/
 	pip3 install -r requirements.txt
+count-lines-o-code:
+	find . -name '*.py' | xargs wc -l
 test:
-	python -m unittest test_edu_storybook
+	cd test_edu_storybook/
+	python3 -m unittest \
+	test_edu_storybook.test_edu_storybook \
+	test_edu_storybook.test_api \
+	test_edu_storybook.test_core \
+	test_edu_storybook.test_ssg
 server:
 	if [ ! -d ../../instantclient* ]; then \
 	sudo apt install unzip; \

@@ -5,13 +5,39 @@
     max-height: 75px;
 }
 
-.storyPage img{
+.storyPage img {
     height: 400em;
     width: 400em;
     
 }
 
-img{
+img {
     width: 400px;
     height: 400px;
+}
+
+.btn-navbar-size {
+    max-width: 125px;
+    min-width: 125px;
+    color: #FFFFFF !important;
+}
+
+.btn-atts {
+    min-width: 200px;
+    max-width: 200px;
+    margin-left: 5px !important;
+    margin-right: 5px !important;
+    margin-bottom: 5px !important;
+    color: #FFFFFF !important;
+
+}
+
+.btn-random {
+    border-style: none;
+    color: #FFFFFF !important;
+}
+
+.col_atts {
+    margin-left: 20px !important;
+    margin-right: 20px !important;
 }

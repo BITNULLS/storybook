@@ -1,26 +1,26 @@
 """
 bucket.py
-    Launches connection to Oracle Bucket, where we store large data files.
-    Provides simple functions for accessing the bucket.
 
-Functions:
-    upload_bucket_file(...)
-    download_bucket_file(...)
-    delete_bucket_file(...)
-    list_bucket_files(...)
+Launches connection to Oracle Bucket, where we store large data files.
+Provides simple functions for accessing the bucket.
 """
 
 import oci
 import json
 import os
-from .helper import fix_filepath
+from .filepath import fix_filepath
 from tempfile import TemporaryDirectory
 from typing import List
+from .config import config
+
+import logging
+
+c_bucket_log = logging.getLogger('core.bucket')
+if config['production'] == False:
+    c_bucket_log.setLevel(logging.DEBUG)
 
 # Sen_Files Downloader setup - Only used to download project configuration files
 # Chum-Bucket Downloader will be set up after config files have been downloaded
-
-#print(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data/StorybookFiles.json'))
 
 with open(fix_filepath(__file__, 'data/StorybookFiles.json')) as sb_files:
     bucket = json.load(sb_files)
@@ -63,7 +63,7 @@ def download_bucket_file(filename: str, folder = 'temp') -> str:
             f.close()
         return new_file
     except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
+        c_bucket_log.warning("The object '" + filename + "' does not exist in bucket.")
         return None
 
 
@@ -77,8 +77,9 @@ def delete_bucket_file(filename: str) -> bool:
         oracle_cloud_client.delete_object(bucket['namespace'], bucket['name'], filename)
         return True
     except oci.exceptions.ServiceError as e:
-        print("The object '" + filename + "' does not exist in bucket.")
+        c_bucket_log.warning("The object '" + filename + "' does not exist in bucket.")
         return False
+
 
 def list_bucket_files() -> List[str]:
     """

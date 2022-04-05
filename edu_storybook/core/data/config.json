@@ -1,9 +1,16 @@
 {
-    "production": true,
+    "production": false,
+    "_production": "true means live website, false means development mode.",
+    "domain": "https://www.edustorybooks.tk",
+    "_domain": "The domain where this application will be hosted on. Must not have a trailing slash",
+    "last_mod": "2022-04-20",
+    "_last_mod": "YYYY-MM-DD of last modification made to project",
     "login_duration": 86400,
     "_login_duration": "How many seconds can a user login for before needing to sign in again",
-    "buffer_size": 65536, 
+    "buffer_size": 65536,
     "_buffer_size": "The size of file reading buffer",
+    "temp_folder": "../temp/",
+    "_temp_folder": "Where our temporary files will be saved",
     "temp_file_expire": 300,
     "_temp_file_expire": "How many seconds minimum to keep a temporary download file on the server",
     "sensitives": {
