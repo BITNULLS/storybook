@@ -3,6 +3,7 @@ app.py
     Main launch point for our web server.
 """
 
+from distutils.log import error
 from flask import Flask
 from api import main 
 import admin
@@ -12,6 +13,7 @@ import password
 import register    
 import story_selection 
 import storyboard  
+import errors
    
  
 app = Flask(__name__, static_url_path="/static/", static_folder="static")
@@ -24,7 +26,7 @@ app.register_blueprint(password.password)
 app.register_blueprint(register.register)
 app.register_blueprint(story_selection.story_selection)
 app.register_blueprint(storyboard.storyboard)
-
+app.register_blueprint(errors.errors) 
 
  
 if __name__ == "__main__":

@@ -53,6 +53,15 @@ TEMPLATES = {
         "quiz": load_template("templates/storyboard/quiz.html"),
         "viewer": load_template("templates/storyboard/viewer.html")
     },
+    "errors": {
+        "400": load_template("templates/errors/400.html"),
+        "401": load_template("templates/errors/401.html"),
+        "403": load_template("templates/errors/403.html"),
+        "404": load_template("templates/errors/404.html"),
+        "405": load_template("templates/errors/405.html"),
+        "500": load_template("templates/errors/500.html"),
+        "502": load_template("templates/errors/502.html")
+    },
     "_base": load_template("templates/_base.html"),
     "index": load_template("templates/index.html"),
     "login": load_template("templates/login.html"),
