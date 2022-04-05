@@ -29,20 +29,4 @@ jobs:
         cd instantclient_21_5
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd -
-    - name: Create oracle_dir.txt
-      run: |
-        echo $INSTANT_DIR > /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
-    - name: Create StorybookFiles Files
-      run: |
-        echo "$JSON" > edu_storybook/core/data/StorybookFiles.json
-        echo "$PEM" > edu_storybook/core/data/StorybookFiles.pem
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.9'
-    - name: Install Requirements
-      run: |
-        pip3 install -r requirements.txt
-    - name: Run Tests
-      run: |
-        make test
+        ls
