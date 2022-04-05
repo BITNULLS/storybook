@@ -13,14 +13,12 @@ Routes:
 from flask import request
 from flask import send_file
 from flask import Blueprint
-
+from flask import abort
 from templates import TEMPLATES
 
 from navbar import make_navbar
 
 admin = Blueprint('admin', __name__)
-
-
 
 @admin.route("/admin/")
 def gen_admin_index():
@@ -28,6 +26,8 @@ def gen_admin_index():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+    else:
+        abort(401, description="You are not logged in.")
 
     the_index_page = TEMPLATES["_base"].substitute(
         title = "Admin Homepage",
@@ -44,6 +44,8 @@ def gen_admin_book_mananger():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+    else:
+        abort(401, description="You are not logged in.")
 
     book_manager_page = TEMPLATES["_base"].substitute(
         title = "Admin: Book Manager",
@@ -60,6 +62,8 @@ def gen_admin_edit_book():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+    else:
+        abort(401, description="You are not logged in.")
 
     edit_book_page = TEMPLATES["_base"].substitute(
         title = "Admin: Edit Book",
@@ -76,6 +80,8 @@ def gen_admin_upload_book():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+    else:
+        abort(401, description="You are not logged in.")
 
     upload_book_page = TEMPLATES["_base"].substitute(
         title = "Admin: Upload Book",
@@ -92,6 +98,8 @@ def gen_admin_study_manager():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+    else:
+        abort(401, description="You are not logged in.")
 
     study_manager_page = TEMPLATES["_base"].substitute(
         title = "Admin: Study Manager",

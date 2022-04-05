@@ -9,7 +9,7 @@ Routes:
     /error/405
     /error/500
     /error/502
-"""
+
 
 from flask import request, Flask, render_template
 from flask import make_response
@@ -54,7 +54,7 @@ def page_not_found_403():
   )
   return page_403
 
-@errors.route("/error/404")
+@errors.errorhandler(404)
 def page_not_found_404():
   page_404 = TEMPLATES["_base"].substitute(
     title = "404 Error",
@@ -97,4 +97,4 @@ def page_not_found_502():
     )
   )
   return page_502
-
+"""

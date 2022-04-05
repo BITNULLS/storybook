@@ -8,6 +8,7 @@ Routes:
 
 from flask import request
 from flask import Blueprint
+from flask import abort
 
 from templates import TEMPLATES
 
@@ -37,6 +38,8 @@ def gen_books():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+    else:
+        abort(403, description="You are not logged in.")
 
     story_selection_page = TEMPLATES["_base"].substitute(
         title = 'Book Selection',
