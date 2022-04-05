@@ -866,7 +866,7 @@ def admin_get_books(offset: int):
 
     - Connects to database
     - Computes a select query to get book data
-    - return BOOK_ID, BOOKNAME , DESCRIPTION 
+    - return BOOK_ID, BOOKNAME , DESCRIPTION, PAGE_COUNT
     - Allow an admin to retrieve a JSON list of all of the users. 
         LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
         Make offset an input parameter (int).
@@ -913,7 +913,7 @@ def admin_get_books(offset: int):
     stringOffset = str(offset)
     try:
         cursor.execute(
-            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK OFFSET "+ 
+            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK OFFSET "+ 
             stringOffset +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)

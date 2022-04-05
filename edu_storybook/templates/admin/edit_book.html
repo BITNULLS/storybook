@@ -37,6 +37,19 @@
     function addQ() {
         //$('#createQ').append;
     } 
+
+    function displaySelectedBook(book_id, page_count) {
+        $('#selectBookModal').modal('hide');
+        for(var page = 1; page < page_count; page++) {
+            var singlePage = document.createElement('img');
+            singlePage.setAttribute("class", "img-fluid");
+            singlePage.setAttribute(
+                'src', 
+                '/api/storyboard/page/' + book_id + '/' + page
+            );
+            $('#book-images-list').append(singlePage);
+        }
+    }
 </script>
 
 <!--Modal for selecting a book-->
@@ -62,8 +75,7 @@
 <!--Overall container for pages and quiz questions-->
 <div class="container">
     <div class="row">
-        <div class="col scrollable-auto">
-            placeholder for the pages
+        <div class="col scrollable-auto" id="book-images-list">
         </div>
 
         <div class="col container">

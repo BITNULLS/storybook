@@ -71,7 +71,8 @@ def gen_admin_edit_book():
         all_books += TEMPLATES['admin']['book'].substitute(
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
-            book_id = b["BOOK_ID"]
+            book_id = b["BOOK_ID"],
+            book_pages = b["PAGE_COUNT"]
         )      
 
     edit_book_page = TEMPLATES["_base"].substitute(
