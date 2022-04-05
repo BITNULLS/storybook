@@ -24,6 +24,7 @@ from zipfile import ZipFile
 from .config import config
 
 c_sensitive_log = logging.getLogger('core.sensitive')
+
 if config['production'] == False:
     c_sensitive_log.setLevel(logging.DEBUG)
 

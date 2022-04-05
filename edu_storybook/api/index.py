@@ -273,7 +273,7 @@ def login():
     }, jwt_key, algorithm=config['jwt_alg'])
     res.set_cookie(
         "Authorization",
-        "Bearer " + token,
+        "Bearer " + token.decode('utf-8'),
         max_age=config["login_duration"],
         # domain=domain_name#, # TODO: uncomment in production
         # secure=True,
@@ -452,9 +452,7 @@ def register():
 
 @a_index.route("/api/book", methods=['GET'])
 def get_users_books():
-
     # validate that user has rights to access books
-
     auth = request.cookies.get('Authorization')
     vl = validate_login(
         auth,

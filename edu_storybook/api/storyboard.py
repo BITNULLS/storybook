@@ -293,7 +293,7 @@ def get_book_image_path(book_id, page_number):
     fileInput = cursor.fetchone()[0]
     return (fileInput + '_images/' + fileInput + '_' + str(page_number) + '.png')
 
-    
+
 @a_storyboard.route("/api/storyboard/cover/<int:book_id_in>", methods=['GET'])
 def storyboard_get_cover_image(book_id_in):
     # make sure user is authenticated
@@ -309,9 +309,7 @@ def storyboard_get_cover_image(book_id_in):
         auth = auth.replace('Bearer ', '', 1)
 
     try:
-        book_id_in = int( book_id_in)
-        
-    
+        book_id_in = int(book_id_in)
     except ValueError:
         return {
             "status": "fail",

@@ -2,7 +2,7 @@ docs:
 	python3 -m pdoc -o docs/pdoc/ edu_storybook.app edu_storybook.api \
 	edu_storybook.core
 run:
-	export FLASK_APP=edu_storybook/app.py
+	export FLASK_APP=edu_storybook.app
 	export FLASK_ENV=development
 	flask run
 windows-run:

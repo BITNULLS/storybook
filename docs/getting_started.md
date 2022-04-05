@@ -24,8 +24,9 @@ To get this server running, you need to follow these steps:
     - If you are on MacOS, and if you have `brew`, you can do `brew install poppler`
     - If you are on MacOS, and do not have `brew`, [install `brew`](https://brew.sh/), then `brew install poppler`.
  9. You're all done!  Now execute `make run` to start the server.
-    - **NOTE**: If it does not work, try `flask run`
-    - **NOTE**: If it still does not work, you can just run `app.py` directly. You will have to `cd edu_storybook` and then `python3 app.py`.
+    - If it does not work, try `flask run`
+    - **IMPORTANT**: If it still does not work, you can just run the app directly as a module, `python3 -m edu_storybook.app`.
+    - **IMPORTANT**: All of the imports and Python is pathing is setup relative to the root of the repository. This means that `app.py` has to be run as a module, referenced as `edu_storybook.app`.
  10. Flask may have trouble running, so you will have to execute all of the `make run` commands one by one, copying from the makefile.
 
 ## Developing
