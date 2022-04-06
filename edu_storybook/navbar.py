@@ -1,34 +1,39 @@
 '''
 navbar.py
-Makes navbars for all of the other pages
+
+Makes navbars for all of the other pages.
 '''
 
 import jwt
 import logging
 
-from core.config import config
-from core.sensitive import jwt_key
-from core.config import config
+from edu_storybook.core.config import config
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.config import config
 
-from templates import TEMPLATES
+from .templates import Templates
 
 log = logging.getLogger('ssg.navbar')
 if config['production'] == False:
     log.setLevel(logging.DEBUG)
 
-def make_navbar(authorization: str):
+def make_navbar(authorization: str) -> str:
     '''
     Takes in the authorization header from a user.
-    
-    :param authorization: The authorization cookie from the user
+
+    Args:
+     - authorization: The authorization cookie from the user
+
+    Returns: The correct navbar based on if the user is a regular user or an
+    admin.
     '''
     if authorization == None:
-        return TEMPLATES['navbar']['logged_out'].substitute()
+        return Templates.navbar_logged_out.substitute()
 
     token = jwt.decode(authorization.replace('Bearer ', ''), jwt_key, config['jwt_alg'])
 
     if token['permission'] > 0: # have admin
-        return TEMPLATES['navbar']['logged_admin'].substitute()
+        return Templates.navbar_logged_admin.substitute()
     else: # do not have admin
-        return TEMPLATES['navbar']['logged_user'].substitute()
+        return Templates.navbar_logged_user.substitute()
 

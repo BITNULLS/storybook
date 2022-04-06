@@ -1,3 +1,9 @@
+"""
+DatabasePing.py
+
+Pings the database to keep it alive.
+"""
+
 import os
 import sys
 from time import sleep
@@ -8,7 +14,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 def httpDatabaseConnection():
-    
+
     ser = Service(ChromeDriverManager().install())
     chrome_options = Options()
     chrome_options.add_argument('--headless')

@@ -1,22 +1,17 @@
-import sys
-sys.path.append("edu_storybook/") # Adds higher directory to python modules path.
-sys.path.append("edu_storybook/api/") # Adds higher directory to python modules path.
-sys.path.append('.')
-
 import unittest
-from werkzeug.test import Client
 
 from edu_storybook import app
 
-c = Client(app)
-
-class TestEduStorybook(unittest.TestCase):
+class test_edu_storybook(unittest.TestCase):
     """
     Tests the main app.py, launch point of the web app.
     """
 
+    def setUp(self):
+        self.app = app.test_client
+
     def test_load(self):
-        response = c.get('/')
+        response = self.app.get('/')
         self.assertEqual(
             response.status_code, 
             200, 

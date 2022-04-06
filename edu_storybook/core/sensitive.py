@@ -1,7 +1,15 @@
 """
 sensitive.py
-    Downloads, loads in, and then deletes all sensitive data files.
-    Any error here is critical, and should stop execution of the app.
+
+Downloads, loads in, and then deletes all sensitive data files.
+Any error here is critical, and should stop execution of the app.
+
+The following behaviors are implemented:
+ - Unzip Oracle wallet
+ - Get domain name
+ - Log into email client
+ - Initialize `jwt_key`
+ - Setup Oracle login info (Oracle Key)
 """
 
 import logging
@@ -16,6 +24,7 @@ from zipfile import ZipFile
 from .config import config
 
 c_sensitive_log = logging.getLogger('core.sensitive')
+
 if config['production'] == False:
     c_sensitive_log.setLevel(logging.DEBUG)
 
@@ -63,7 +72,6 @@ except Exception as e:
     c_sensitive_log.warning(e)
 else:
     c_sensitive_log.debug('Logged into email account')
-
 
 # jwt_key Initialization
 c_sensitive_log.debug('Loading in jwt_key...')

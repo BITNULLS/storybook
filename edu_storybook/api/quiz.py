@@ -1,9 +1,7 @@
 """
 quiz.py
-    Routes beginning with /api/quiz/
 
-Routes:
-    /api/quiz/submit
+Routes beginning with `/api/quiz/`.
 """
 
 from flask import request
@@ -13,12 +11,12 @@ import jwt
 import cx_Oracle
 import logging
 
-from core.helper import label_results_from
-from core.auth import validate_login, issue_auth_token
-from core.config import config
-from core.db import connection, conn_lock
-from core.sensitive import jwt_key
-from core.reg_exps import *
+from edu_storybook.core.helper import label_results_from
+from edu_storybook.core.auth import validate_login, issue_auth_token
+from edu_storybook.core.config import config
+from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.reg_exps import *
 
 a_quiz = Blueprint('a_quiz', __name__)
 
@@ -61,11 +59,11 @@ def quiz_submit_answer():
             "fail_no": 2,
             "message": "Either the answer_id or the question_id contained invalid characters."
         }, 400, {"Content-Type": "application/json"}
-    
+
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-    
+
     cursor = connection.cursor()
-    
+
     try:
         conn_lock.acquire()
         cursor.execute(
@@ -85,7 +83,7 @@ def quiz_submit_answer():
         }, 400, {"Content-Type": "application/json"}
     finally:
         conn_lock.release()
-        
+
     try:
        conn_lock.acquire()
        cursor.execute(

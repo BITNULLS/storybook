@@ -9,10 +9,17 @@ Routes:
     /admin/study_manager
     /admin/upload_book
 """
-from templates import TEMPLATES
-from templates import Templates
 
-from navbar import make_navbar
+from flask import request
+from flask import send_file
+from flask import Blueprint
+from flask import abort
+import logging
+from edu_storybook.core.auth import validate_login
+
+from edu_storybook.templates import Templates
+from edu_storybook.core.config import config
+from edu_storybook.navbar import make_navbar
 
 from api.admin import admin_get_books
 
@@ -21,19 +28,38 @@ from flask import Blueprint
 
 admin = Blueprint('admin', __name__)
 
-
+log = logging.getLogger('ssg.admin')
+if config['production'] == False:
+    log.setLevel(logging.DEBUG)
 
 @admin.route("/admin/")
 def gen_admin_index():
+    """
+    Generate the `/admin/` index page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/ page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/ page.'
+        )
+        abort(403)
 
-    the_index_page = TEMPLATES["_base"].substitute(
+    the_index_page = Templates._base.substitute(
         title = "Admin Homepage",
         description = "A motivational storybook that helps students learn.",
-        body = TEMPLATES["admin"]["index"].substitute(
+        body = Templates.admin_index.substitute(
             navbar = make_navbar( auth )
         )
     )
@@ -41,15 +67,32 @@ def gen_admin_index():
 
 @admin.route("/admin/book_manager")
 def gen_admin_book_mananger():
+    """
+    Generate the `/admin/book_manager` page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/book_manager page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/book_manager page.'
+        )
+        abort(403)
 
-    book_manager_page = TEMPLATES["_base"].substitute(
+    book_manager_page = Templates._base.substitute(
         title = "Admin: Book Manager",
         description = "A motivational storybook that helps students learn.",
-        body = TEMPLATES["admin"]["book_manager"].substitute(
+        body = Templates.admin_book_manager.substitute(
             navbar = make_navbar( auth )
         )
     )
@@ -57,10 +100,27 @@ def gen_admin_book_mananger():
 
 @admin.route("/admin/edit_book")
 def gen_admin_edit_book():
+    """
+    Generate the `/admin/edit_book` page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/edit_book page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/edit_book page.'
+        )
+        abort(403)
 
     all_books = ""
     for b in admin_get_books(0)['books']:
@@ -70,29 +130,45 @@ def gen_admin_edit_book():
             book_id = b["BOOK_ID"],
             book_pages = b["PAGE_COUNT"]
         )      
-
+        
     edit_book_page = Templates._base.substitute(
         title = "Admin: Edit Book",
         description = "A motivational storybook that helps students learn.",
         body = Templates.admin_edit_book.substitute(
             navbar = make_navbar( auth ), 
-            book = all_books, 
-            
+            book = all_books,
         )
     )
     return edit_book_page
 
 @admin.route("/admin/upload_book")
 def gen_admin_upload_book():
+    """
+    Generate the `/admin/upload_book` page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/upload_book page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/upload_book page.'
+        )
+        abort(403)
 
-    upload_book_page = TEMPLATES["_base"].substitute(
+    upload_book_page = Templates._base.substitute(
         title = "Admin: Upload Book",
         description = "A motivational storybook that helps students learn.",
-        body = TEMPLATES["admin"]["upload_book"].substitute(
+        body = Templates.admin_upload_book.substitute(
             navbar = make_navbar( auth )
         )
     )
@@ -100,15 +176,32 @@ def gen_admin_upload_book():
 
 @admin.route("/admin/study_manager")
 def gen_admin_study_manager():
+    """
+    Generate the `/admin/study_manager` page.
+    """
 
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
+        vl = validate_login(
+            auth,
+            permission=1
+        )
+        if vl != True:
+            log.debug(
+                'A non-admin user tried to access the /admin/study_manager page.'
+            )
+            abort(403)
+    else:
+        log.debug(
+            'An unauthorized, logged out user tried to access the /admin/study_manager page.'
+        )
+        abort(403)
 
-    study_manager_page = TEMPLATES["_base"].substitute(
+    study_manager_page = Templates._base.substitute(
         title = "Admin: Study Manager",
         description = "A motivational storybook that helps students learn.",
-        body = TEMPLATES["admin"]["study_manager"].substitute(
+        body = Templates.admin_study_mananger.substitute(
             navbar = make_navbar( auth )
         )
     )
