@@ -66,3 +66,8 @@ TEMPLATES = {
     "login": load_template("templates/login.html"),
     "register": load_template("templates/register.html")
 }
+
+class Templates: 
+    admin_book: Template = TEMPLATES['admin']['book']
+    admin_edit_book: Template = TEMPLATES['admin']['edit_book'] 
+    _base: Template = TEMPLATES['_base']

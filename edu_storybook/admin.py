@@ -9,19 +9,15 @@ Routes:
     /admin/study_manager
     /admin/upload_book
 """
-
-import json
-from flask import request
-from flask import send_file
-from flask import Blueprint
-from api.index import get_book_info
-from api.storyboard import storyboard_get_pagecount
-
 from templates import TEMPLATES
+from templates import Templates
 
 from navbar import make_navbar
 
 from api.admin import admin_get_books
+
+from flask import request
+from flask import Blueprint
 
 admin = Blueprint('admin', __name__)
 
@@ -68,17 +64,17 @@ def gen_admin_edit_book():
 
     all_books = ""
     for b in admin_get_books(0)['books']:
-        all_books += TEMPLATES['admin']['book'].substitute(
+        all_books += Templates.admin_book.substitute(
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
             book_id = b["BOOK_ID"],
             book_pages = b["PAGE_COUNT"]
         )      
 
-    edit_book_page = TEMPLATES["_base"].substitute(
+    edit_book_page = Templates._base.substitute(
         title = "Admin: Edit Book",
         description = "A motivational storybook that helps students learn.",
-        body = TEMPLATES["admin"]["edit_book"].substitute(
+        body = Templates.admin_edit_book.substitute(
             navbar = make_navbar( auth ), 
             book = all_books, 
             
