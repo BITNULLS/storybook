@@ -951,7 +951,8 @@ def admin_get_books(offset: int):
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
     # check to make sure you have a offset
-    """try:
+    """
+    try:
         assert 'offset' in request.form
     except AssertionError:
         a_admin_log.debug('An admin did not provide the offset when ' +\
@@ -972,16 +973,15 @@ def admin_get_books(offset: int):
             "fail_no": 2,
             "message": "offset failed a sanitize check. The POSTed field should be an integer."
         }, 400, {"Content-Type": "application/json"}
-        """
+    """
 
     # connect to database
     cursor = connection.cursor()
-
-    stringOffset = str(offset)
+ 
     try:
         cursor.execute(
             "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK OFFSET "+ 
-            stringOffset +" ROWS FETCH NEXT 50 ROWS ONLY"
+            str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
