@@ -136,7 +136,7 @@ def gen_admin_edit_book():
         description = "A motivational storybook that helps students learn.",
         body = Templates.admin_edit_book.substitute(
             navbar = make_navbar( auth ), 
-            book = all_books,
+            book = all_books
         )
     )
     return edit_book_page
