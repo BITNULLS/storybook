@@ -24,12 +24,15 @@
     function displaySelectedBook(book_id, page_count) {
         $('#selectBookModal').modal('hide');
         for(var page = 1; page < page_count; page++) {
+            var pageIndicator = $('<h4>Page ' + page + '</h4>');
+
             var singlePage = document.createElement('img');
             singlePage.setAttribute("class", "img-fluid");
             singlePage.setAttribute(
                 'src', 
                 '/api/storyboard/page/' + book_id + '/' + page
             );
+            $('#book-images-list').append(pageIndicator);
             $('#book-images-list').append(singlePage);
         }
     }
@@ -75,14 +78,14 @@
                             <div class="tab-pane active" id="MC">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="form-group">
+                                        <div class="form-group" id="multiple-choice-form">
                                             <label for="input_MC_question">Enter Your Question</label>
                                             <input type="text" class="form-control" id="input_MC_question" placeholder="???">
                                             <small class="form-text text-muted">Required</small>
                                         </div>
                                         <div class="form-group">
                                             <label for="input_MC_options">Add Answer Choices</label>
-                                            <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addQ()">Add Answer Choice</a>                                      
+                                            <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addSA()">Add Answer Choice</a>                                      
                                             <small class="form-text text-muted">Required</small>
                                         </div>
                                         <button type="submit" class="btn btn-atts btn-info">Add Question</button>
@@ -92,7 +95,7 @@
                             <div class="tab-pane" id="SA">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="form-group">
+                                        <div class="form-group" id="short-answer-form">
                                             <label for="input_SA_question">Enter Your Question</label>
                                             <input type="text" class="form-control" id="input_SA_question" placeholder="???">
                                             <small class="form-text text-muted">Required</small>
@@ -102,7 +105,7 @@
                                             <textarea type="text" class="form-control" id="input_SA_answer" placeholder="Please type your response here"></textarea>
                                             <small class="form-text text-muted">Optional</small>
                                         </div>
-                                        <button type="submit" class="btn btn-atts btn-info">Add Question</button>
+                                        <button type="submit" class="btn btn-atts btn-info" onclick="">Add Question</button>
                                     </div>
                                 </div>
                             </div>
