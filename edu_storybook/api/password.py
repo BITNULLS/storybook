@@ -1,7 +1,14 @@
 """
 password.py
 
-Routes beginning with /api/password/
+Routes beginning with `/api/password/`.
+
+Routes:
+
+```
+/api/password/forgot
+/api/password/reset
+```
 """
 
 from flask import request

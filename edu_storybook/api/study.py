@@ -2,6 +2,12 @@
 study.py
 
 Handle all study related GET, POST, PUT, DELETE operations.
+
+Routes:
+
+```
+/api/studies/<int:offset>
+```
 """
 
 from flask import request
@@ -30,6 +36,30 @@ def get_studies(offset):
     '''
     Return a list of studies in the same style/format/convention that
     admin_get_schools() returns a list of users.
+
+    Expects:
+     - offset (URL parameter): From 0 onward, how far to look into the studies
+     table.
+
+    Fails:
+     - `1` to `3`: Validate login errors.
+     - `5`: offset failed sanitize check.
+     - `6`: Error when accessing database
+
+    Returns: A list of studies, as
+
+    ```
+    {
+        "studies": [
+            {
+                "STUDY_ID": 1,
+                "STUDY_NAME": "Cool Study",
+                "SCHOOL_NAME": "University of Delaware
+            },
+            ...
+        ]
+    }
+    ```
     '''
     # validate that user has rights to access
     auth = request.cookies.get('Authorization')
@@ -50,7 +80,7 @@ def get_studies(offset):
         a_study_log.debug('User provided a non-int value for the offset parameter')
         return {
             "status": "fail",
-            "fail_no": 2,
+            "fail_no": 5,
             "message": "offset failed a sanitize check. The POSTed field should be an integer."
         }, 400, {"Content-Type": "application/json"}
 
@@ -69,7 +99,7 @@ def get_studies(offset):
         a_study_log.warning(e)
         return {
             "status": "fail",
-            "fail_no": 3,
+            "fail_no": 6,
             "message": "Error when accessing database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}

@@ -2,6 +2,12 @@
 quiz.py
 
 Routes beginning with `/api/quiz/`.
+
+Routes:
+
+```
+/api/quiz/submit
+```
 """
 
 from flask import request

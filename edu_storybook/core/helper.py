@@ -1,7 +1,7 @@
 """
 helper.py
 
-Helper functions not distinctly part of auth, bucket, db, or other "parts" of 
+Helper functions not distinctly part of auth, bucket, db, or other "parts" of
 our app.
 """
 

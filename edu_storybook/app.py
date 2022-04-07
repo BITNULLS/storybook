@@ -48,7 +48,10 @@ app.register_blueprint(storyboard.storyboard)
 
 
 @app.errorhandler(400)
-def page_not_found_400(e):
+def bad_request_400(e):
+    '''
+    Serve the HTTP status 400 page, bad request.
+    '''
     page_400 = TEMPLATES["_base"].substitute(
         title="400 Error",
         description=str(e),
@@ -60,7 +63,10 @@ def page_not_found_400(e):
 
 
 @app.errorhandler(401)
-def page_not_found_401(e):
+def unauthorized_401(e):
+    '''
+    Serve the HTTP status 401 page, unauthorized.
+    '''
     page_401 = TEMPLATES["_base"].substitute(
         title="401 Error",
         description=str(e),
@@ -72,7 +78,10 @@ def page_not_found_401(e):
 
 
 @app.errorhandler(403)
-def page_not_found_403(e):
+def forbidden_403(e):
+    '''
+    Serve the HTTP status 403 page, forbidden.
+    '''
     page_403 = TEMPLATES["_base"].substitute(
         title="403 Error",
         description=str(e),
@@ -85,6 +94,9 @@ def page_not_found_403(e):
 
 @app.errorhandler(404)
 def page_not_found_404(e):
+    '''
+    Serve the HTTP status 404 page, not found.
+    '''
     page_404 = TEMPLATES["_base"].substitute(
         title="404 Error",
         description=str(e),
@@ -96,7 +108,10 @@ def page_not_found_404(e):
 
 
 @app.errorhandler(405)
-def page_not_found_405(e):
+def method_not_allowed_405(e):
+    '''
+    Serve the HTTP status 405 page, method not allowed.
+    '''
     page_405 = TEMPLATES["_base"].substitute(
         title="405 Error",
         description=str(e),

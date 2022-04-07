@@ -1,11 +1,7 @@
 """
 auth.py
-    ...
 
-Functions:
-    login()
-    logout()
-    register()
+Holds the critical authentication functions that are used throughout the app.
 """
 
 import jwt
@@ -62,7 +58,7 @@ def validate_login(auth: str, permission: int=0):
     permissions granted.
 
     NOTE:  For creating sequential "fail_no" (fail numbers), start at 8, as this
-    function may produce fail numbers 1 through 7.
+    function may produce fail numbers 1 through 3.
 
     Args:
      - auth (str): The Authorization cookie given to the user.
@@ -95,7 +91,7 @@ def validate_login(auth: str, permission: int=0):
         c_auth_log.debug('User provided an expired token')
         return {
             "status": "fail",
-            "fail_no": "2",
+            "fail_no": 2,
             "message": "Session is expired. Please log in again.",
             "details": {
                 "iat": token['iat'],
@@ -108,7 +104,7 @@ def validate_login(auth: str, permission: int=0):
         c_auth_log.debug('User lacks permission for endpoint')
         return {
             "status": "fail",
-            "fail_no": "3",
+            "fail_no": 3,
             "message": "You do not have high enough permissions to view this endpoint."
         }, 403, {"Content-Type": "application/json"}
 
