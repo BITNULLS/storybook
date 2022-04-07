@@ -3,9 +3,9 @@ app.py
 
 Main launch point for our web server.
 """
-import sys
-
 from flask import Flask, url_for, Response
+import sys
+import logging
 
 from edu_storybook.core.config import config
 from edu_storybook.api import main
@@ -19,31 +19,21 @@ from edu_storybook import storyboard
 from edu_storybook.core.helper import has_no_empty_params
 from edu_storybook.core.config import config
 
-import logging
+from edu_storybook.navbar import make_navbar
+from edu_storybook.templates import TEMPLATES
 
-app = Flask('edu_storybook', static_url_path="/static/", static_folder="static")
+app = Flask('edu_storybook', static_url_path="/static/",
+            static_folder="static")
 
 test_client = app.test_client()
 
-from distutils.log import error
-from flask import Flask
-from api import main 
-import admin
-import index
-import login
-import password
-import register    
-import story_selection 
-import storyboard 
-from templates import TEMPLATES
-from navbar import make_navbar 
 
 app = Flask(__name__, static_url_path="/static/", static_folder="static")
 
-app.register_blueprint(main.api) 
+app.register_blueprint(main.api)
 handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.DEBUG)
 app.logger.debug('Starting app')
@@ -56,82 +46,90 @@ app.register_blueprint(register.register)
 app.register_blueprint(story_selection.story_selection)
 app.register_blueprint(storyboard.storyboard)
 
+
 @app.errorhandler(400)
 def page_not_found_400(e):
-  page_400 = TEMPLATES["_base"].substitute(
-    title = "400 Error",
-    description = str(e),
-    body = TEMPLATES['errors']['400'].substitute(
-     navbar = make_navbar( None )
+    page_400 = TEMPLATES["_base"].substitute(
+        title="400 Error",
+        description=str(e),
+        body=TEMPLATES['errors']['400'].substitute(
+            navbar=make_navbar(None)
+        )
     )
-  )
-  return page_400
+    return page_400
+
 
 @app.errorhandler(401)
 def page_not_found_401(e):
-  page_401 = TEMPLATES["_base"].substitute(
-    title = "401 Error",
-    description = str(e),
-    body = TEMPLATES['errors']['401'].substitute(
-     navbar = make_navbar( None )
+    page_401 = TEMPLATES["_base"].substitute(
+        title="401 Error",
+        description=str(e),
+        body=TEMPLATES['errors']['401'].substitute(
+            navbar=make_navbar(None)
+        )
     )
-  )
-  return page_401
+    return page_401
+
 
 @app.errorhandler(403)
 def page_not_found_403(e):
-  page_403 = TEMPLATES["_base"].substitute(
-    title = "403 Error",
-    description = str(e),
-    body = TEMPLATES['errors']['403'].substitute(
-     navbar = make_navbar( None )
+    page_403 = TEMPLATES["_base"].substitute(
+        title="403 Error",
+        description=str(e),
+        body=TEMPLATES['errors']['403'].substitute(
+            navbar=make_navbar(None)
+        )
     )
-  )
-  return page_403
+    return page_403
+
 
 @app.errorhandler(404)
 def page_not_found_404(e):
-  page_404 = TEMPLATES["_base"].substitute(
-    title = "404 Error",
-    description = str(e),
-    body = TEMPLATES['errors']['404'].substitute(
-     navbar = make_navbar( None )
+    page_404 = TEMPLATES["_base"].substitute(
+        title="404 Error",
+        description=str(e),
+        body=TEMPLATES['errors']['404'].substitute(
+            navbar=make_navbar(None)
+        )
     )
-  )
-  return page_404
+    return page_404
+
 
 @app.errorhandler(405)
 def page_not_found_405(e):
-  page_405 = TEMPLATES["_base"].substitute(
-    title = "405 Error",
-    description = str(e),
-    body = TEMPLATES['errors']['405'].substitute(
-     navbar = make_navbar( None )
+    page_405 = TEMPLATES["_base"].substitute(
+        title="405 Error",
+        description=str(e),
+        body=TEMPLATES['errors']['405'].substitute(
+            navbar=make_navbar(None)
+        )
     )
-  )
-  return page_405
+    return page_405
+
 
 @app.errorhandler(500)
 def page_not_found_500(e):
-  page_500 = TEMPLATES["_base"].substitute(
-    title = "500 Error",
-    description = str(e),
-    body = TEMPLATES['errors']['500'].substitute(
-     navbar = make_navbar( None )
+    page_500 = TEMPLATES["_base"].substitute(
+        title="500 Error",
+        description=str(e),
+        body=TEMPLATES['errors']['500'].substitute(
+            navbar=make_navbar(None)
+        )
     )
-  )
-  return page_500
+    return page_500
+
 
 @app.errorhandler(502)
 def page_not_found_502(e):
-  page_502 = TEMPLATES["_base"].substitute(
-    title = "502 Error",
-    description = str(e),
-    body = TEMPLATES['errors']['502'].substitute(
-     navbar = make_navbar( None )
+    page_502 = TEMPLATES["_base"].substitute(
+        title="502 Error",
+        description=str(e),
+        body=TEMPLATES['errors']['502'].substitute(
+            navbar=make_navbar(None)
+        )
     )
-  )
-  return page_502
+    return page_502
+
 
 def site_map():
     '''
@@ -154,7 +152,7 @@ def site_map():
     links = {}
     for rule in app.url_map.iter_rules():
         if rule.rule.startswith('/api') or len(rule.arguments) > 0:
-                continue
+            continue
         url = url_for(rule.endpoint, **(rule.defaults or {}))
         links[url] = {
             'endpoint': rule.endpoint,
@@ -215,9 +213,9 @@ def gen_site_map_xml():
         # and rules that require parameters
         if "GET" in links[rule]['methods']:
             xml += '\t<url>\n' + \
-                    f'\t\t<loc>{config["domain"]}{rule}</loc>\n' +\
-                    f'\t\t<lastmod>{config["last_mod"]}</lastmod>\n' +\
-                    '\t</url>'
+                f'\t\t<loc>{config["domain"]}{rule}</loc>\n' +\
+                f'\t\t<lastmod>{config["last_mod"]}</lastmod>\n' +\
+                '\t</url>'
     xml += '</urlset>'
     return xml, 200, {'Content-Type': 'text/xml'}
 

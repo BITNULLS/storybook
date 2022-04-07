@@ -273,7 +273,7 @@ def login():
     }, jwt_key, algorithm=config['jwt_alg'])
     res.set_cookie(
         "Authorization",
-        "Bearer " + token.decode('utf-8'),
+        "Bearer " + token,
         max_age=config["login_duration"],
         # domain=domain_name#, # TODO: uncomment in production
         # secure=True,

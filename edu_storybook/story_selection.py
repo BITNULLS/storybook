@@ -47,7 +47,7 @@ def gen_books():
     else:
         log.debug('An unauthorized, logged out user tried to access the /books page.')
         #abort(403)
-    
+
     all_books = ""
     for b in get_users_books()['books']:
         all_books += Templates.story_selection_book.substitute(
