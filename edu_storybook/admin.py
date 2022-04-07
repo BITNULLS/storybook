@@ -14,6 +14,8 @@ from flask import request
 from flask import send_file
 from flask import Blueprint
 from flask import abort
+from edu_storybook.core import auth
+
 import logging
 from edu_storybook.core.auth import validate_login
 
@@ -27,6 +29,7 @@ log = logging.getLogger('ssg.admin')
 if config['production'] == False:
     log.setLevel(logging.DEBUG)
 
+
 @admin.route("/admin/")
 def gen_admin_index():
     """
@@ -36,19 +39,17 @@ def gen_admin_index():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-        vl = validate_login(
+    else:
+        log.debug('An unauthorized, logged out user tried to access the ' +\
+            '/admin/ page.')
+        abort(401, description="You are not logged in.")
+
+    vl = validate_login(
             auth,
             permission=1
         )
-        if vl != True:
-            log.debug(
-                'A non-admin user tried to access the /admin/ page.'
-            )
-            abort(403)
-    else:
-        log.debug(
-            'An unauthorized, logged out user tried to access the /admin/ page.'
-        )
+    if vl != True:
+        log.debug('A non-admin user tried to access the /admin/ page.')
         abort(403)
 
     the_index_page = Templates._base.substitute(
@@ -69,19 +70,21 @@ def gen_admin_book_mananger():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-        vl = validate_login(
-            auth,
-            permission=1
-        )
-        if vl != True:
-            log.debug(
-                'A non-admin user tried to access the /admin/book_manager page.'
-            )
-            abort(403)
     else:
         log.debug(
-            'An unauthorized, logged out user tried to access the /admin/book_manager page.'
+            'An unauthorized, logged out user tried to access the ' +\
+                '/admin/book_manager page.'
         )
+        abort(401, description="You are not logged in.")
+
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        log.debug(
+            'A non-admin user tried to access the /admin/book_manager page.'
+            )
         abort(403)
 
     book_manager_page = Templates._base.substitute(
@@ -93,6 +96,7 @@ def gen_admin_book_mananger():
     )
     return book_manager_page
 
+
 @admin.route("/admin/edit_book")
 def gen_admin_edit_book():
     """
@@ -102,18 +106,20 @@ def gen_admin_edit_book():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-        vl = validate_login(
-            auth,
-            permission=1
-        )
-        if vl != True:
-            log.debug(
-                'A non-admin user tried to access the /admin/edit_book page.'
-            )
-            abort(403)
     else:
         log.debug(
-            'An unauthorized, logged out user tried to access the /admin/edit_book page.'
+            'An unauthorized, logged out user tried to access the ' +\
+                '/admin/edit_book page.'
+        )
+        abort(401, description="You are not logged in.")
+
+    vl = validate_login(
+        auth,
+        permission=1
+        )
+    if vl != True:
+        log.debug(
+            'A non-admin user tried to access the /admin/edit_book page.'
         )
         abort(403)
 
@@ -126,6 +132,7 @@ def gen_admin_edit_book():
     )
     return edit_book_page
 
+
 @admin.route("/admin/upload_book")
 def gen_admin_upload_book():
     """
@@ -135,19 +142,22 @@ def gen_admin_upload_book():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-        vl = validate_login(
-            auth,
-            permission=1
-        )
-        if vl != True:
-            log.debug(
-                'A non-admin user tried to access the /admin/upload_book page.'
-            )
-            abort(403)
     else:
         log.debug(
-            'An unauthorized, logged out user tried to access the /admin/upload_book page.'
+            'An unauthorized, logged out user tried to access the ' +\
+                '/admin/upload_book page.'
         )
+        abort(401, description="You are not logged in.")
+
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+
+    if vl != True:
+        log.debug(
+            'A non-admin user tried to access the /admin/upload_book page.'
+            )
         abort(403)
 
     upload_book_page = Templates._base.substitute(
@@ -159,6 +169,7 @@ def gen_admin_upload_book():
     )
     return upload_book_page
 
+
 @admin.route("/admin/study_manager")
 def gen_admin_study_manager():
     """
@@ -168,19 +179,22 @@ def gen_admin_study_manager():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-        vl = validate_login(
-            auth,
-            permission=1
-        )
-        if vl != True:
-            log.debug(
-                'A non-admin user tried to access the /admin/study_manager page.'
-            )
-            abort(403)
     else:
         log.debug(
-            'An unauthorized, logged out user tried to access the /admin/study_manager page.'
+            'An unauthorized, logged out user tried to access the ' +\
+                '/admin/study_manager page.'
         )
+        abort(401, description="You are not logged in.")
+
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+
+    if vl != True:
+        log.debug(
+            'A non-admin user tried to access the /admin/study_manager page.'
+            )
         abort(403)
 
     study_manager_page = Templates._base.substitute(
