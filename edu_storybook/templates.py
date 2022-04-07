@@ -49,7 +49,8 @@ TEMPLATES = {
         "edit_book": load_template("templates/admin/edit_book.html"),
         "index": load_template("templates/admin/index.html"),
         "study_manager": load_template("templates/admin/study_manager.html"),
-        "upload_book": load_template("templates/admin/upload_book.html")
+        "upload_book": load_template("templates/admin/upload_book.html"), 
+        "book": load_template("templates/admin/book.html")
     },
     "navbar": {
         "logged_admin": load_template("templates/navbar/logged_admin.html"),
@@ -90,6 +91,7 @@ class Templates:
 
     This class will help type safety, and make it easier for our contributors.
     '''
+    admin_book: Template = TEMPLATES['admin']['book']
     admin_book_manager: Template = TEMPLATES['admin']['book_manager']
     admin_edit_book: Template = TEMPLATES['admin']['edit_book']
     admin_index: Template = TEMPLATES['admin']['index']

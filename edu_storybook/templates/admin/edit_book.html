@@ -13,9 +13,26 @@
 
 <!--JS to make modal pop up upon opening window-->
 <script>
-  $(document).ready(function(){
-      $("#selectBookModal").modal('show');
-  });
+    $(document).ready(function(){
+        $("#selectBookModal").modal('show'); 
+    });
+
+    function addQ() {
+        //$('#createQ').append;
+    } 
+
+    function displaySelectedBook(book_id, page_count) {
+        $('#selectBookModal').modal('hide');
+        for(var page = 1; page < page_count; page++) {
+            var singlePage = document.createElement('img');
+            singlePage.setAttribute("class", "img-fluid");
+            singlePage.setAttribute(
+                'src', 
+                '/api/storyboard/page/' + book_id + '/' + page
+            );
+            $('#book-images-list').append(singlePage);
+        }
+    }
 </script>
 
 <!--Modal for selecting a book-->
@@ -29,8 +46,7 @@
         </button>
       </div>
       <div class="modal-body">
-        List of Books,
-        Have a button to select on the right
+        ~book
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Select</button>
@@ -38,6 +54,66 @@
     </div>
   </div>
 </div>
+
+<!--Overall container for pages and quiz questions-->
+<div class="container">
+    <div class="row">
+        <div class="col scrollable-auto" id="book-images-list">
+        </div>
+
+        <div class="col container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h4>Add a Quiz Question</h4>
+                    <div>
+                        <nav class="nav nav-tabs" id="myTab">
+                            <a class="nav-link active" href="#MC" role="tab" data-toggle="tab">Multiple Choice</a>
+                            <a class="nav-link" href="#SA" data-toggle="tab" role="tab">Short Answer</a>
+                        </nav>
+
+                        <div class="tab-content my-tab">
+                            <div class="tab-pane active" id="MC">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="input_MC_question">Enter Your Question</label>
+                                            <input type="text" class="form-control" id="input_MC_question" placeholder="???">
+                                            <small class="form-text text-muted">Required</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="input_MC_options">Add Answer Choices</label>
+                                            <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addQ()">Add Answer Choice</a>                                      
+                                            <small class="form-text text-muted">Required</small>
+                                        </div>
+                                        <button type="submit" class="btn btn-atts btn-info">Add Question</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="SA">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="input_SA_question">Enter Your Question</label>
+                                            <input type="text" class="form-control" id="input_SA_question" placeholder="???">
+                                            <small class="form-text text-muted">Required</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="input_SA_answer">Answer</label>
+                                            <textarea type="text" class="form-control" id="input_SA_answer" placeholder="Please type your response here"></textarea>
+                                            <small class="form-text text-muted">Optional</small>
+                                        </div>
+                                        <button type="submit" class="btn btn-atts btn-info">Add Question</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
 
 <!--Save and Publish buttons-->
 <div class="row justify-content--center">

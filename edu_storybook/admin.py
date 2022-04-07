@@ -23,6 +23,11 @@ from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
 from edu_storybook.navbar import make_navbar
 
+from edu_storybook.api.admin import admin_get_books
+
+from flask import request
+from flask import Blueprint
+
 admin = Blueprint('admin', __name__)
 
 log = logging.getLogger('ssg.admin')
@@ -123,11 +128,21 @@ def gen_admin_edit_book():
         )
         abort(403)
 
+    all_books = ""
+    for b in admin_get_books(0)['books']:
+        all_books += Templates.admin_book.substitute(
+            book_title = b['BOOK_NAME'],
+            book_description = b['DESCRIPTION'],
+            book_id = b["BOOK_ID"],
+            book_pages = b["PAGE_COUNT"]
+        )      
+        
     edit_book_page = Templates._base.substitute(
         title = "Admin: Edit Book",
         description = "A motivational storybook that helps students learn.",
         body = Templates.admin_edit_book.substitute(
-            navbar = make_navbar( auth )
+            navbar = make_navbar( auth ), 
+            book = all_books
         )
     )
     return edit_book_page
