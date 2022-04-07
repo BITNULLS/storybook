@@ -11,6 +11,8 @@ Routes:
     /api/admin/download/action
     /api/admin/get/user
     /api/admin/study/user
+    /api/admin/school
+    /api/admin/book/update
 """
 
 from pydoc import Helper
@@ -1085,4 +1087,214 @@ def admin_study_user():
 
     return{
         'status':  'ok'
+    }
+
+
+@a_admin.route("/api/admin/school", methods=['GET', 'POST', 'PUT', 'DELETE'])
+def admin_school():
+    '''
+    'GET', 'POST', 'PUT', and 'DELETE' methods to get the full list of schools, create a new school, update a school, or delete a school.
+    '''
+     # validate that user has rights
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # return the full list of schools
+    if request.method =='GET':
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute(
+                "SELECT SCHOOL_NAME FROM SCHOOL ORDER BY SCHOOL_ID"
+            )
+            label_results_from(cursor)
+
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+        schools = cursor.fetchall()
+
+        return {
+            "schools": schools
+        }
+
+    #check for school_id and school_name
+    try:
+        assert 'school_name' in request.form
+    except AssertionError:
+        a_admin_log.debug('An admin did not provide the school_name or school_id when ' +\
+            'updating  data for a book')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "school_id or school_name was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+
+    # check if post method
+    if request.method == 'POST':
+        cursor = connection.cursor()
+
+        try:
+            cursor.callproc("insert_school_proc",\
+                [request.form['school_name']])
+            connection.commit()
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+        return{
+            "status":"ok"
+        }
+    try:
+        assert 'school_id' in request.form
+    except AssertionError:
+        a_admin_log.debug('An admin did not provide the school_name or school_id when ' +\
+            'updating  data for a book')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "school_id or school_name was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+
+    #make sure school_id is an int
+    try:
+        school_id = int(request.form['school_id'])
+    except ValueError:
+        a_admin_log.debug('An admin did not provide a numerical school_id when ' +\
+            'updating  data for a book')
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "school_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+    # check if put method
+    if request.method == 'PUT':
+        cursor = connection.cursor()
+
+        try:
+            cursor.callproc("edit_school_proc",\
+                [int(request.form['school_id']), request.form['school_name']])
+            connection.commit()
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+    #TODO: Fix cascading delete with schools that reference delete
+    # check if school name and id and then delete it
+    '''
+    elif request.method == 'DELETE':
+        cursor = connection.cursor()
+
+        try:
+            cursor.callproc("delete_school_proc",\
+                [int(request.form['school_id']), request.form['school_name']])
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+    '''
+
+    return{
+        'status':  'ok'
+    }
+
+@a_admin.route("/api/admin/book/update", methods=['POST'])
+def admin_update_books():
+    """
+    Updates the book name and description
+    """
+
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # check to make sure you have a book name and book_description 
+    try:
+        assert 'book_name' in request.form
+        assert 'book_description' in request.form
+        assert 'book_id' in request.form
+    except AssertionError:
+        a_admin_log.debug('An admin did not provide the book_name or description when ' +\
+            'updating  data for a book')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_name or book_description was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    try:
+        book_id = int(request.form['book_id'])
+    except ValueError:
+        a_admin_log.debug('An admin did not provide a numerical book_id when ' +\
+            'updating  data for a book')
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "school_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.callproc("edit_book_proc",\
+            [int(request.form['book_id']), request.form['book_name'], request.form['book_description']])
+        connection.commit()
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    return {
+        "status": "ok"
     }
