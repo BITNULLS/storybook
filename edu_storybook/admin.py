@@ -23,7 +23,7 @@ from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
 from edu_storybook.navbar import make_navbar
 
-from api.admin import admin_get_books
+from edu_storybook.api.admin import admin_get_books
 
 from flask import request
 from flask import Blueprint

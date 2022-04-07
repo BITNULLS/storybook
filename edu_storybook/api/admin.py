@@ -925,16 +925,17 @@ def admin_get_users():
         "users": users
     }
 
-@a_admin.route("/api/admin/get/book", methods=['GET'])
+@a_admin.route("/api/admin/get/book/<int:offset>", methods=['GET'])
 def admin_get_books(offset: int):
     """
-    Exports book data to a json
+    Exports book data to a JSON.
 
     - Connects to database
     - Computes a select query to get book data
-    - return BOOK_ID, BOOKNAME , DESCRIPTION, PAGE_COUNT
-    - Allow an admin to retrieve a JSON list of all of the users. 
-        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows. 
+    - Return BOOK_ID, BOOKNAME , DESCRIPTION, PAGE_COUNT
+    - Allow an admin to retrieve a JSON list of all of the users.
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset
+        to grab the first 50 rows, then next 50 rows.
         Make offset an input parameter (int).
     """
 
@@ -952,34 +953,9 @@ def admin_get_books(offset: int):
 
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
-    # check to make sure you have a offset
-    """
-    try:
-        assert 'offset' in request.form
-    except AssertionError:
-        a_admin_log.debug('An admin did not provide the offset when ' +\
-            'getting data for a book')
-        return {
-            "status": "fail",
-            "fail_no": 1,
-            "message": "offset was not provided."
-        }, 400, {"Content-Type": "application/json"} 
-
-    # sanitize inputs: make sure offset is int
-    try:
-        offset = int(request.form['offset'])
-    except ValueError:
-        a_admin_log.debug('An admin provided a non-int value for offset')
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "offset failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
-    """
-
     # connect to database
     cursor = connection.cursor()
- 
+
     try:
         cursor.execute(
             "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK OFFSET "+ 
