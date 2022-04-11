@@ -413,7 +413,8 @@ def register():
 
     try:
         conn_lock.acquire()
-        cursor.execute(
+     #   cursor.callproc('insert_user_register_proc'...... )
+     '''   cursor.execute(
             "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, password) VALUES ('"
             + email + "', '"
             + first_name + "', '"
@@ -422,7 +423,7 @@ def register():
             + school_id + ", '"
             + hashed.decode('utf8')
             + "')"
-        )
+        ) '''
         connection.commit()
     except cx_Oracle.Error as e:
         a_index_log.warning('Error when accessing database')
@@ -433,6 +434,7 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+
     finally:
         conn_lock.release()
 
