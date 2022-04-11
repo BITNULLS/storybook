@@ -29,7 +29,7 @@ jobs:
         echo "INSTANT_DIR=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
         echo "/opt/oracle/instantclient_21_5" >> $GITHUB_PATH
-        more /opt/oracle/instantclient_21_5/libclntsh.so
+        sha1sum  /opt/oracle/instantclient_21_5/libclntsh.so
     - name: Create oracle_dir.txt
       run: |
         echo $INSTANT_DIR > /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
