@@ -23,9 +23,27 @@ jobs:
           echo "Oracle Directory Does not Exist, Creating"
           mkdir /opt/oracle
         fi
-        wget -q https://download.oracle.com/otn_software/linux/instantclient/215000/oracle-instantclient-basic-21.5.0.0.0-1.el8.x86_64.rpm
-        sudo apt-get install libaio1 alien
-        sudo alien -i oracle-instantclient-basic-21.5.0.0.0-1.el8.x86_64.rpm
-        echo ***********************************************
-        ls /usr/lib/oracle
-        echo ***********************************************
+        wget -q https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
+        sudo apt-get install unzip libaio1 libaio-dev
+        unzip -q instantclient-basic-linux.x64-21.5.0.0.0dbru.zip -d /opt/oracle
+        echo "INSTANT_DIR=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
+        echo "/opt/oracle/instantclient_21_5" >> $GITHUB_PATH
+        more /opt/oracle/instantclient_21_5/libclntsh.so
+    - name: Create oracle_dir.txt
+      run: |
+        echo $INSTANT_DIR > /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
+    - name: Create StorybookFiles Files
+      run: |
+        echo "$JSON" > edu_storybook/core/data/StorybookFiles.json
+        echo "$PEM" > edu_storybook/core/data/StorybookFiles.pem
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+    - name: Install Requirements
+      run: |
+        pip3 install -r requirements.txt
+    - name: Run Tests
+      run: |
+        make test
