@@ -29,6 +29,9 @@ def gen_books():
     '''
     Generate the story selection (books) page.
     '''
+    # When registering as a user, the register page redirects to
+    # Story Selection with admin navbar (not user)
+    # aIssue with make_navbar(auth) where auth may be incorrectly setup
 
     auth = None
     if 'Authorization' in request.cookies:
@@ -44,9 +47,6 @@ def gen_books():
     if vl != True:
         log.debug('A non-admin user tried to access the /books page.')
         abort(403)
-    else:
-        log.debug('An unauthorized, logged out user tried to access the /books page.')
-        #abort(403)
 
     all_books = ""
     for b in get_users_books()['books']:
