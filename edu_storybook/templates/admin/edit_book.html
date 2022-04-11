@@ -24,6 +24,8 @@
     function displaySelectedBook(book_id, page_count) {
         $('#selectBookModal').modal('hide');
         for(var page = 1; page < page_count; page++) {
+            var pageOption = $('<option value="' + page + '">' + page + '</option>');
+            $('#insert-question').append(pageOption);
             var pageIndicator = $('<h4>Page ' + page + '</h4>');
 
             var singlePage = document.createElement('img');
@@ -36,6 +38,13 @@
             $('#book-images-list').append(singlePage);
         }
     }
+
+    function addAnswerChoice() {
+        //TODO
+        //add new form/field for text box 
+        //add a box to select if it is the correct choice 
+        //add a delete box 
+    } 
 </script>
 
 <!--Modal for selecting a book-->
@@ -78,6 +87,13 @@
                             <div class="tab-pane active" id="MC">
                                 <div class="row">
                                     <div class="col-md-12">
+                                        <div class="form-group" id="inserting-question">
+                                            <label for="where-to-insert-question">Question will be inserted after this page</label>
+                                            <select class="form-select" id="insert-question">
+                                                <option disabled selected>Please select a page</option>
+                                            </select>
+                                            <small class="form-text text-muted">Required</small>
+                                        </div>
                                         <div class="form-group" id="multiple-choice-form">
                                             <label for="input_MC_question">Enter Your Question</label>
                                             <input type="text" class="form-control" id="input_MC_question" placeholder="???">
@@ -88,13 +104,20 @@
                                             <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addSA()">Add Answer Choice</a>                                      
                                             <small class="form-text text-muted">Required</small>
                                         </div>
-                                        <button type="submit" class="btn btn-atts btn-info">Add Question</button>
+                                        <button type="submit" class="btn btn-atts btn-info" onclick="addAnswerChoice()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
                             <div class="tab-pane" id="SA">
                                 <div class="row">
                                     <div class="col-md-12">
+                                        <div class="form-group" id="inserting-question">
+                                            <label for="where-to-insert-question">Question will be inserted after this page</label>
+                                            <select class="form-select" id="insert-question">
+                                                <option disabled selected>Please select a page</option>
+                                            </select>
+                                            <small class="form-text text-muted">Required</small>
+                                        </div>
                                         <div class="form-group" id="short-answer-form">
                                             <label for="input_SA_question">Enter Your Question</label>
                                             <input type="text" class="form-control" id="input_SA_question" placeholder="???">
