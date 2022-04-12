@@ -409,7 +409,7 @@ def register():
         }
 
     if (request.form['password'] != request.form['confirm_password']):
-        a_index_log.debug('User tried to reset password with unmatched password')
+        a_index_log.debug('User tried to register with an unmatched password.')
         return {
             "status": "fail",
             "fail_no": 5,
