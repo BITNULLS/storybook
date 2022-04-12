@@ -34,17 +34,34 @@
                 'src', 
                 '/api/storyboard/page/' + book_id + '/' + page
             );
+            singlePage.setAttribute("id", "page-" + page);
             $('#book-images-list').append(pageIndicator);
             $('#book-images-list').append(singlePage);
         }
     }
 
-    function addAnswerChoice() {
-        //TODO
-        //add new form/field for text box 
-        //add a box to select if it is the correct choice 
-        //add a delete box 
+    var quizQuestionsToAdd = [];
+
+    function multChoiceNewQuizQ() {
+        let insertAfter = $('#insert-question').val();
+        let questionPreview = $('<h1>mult choice</h1>');
+        $('#page-' + insertAfter).after(questionPreview);
     } 
+
+    function shortAnswerNewQuizQ() {
+        let insertAfter = $('#insert-question').val();
+        let questionPreview = $('<h1>short answer</h1>');
+        $('#page-' + insertAfter).after(questionPreview);
+
+        //quizQuestionsToAdd.append({
+        //    "type": "...", // free response short answer / MC
+        //    "question": "..."
+        //})
+    }
+
+    function submitQuestions() {
+        //actually save the questions to the backend
+    }
 </script>
 
 <!--Modal for selecting a book-->
@@ -59,9 +76,6 @@
       </div>
       <div class="modal-body">
         ~book
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Select</button>
       </div>
     </div>
   </div>
@@ -83,15 +97,16 @@
                             <a class="nav-link" href="#SA" data-toggle="tab" role="tab">Short Answer</a>
                         </nav>
 
+                        <label for="where-to-insert-question">Question will be inserted after this page</label>
+                        <select class="form-select" id="insert-question">
+                            <option disabled selected>Please select a page</option>
+                        </select>
+
                         <div class="tab-content my-tab">
                             <div class="tab-pane active" id="MC">
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="form-group" id="inserting-question">
-                                            <label for="where-to-insert-question">Question will be inserted after this page</label>
-                                            <select class="form-select" id="insert-question">
-                                                <option disabled selected>Please select a page</option>
-                                            </select>
                                             <small class="form-text text-muted">Required</small>
                                         </div>
                                         <div class="form-group" id="multiple-choice-form">
@@ -104,7 +119,7 @@
                                             <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addSA()">Add Answer Choice</a>                                      
                                             <small class="form-text text-muted">Required</small>
                                         </div>
-                                        <button type="submit" class="btn btn-atts btn-info" onclick="addAnswerChoice()">Add Question</button>
+                                        <button type="submit" class="btn btn-atts btn-info" onclick="multChoiceNewQuizQ()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
@@ -112,10 +127,6 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="form-group" id="inserting-question">
-                                            <label for="where-to-insert-question">Question will be inserted after this page</label>
-                                            <select class="form-select" id="insert-question">
-                                                <option disabled selected>Please select a page</option>
-                                            </select>
                                             <small class="form-text text-muted">Required</small>
                                         </div>
                                         <div class="form-group" id="short-answer-form">
@@ -128,7 +139,7 @@
                                             <textarea type="text" class="form-control" id="input_SA_answer" placeholder="Please type your response here"></textarea>
                                             <small class="form-text text-muted">Optional</small>
                                         </div>
-                                        <button type="submit" class="btn btn-atts btn-info" onclick="">Add Question</button>
+                                        <button type="submit" class="btn btn-atts btn-info" onclick="shortAnswerNewQuizQ()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
@@ -145,7 +156,6 @@
 <div class="row mt-3 justify-content--center">
   <div class="col text-center col_atts">
     <a type="button" class="btn btn-atts bg-info" data-toggle="modal" data-target="#selectBookModal">Change Book</a>
-    <a href="/admin/" class="btn btn-atts bg-info" role="button" aria-pressed="true">Save</a>
-    <a href="/admin/" class="btn btn-atts bg-info" role="button" aria-pressed="true">Publish</a>
+    <a type="button" class="btn btn-atts bg-info" role="button" aria-pressed="true" onclick="submitQuestions()">Save & Publish</a>
   </div>  
 </div>  
