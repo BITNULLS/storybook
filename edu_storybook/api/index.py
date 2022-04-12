@@ -352,11 +352,13 @@ def register():
     # check that all expected inputs are not empty
     try:
         assert 'email' in request.form
-        assert 'password'in request.form
-        assert 'confirm_password' in request.form
         assert 'first_name'in request.form
         assert 'last_name' in request.form
-        assert 'school_id'in request.form
+        assert 'school_id' in request.form
+        assert 'password'in request.form
+        assert 'confirm_password' in request.form
+        assert 'study_invite_code' in request.form
+
     except AssertionError:
         a_index_log.debug(
             'User did not provide a required field when registering')
@@ -382,7 +384,8 @@ def register():
     email = (request.form['email']).lower().strip()
     first_name = (request.form['first_name']).strip()
     last_name = (request.form['last_name']).strip()
-    school_id = (request.form['school_id']).lower().strip()
+    school_id = int(request.form['school_id'])
+    study_invite_code = (request.form['study_invite_code']).strip()
 
     cursor = connection.cursor()
     try:
@@ -421,18 +424,10 @@ def register():
 
     try:
         conn_lock.acquire()
-     #   cursor.callproc('insert_user_register_proc'...... )
-     '''   cursor.execute(
-            "INSERT into USER_PROFILE (email, first_name, last_name, admin, school_id, password) VALUES ('"
-            + email + "', '"
-            + first_name + "', '"
-            + last_name + "', "
-            + "0 , "
-            + school_id + ", '"
-            + hashed.decode('utf8')
-            + "')"
-        ) '''
+        cursor.callproc("insert_user_register_proc",\
+            [first_name, last_name, email, school_id, study_invite_code, hashed.decode('utf8')])
         connection.commit()
+
     except cx_Oracle.Error as e:
         a_index_log.warning('Error when accessing database')
         a_index_log.warning(e)
