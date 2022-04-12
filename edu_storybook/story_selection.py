@@ -28,11 +28,11 @@ if config['production'] == False:
 def gen_books():
     '''
     Generate the story selection (books) page.
+    
+    When registering as a user, the register page redirects to 
+    story Selection with admin navbar (not user).
+    an issue with make_navbar(auth) may arise where auth may be incorrectly setup
     '''
-    # When registering as a user, the register page redirects to
-    # Story Selection with admin navbar (not user)
-    # aIssue with make_navbar(auth) where auth may be incorrectly setup
-
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
