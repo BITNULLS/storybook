@@ -355,7 +355,7 @@ def register():
         assert 'first_name'in request.form
         assert 'last_name' in request.form
         assert 'school_id' in request.form
-        assert 'password'in request.form
+        assert 'password' in request.form
         assert 'confirm_password' in request.form
         assert 'study_invite_code' in request.form
 
