@@ -408,6 +408,14 @@ def register():
             "message": "Email is already registered."
         }
 
+    if (request.form['password'] != request.form['confirm_password']):
+        a_index_log.debug('User tried to register with an unmatched password.')
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Both passwords do not match."
+        }, 400, {"Content-Type": "application/json"}
+
     hashed = bcrypt.hashpw(
         request.form['password'].encode('utf8'), bcrypt.gensalt())
 
@@ -429,7 +437,7 @@ def register():
         a_index_log.warning(e)
         return {
             "status": "fail",
-            "fail_no": 5,
+            "fail_no": 6,
             "message": "Error when querying database.",
             "database_message": str(e)
         }
