@@ -15,7 +15,7 @@ import logging
 
 from edu_storybook.core.auth import validate_login
 from edu_storybook.core.bucket import download_bucket_file
-from edu_storybook.core.config import config
+from edu_storybook.core.config import config, temp_folder
 from edu_storybook.core.db import connection, conn_lock
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.sensitive import jwt_key
@@ -107,9 +107,10 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
 
     # Return page assuming current page has no quiz question
     try:
-        return send_file(download_bucket_file(fileInput))
-    except:
+        return send_file(download_bucket_file(fileInput, folder=temp_folder))
+    except Exception as e:
         a_storyboard_log.warning('Could not load bucket file for some unknown reason')
+        a_storyboard_log.warning(e)
         return {
             "status": "fail",
             "fail_no": 5,
@@ -317,4 +318,4 @@ def storyboard_get_cover_image(book_id_in):
             "message": "The book_id or page_number failed a sanitize check. The POSTed fields should be an integer."
         }, 400, {"Content-Type": "application/json"}
 
-    return send_file(download_bucket_file(get_book_image_path(book_id_in, 1)))
+    return send_file(download_bucket_file(get_book_image_path(book_id_in, 1), folder=temp_folder))
