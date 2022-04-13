@@ -12,27 +12,23 @@ env:
 jobs:
   build:
     name: Install Oracle and Run Tests
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Download Make and Wget
+      run: |
+        choco install make
+        choco install wget -y
     - name: Download Oracle Instant Client
       run: |
-        if [ -d "/opt/oracle" ]; then 
-          echo "Oracle Directory Exist"
-        else
-          echo "Oracle Directory Does not Exist, Creating"
-          mkdir /opt/oracle
-        fi
-        wget -q https://download.oracle.com/otn_software/linux/instantclient/215000/instantclient-basic-linux.x64-21.5.0.0.0dbru.zip
-        sudo apt-get install unzip libaio1 libaio-dev
-        unzip -q instantclient-basic-linux.x64-21.5.0.0.0dbru.zip -d /opt/oracle
-        echo "INSTANT_DIR=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=/opt/oracle/instantclient_21_5" >> $GITHUB_ENV
-        echo "/opt/oracle/instantclient_21_5" >> $GITHUB_PATH
-        sha1sum  /opt/oracle/instantclient_21_5/libclntsh.so
+        wget https://download.oracle.com/otn_software/nt/instantclient/213000/instantclient-basic-windows.x64-21.3.0.0.0.zip
+        Expand-Archive -LiteralPath instantclient-basic-windows.x64-21.3.0.0.0.zip -DestinationPath .
+        cd instantclient_21_3
+        $oracle_directory=(pwd).path
+        cd ..
     - name: Create oracle_dir.txt
       run: |
-        echo $INSTANT_DIR > /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
+        echo $oracle_directory > edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo "$JSON" > edu_storybook/core/data/StorybookFiles.json
