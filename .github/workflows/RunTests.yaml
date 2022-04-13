@@ -23,9 +23,9 @@ jobs:
       run: |
         wget https://download.oracle.com/otn_software/mac/instantclient/198000/instantclient-basic-macos.x64-19.8.0.0.0dbru.zip -P /Users/$USER/Library/Caches/Homebrew -q
         brew install InstantClientTap/instantclient/instantclient-basic
-        cd instantclient_19_8
+        cd /usr/local/opt/instantclient-basic/
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
-        cd ..
+        cd -
     - name: Create oracle_dir.txt
       run: |
         echo $INSTANT_DIR > edu_storybook/core/data/oracle_dir.txt
