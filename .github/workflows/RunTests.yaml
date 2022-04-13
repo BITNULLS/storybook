@@ -22,7 +22,7 @@ jobs:
     - name: Download Oracle Instant Client
       run: |
         wget https://download.oracle.com/otn_software/mac/instantclient/198000/instantclient-basic-macos.x64-19.8.0.0.0dbru.zip
-        unzip instantclient-basic-windows.x64-21.3.0.0.0.zip
+        unzip instantclient-basic-macos.x64-19.8.0.0.0dbru.zip
         cd instantclient_19_8
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd ..
