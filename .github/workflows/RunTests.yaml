@@ -12,24 +12,24 @@ env:
 jobs:
   build:
     name: Install Oracle and Run Tests
-    runs-on: windows-latest
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
     - name: Download Make and Wget
       run: |
-        choco install make
-        choco install wget -y
+        brew install make
+        brew install wget -y
     - name: Download Oracle Instant Client
       run: |
-        wget https://download.oracle.com/otn_software/nt/instantclient/213000/instantclient-basic-windows.x64-21.3.0.0.0.zip
-        Expand-Archive -LiteralPath instantclient-basic-windows.x64-21.3.0.0.0.zip -DestinationPath .
-        cd instantclient_21_3
-        $oracle_directory=(pwd).path
+        wget https://download.oracle.com/otn_software/mac/instantclient/198000/instantclient-basic-macos.x64-19.8.0.0.0dbru.zip
+        unzip instantclient-basic-windows.x64-21.3.0.0.0.zip
+        cd instantclient_19_8
+        echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd ..
     - name: Create oracle_dir.txt
       run: |
-        echo $oracle_directory > edu_storybook/core/data/oracle_dir.txt
-    - name: Create StorybookFiles Files
+        echo $INSTANT_DIR > edu_storybook/core/data/oracle_dir.txt
+    - name: Create Storybook Files
       run: |
         echo "$JSON" > edu_storybook/core/data/StorybookFiles.json
         echo "$PEM" > edu_storybook/core/data/StorybookFiles.pem
