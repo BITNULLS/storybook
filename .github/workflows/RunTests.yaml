@@ -18,7 +18,7 @@ jobs:
     - name: Download Make and Wget
       run: |
         brew install make
-        brew install wget -y
+        brew install wget
     - name: Download Oracle Instant Client
       run: |
         wget https://download.oracle.com/otn_software/mac/instantclient/198000/instantclient-basic-macos.x64-19.8.0.0.0dbru.zip
