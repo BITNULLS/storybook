@@ -30,7 +30,7 @@ jobs:
         cd ..
     - name: Create oracle_dir.txt
       run: |
-        echo $Env:oracle_dir > edu_storybook/core/data/oracle_dir.txt
+        echo D:\a\storybook\storybook\instantclient_21_3 > edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo $env:JSON > edu_storybook/core/data/StorybookFiles.json
