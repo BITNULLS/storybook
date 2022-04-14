@@ -21,14 +21,14 @@ jobs:
         choco install wget
     - name: Download Oracle Instant Client
       run: |
-        wget https://download.oracle.com/otn_software/nt/instantclient/213000/instantclient-basic-windows.x64-21.3.0.0.0.zip
+        wget https://download.oracle.com/otn_software/nt/instantclient/213000/instantclient-basic-windows.x64-21.3.0.0.0.zip -q
         Expand-Archive -LiteralPath instantclient-basic-windows.x64-21.3.0.0.0.zip -DestinationPath .
         cd instantclient_21_3
-        $oracle_directory=(pwd).path
+        $Env:oracle_dir = (pwd).path
         cd ..
     - name: Create oracle_dir.txt
       run: |
-        echo $oracle_directory > edu_storybook/core/data/oracle_dir.txt
+        echo $Env:oracle_dir > edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo $env:JSON > edu_storybook/core/data/StorybookFiles.json
