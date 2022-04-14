@@ -50,7 +50,12 @@ TEMPLATES = {
         "index": load_template("templates/admin/index.html"),
         "study_manager": load_template("templates/admin/study_manager.html"),
         "upload_book": load_template("templates/admin/upload_book.html"), 
-        "book": load_template("templates/admin/book.html")
+        "book": load_template("templates/admin/book.html"), 
+        "book_card": load_template("templates/admin/book_card.html"),
+        "study_list": load_template("templates/admin/study_list.html"), 
+        "add_study": load_template("templates/admin/add_to_study.html"), 
+        "user_list": load_template("templates/admin/user_list.html"),
+        "add_book": load_template("templates/admin/add_to_book.html")
     },
     "navbar": {
         "logged_admin": load_template("templates/navbar/logged_admin.html"),
@@ -92,10 +97,15 @@ class Templates:
     This class will help type safety, and make it easier for our contributors.
     '''
     admin_book: Template = TEMPLATES['admin']['book']
+    admin_book_card: Template = TEMPLATES['admin']['book_card']
     admin_book_manager: Template = TEMPLATES['admin']['book_manager']
     admin_edit_book: Template = TEMPLATES['admin']['edit_book']
     admin_index: Template = TEMPLATES['admin']['index']
     admin_study_mananger: Template = TEMPLATES['admin']['study_manager']
+    admin_study_list: Template = TEMPLATES['admin']['study_list']
+    admin_add_study: Template = TEMPLATES['admin']['add_study']
+    admin_add_book: Template = TEMPLATES['admin']['add_book']
+    admin_user_list: Template = TEMPLATES['admin']['user_list']
     admin_upload_book: Template = TEMPLATES['admin']['upload_book']
     navbar_logged_admin: Template = TEMPLATES['navbar']['logged_admin']
     navbar_logged_out: Template = TEMPLATES['navbar']['logged_out']

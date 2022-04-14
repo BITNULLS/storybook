@@ -14,6 +14,16 @@ suggestion from @lisapat
             let randomID = Math.floor((Math.random() * 1000000) + 1);
             document.getElementById('study_id').value = randomID;
         }
+
+        function addStudyToBook(study_id) {
+            $('#studyId').val(study_id);
+            $('#addBookToStudy').modal('show')
+        }
+
+        function addStudyToUser(study_id) {
+            $('#studyId').val(study_id);
+            $('#addStudyToUser').modal('show')
+        }
     </script>
     <!--Modal for Create New Study-->
     <div class="modal fade" id="createNewStudyModal" tabindex="-1" role="dialog"
@@ -27,7 +37,7 @@ suggestion from @lisapat
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form action="/api/admin/study" method="POST" enctype="multipart/form-data">
                         <label for="message-text" class="col-form-label">Study ID:</label>
                         <div class="input-group mb-3">
                             <input type="text" class="form-control" id="study_id" placeholder="123456"
@@ -81,14 +91,15 @@ suggestion from @lisapat
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form>
-                        <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                            <label class="form-check-label" for="flexCheckDefault">
-                                Study ID: 1234
-                            </label>
-                        </div>
+                    <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="studyId" value="study_id">
+                        <!-- TODO: admin_add_book_to_study/  Add all the study ids and have the ones the book is involved with checked -->
+                        <div class="form-group">
+                            <label for="study_id">Book ID(s) for Study</label>
+                            <select multiple class="form-control" id="book_ids" name="book_ids">
+                                ~add_book
+                            </select>
+                          </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -111,14 +122,15 @@ suggestion from @lisapat
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form>
-                        <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                            <label class="form-check-label" for="flexCheckDefault">
-                                Study ID: 1234
-                            </label>
-                        </div>
+                    <form action="/api/admin/user/study" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="userId" value="user_id">
+                        <!-- TODO: admin_add_book_to_study/  Add all the study ids and have the ones the book is involved with checked -->
+                        <div class="form-group">
+                            <label for="study_id">Study ID(s) for User</label>
+                            <select multiple class="form-control" id="study_ids" name="study_ids">
+                                ~add_study
+                            </select>
+                          </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -146,16 +158,14 @@ suggestion from @lisapat
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th scope="col">User ID</th>
+                                    <th scope="col">User Email</th>
                                     <th scope="col">First Name</th>
                                     <th scope="col">Last Name</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <th scope="row">123</th>
-                                    <td>Mark</td>
-                                    <td>Otto</td>
+                                    ~user_list
                                 </tr>
                             </tbody>
                         </table>
@@ -195,34 +205,7 @@ suggestion from @lisapat
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">123</th>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addBookToStudy">Books</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addUsersToStudy">Users</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-danger">Delete</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">223</th>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addBookToStudy">Books</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addUsersToStudy">Users</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-danger">Delete</a>
-                                </td>
-                            </tr>
+                            ~study_list
                         </tbody>
                     </table>
                 </div>
@@ -232,7 +215,7 @@ suggestion from @lisapat
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th scope="col">User ID</th>
+                                <th scope="col">User Email</th>
                                 <th scope="col">First Name</th>
                                 <th scope="col">Last Name</th>
                                 <th scope="col">Studies</th>
@@ -241,13 +224,8 @@ suggestion from @lisapat
                         </thead>
                         <tbody>
                             <tr>
-                                <th scope="row">123</th>
-                                <td>
-                                    John
-                                </td>
-                                <td>
-                                    Doe
-                                </td>
+                                ~user_list   
+                                <!--admin_study_user-->                         
                                 <td>
                                     <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
                                         data-target="#addStudyToUser">Studies</a>
