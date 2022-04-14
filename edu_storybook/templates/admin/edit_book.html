@@ -44,13 +44,15 @@
 
     function multChoiceNewQuizQ() {
         let insertAfter = $('#insert-question').val();
-        let questionPreview = $('<h1>mult choice</h1>');
+        let question = $('#input_MC_question').val();
+        let questionPreview = $('<p>' + question + '</p>');
         $('#page-' + insertAfter).after(questionPreview);
     } 
 
     function shortAnswerNewQuizQ() {
         let insertAfter = $('#insert-question').val();
-        let questionPreview = $('<h1>short answer</h1>');
+        let question = $('#input_SA_question').val();
+        let questionPreview = $('<p>' + question + '</p>');
         $('#page-' + insertAfter).after(questionPreview);
 
         //quizQuestionsToAdd.append({
