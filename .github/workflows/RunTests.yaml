@@ -31,8 +31,8 @@ jobs:
         echo $oracle_directory > edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
-        echo "$JSON" > edu_storybook/core/data/StorybookFiles.json
-        echo "$PEM" > edu_storybook/core/data/StorybookFiles.pem
+        echo $env:JSON > edu_storybook/core/data/StorybookFiles.json
+        echo $env:PEM > edu_storybook/core/data/StorybookFiles.pem
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
