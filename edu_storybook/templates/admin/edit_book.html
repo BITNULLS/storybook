@@ -64,6 +64,12 @@
     function submitQuestions() {
         //actually save the questions to the backend
     }
+
+    function addChoiceA() {
+        <div class="form-group">
+            <input type="text" class="form-control" href="#" id="new-answer-choice" aria-describedby="basic-addon2">
+        </div>
+    }
 </script>
 
 <!--Modal for selecting a book-->
@@ -118,7 +124,7 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="input_MC_options">Add Answer Choices</label>
-                                            <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addSA()">Add Answer Choice</a>                                      
+                                            <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addChoice()">Add Answer Choice</a>                                      
                                             <small class="form-text text-muted">Required</small>
                                         </div>
                                         <button type="submit" class="btn btn-atts btn-info" onclick="multChoiceNewQuizQ()">Add Question</button>
