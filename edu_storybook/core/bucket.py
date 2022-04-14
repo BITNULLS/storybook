@@ -23,7 +23,7 @@ if config['production'] == False:
 # Chum-Bucket Downloader will be set up after config files have been downloaded
 
 with open(fix_filepath(__file__, 'data/StorybookFiles.json')) as sb_files:
-    bucket = json.load(sb_files.read())
+    bucket = json.load(sb_files)
 
 assert bucket is not None, 'StorybookFiles.json file was empty'
 
