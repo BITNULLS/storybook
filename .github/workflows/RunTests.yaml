@@ -21,9 +21,11 @@ jobs:
         choco install wget
     - name: Download Oracle Instant Client
       run: |
+        pwd
         wget https://download.oracle.com/otn_software/nt/instantclient/213000/instantclient-basic-windows.x64-21.3.0.0.0.zip -q
         Expand-Archive -LiteralPath instantclient-basic-windows.x64-21.3.0.0.0.zip -DestinationPath .
         cd instantclient_21_3
+        pwd
         $Env:oracle_dir = (pwd).path
         cd ..
     - name: Create oracle_dir.txt
