@@ -16,7 +16,7 @@ import logging
 from edu_storybook.core.auth import validate_login
 from edu_storybook.core.bucket import download_bucket_file
 from edu_storybook.core.config import config, temp_folder
-from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.db import pool
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.reg_exps import *
@@ -60,6 +60,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
 
     # goes into database and gets the bucket folder.
     # goes into bucket and then says I want this image from this folder.
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     fileInput = get_book_image_path(book_id, page_number)
@@ -150,20 +151,25 @@ def storyboard_get_pagecount(book_id_in: int):
 
     # goes into database and gets the bucket folder.
     # goes into bucket and then says I want this image from this folder.
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
         # get folder that holds that book's images
         cursor.execute(
             "SELECT page_count FROM BOOK where book_id =" + str(book_id) )
-    except cx_Oracle.Error as e:
+    except cx_Oracle.DatabaseError as e:
         a_storyboard_log.warning('Error when accessing database')
         a_storyboard_log.warning(e)
-        return {"status": "fail",
-                "fail_no": 3,
-                "message": "Error when updating database action",
-                "database_message": str(e)
-                }, 400, {"Content-Type": "application/json"}
+        print(dir(e))
+        error, = e.args
+        print(error.code)
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
 
     pagecount = cursor.fetchone()
     return {
@@ -234,6 +240,7 @@ def storyboard_save_user_action():
             "message": "Either the action_start, action_stop, or detail_description failed a sanitize check. The POSTed fields should be in date format YYYY-MM-DD HH:MM:SS. detail_description should be alphanumeric only."
         }, 400, {"Content-Type": "application/json"}
 
+    connection = pool.acquire()
     cursor = connection.cursor()
     try:
         cursor.execute(
@@ -277,8 +284,8 @@ def storyboard_save_user_action():
 
 
 def get_book_image_path(book_id, page_number):
+    connection = pool.acquire()
     cursor = connection.cursor()
-
     try:
         # get folder that holds that book's images
         cursor.execute(

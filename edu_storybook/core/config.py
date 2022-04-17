@@ -26,6 +26,7 @@ class Config:
     '''
     production: bool = config['production']
     domain: str = config['domain']
+    database_retries: int = config['database_retries']
     last_mod: str = config['last_mod']
     login_duration: int = config['login_duration']
     buffer_size: int = config['buffer_size']
