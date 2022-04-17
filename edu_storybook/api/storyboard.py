@@ -161,9 +161,6 @@ def storyboard_get_pagecount(book_id_in: int):
     except cx_Oracle.DatabaseError as e:
         a_storyboard_log.warning('Error when accessing database')
         a_storyboard_log.warning(e)
-        print(dir(e))
-        error, = e.args
-        print(error.code)
         return {
             "status": "fail",
             "fail_no": 3,
