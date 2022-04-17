@@ -147,6 +147,28 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "correct_answer": quiz_question_info['ANSWER']
         }
 
+    cursor = connection.cursor()
+    try:
+        conn_lock.acquire()
+        cursor.callproc("track_last_page",\
+            [token['sub'],\
+            book_id_in,\
+            page_number_in,\
+            token['permission']])
+        # commit changes to db
+        connection.commit()
+    except cx_Oracle.Error as e:
+        a_storyboard_log.warning('Error when accessing the database')
+        a_storyboard_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 6,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+    finally:
+        conn_lock.release()
+
     # Return page assuming current page has no quiz question
     try:
         return send_file(download_bucket_file(fileInput))
