@@ -17,10 +17,6 @@
         $("#selectBookModal").modal('show'); 
     });
 
-    function addQ() {
-        //$('#createQ').append;
-    } 
-
     function displaySelectedBook(book_id, page_count) {
         $('#selectBookModal').modal('hide');
         for(var page = 1; page < page_count; page++) {
@@ -43,16 +39,11 @@
     var quizQuestionsToAdd = [];
 
     var answerChoiceList = []
+
     function addChoiceA() {
-        //$('#new-mc-answer-choice').toggleClass("d-none");
         $('#mc-answer-choice-holder').append( 
             $('#template-new-mc-answer-choice').html()
         );
-        //$('#new-mc-answer-choice').append("<input type='text'/>"); 
-    }
-
-    function deleteChoice() {
-        //TODO: delete the block that was chosen
     }
 
     function multChoiceNewQuizQ() {
@@ -131,11 +122,7 @@
                                             <small class="form-text text-muted">Required</small>
                                         </div>
 
-
-
-
                                         <button id="add-choiceA-button" type="button" class="btn btn-atts btn-info" onclick="addChoiceA()">Add Answer Choice</button>
-
                                         <template id="template-new-mc-answer-choice">
                                             <div class="input-group" id="new-mc-answer-choice">
                                                 <div class="input-group-prepend">
@@ -152,17 +139,10 @@
 
                                         <div id="mc-answer-choice-holder"></div>
 
-                                        
-
-
-                                    
-
-
                                         <button type="submit" class="btn btn-atts btn-info" onclick="multChoiceNewQuizQ()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
-
 
                             <div class="tab-pane" id="SA">
                                 <div class="row">
