@@ -20,7 +20,7 @@ import logging
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.config import Config
-from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.db import pool
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.reg_exps import *
 
@@ -104,11 +104,11 @@ def quiz_submit_answer():
 
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     if request.form['type'] == 'mc': # multiple choice handling
         try:
-            conn_lock.acquire()
             cursor.execute(
                 "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" +
                 token['sub'] + "', " + str(question_id) +
@@ -124,11 +124,8 @@ def quiz_submit_answer():
                 "message": "Error when updating database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        finally:
-            conn_lock.release()
 
         try:
-            conn_lock.acquire()
             cursor.execute(
                 "SELECT correct FROM answer WHERE answer_id= " + str(answer_id) +\
                     " and question_id= " + str(question_id)
@@ -144,8 +141,6 @@ def quiz_submit_answer():
                 "message": "Error when updating database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        finally:
-            conn_lock.release()
 
         result = cursor.fetchone()
 

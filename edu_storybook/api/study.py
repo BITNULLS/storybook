@@ -20,7 +20,7 @@ import logging
 from edu_storybook.core.auth import validate_login
 from edu_storybook.core.bucket import bucket
 from edu_storybook.core.config import Config
-from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.db import pool
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.reg_exps import *
@@ -85,6 +85,7 @@ def get_studies(offset):
         }, 400, {"Content-Type": "application/json"}
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:

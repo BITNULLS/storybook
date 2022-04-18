@@ -13,26 +13,101 @@
 
 <!--JS to make modal pop up upon opening window-->
 <script>
+    //show the modal that allows user to select a book to edit 
     $(document).ready(function(){
         $("#selectBookModal").modal('show'); 
     });
 
-    function addQ() {
-        //$('#createQ').append;
-    } 
-
+    //modal for the admin to select which book to edit 
     function displaySelectedBook(book_id, page_count) {
         $('#selectBookModal').modal('hide');
         for(var page = 1; page < page_count; page++) {
+            var pageOption = $('<option value="' + page + '">' + page + '</option>');
+            $('#insert-question').append(pageOption);
+            var pageIndicator = $('<h4>Page ' + page + '</h4>');
+
             var singlePage = document.createElement('img');
             singlePage.setAttribute("class", "img-fluid");
             singlePage.setAttribute(
                 'src', 
                 '/api/storyboard/page/' + book_id + '/' + page
             );
+            singlePage.setAttribute("id", "page-" + page);
+            $('#book-images-list').append(pageIndicator);
             $('#book-images-list').append(singlePage);
         }
     }
+
+    //dictionary with 3 attributes, question, pg before and answers, and correct answer
+    var answerCreated = []
+    var answerDeleted = []
+
+    //adds spot to put in a new answer choice by the admin for a question
+    function addChoiceA() {
+        $('#mc-answer-choice-holder').append( 
+            $('#template-new-mc-answer-choice').html()
+        );
+    }
+
+    //invoked when admin clicks Add Question button for multiple choice
+    function multChoiceNewQuizQ() {
+
+        let insertAfter = $('#insert-question').val(); //this is the page the admin selected to insert the question
+        let question = $('#input_MC_question').val(); //this is the question being asked 
+        let questionPreview = $('<p>' + question + '</p>'); //styling of the question
+
+        var answers = []
+
+        $('#mc-answer-choice-holder').children().each(function (index, element) {
+            var ans = {};
+            ans['correct'] = $(element).children('.input-group.input-group-prepend.input').val();
+            ans['content'] = $(element).children('input').val();
+            answers.push(ans);
+        });
+
+        let card_class = document.createElement("div");
+        card_class.setAttribute("name", "card-class");
+        let main_question = questionPreview; //this is the header
+        
+        let answer_choices = '<div class="card-body">' //this is the card body
+        for(var choice = 0; choice < answers.length; choice++) {
+            let choice2 = '<p>' + answers[choice].content + '</p>';
+            answer_choices += choice2 + '</p>';
+        }
+        answer_choices += '</div>';
+        answer_choices = $(answer_choices);
+        
+        $('#page-' + insertAfter).after(answer_choices).after(main_question).after(card_class);
+        
+        /**
+        {
+            "question": "What is red",
+            "page_prev": 5,
+            "answers": [
+                {
+                    "content": "An apple",
+                    "correct": true
+                },
+                ...
+            ]
+        }
+        */
+    } 
+
+    //invoked when admin clicks Add Question button for short answer
+    function shortAnswerNewQuizQ() {
+        let insertAfter = $('#insert-question').val();
+        let question = $('#input_SA_question').val();
+        let questionPreview = $('<p>' + question + '</p>');
+        $('#page-' + insertAfter).after(questionPreview);
+
+    }
+
+    //when admin clicks Save & Publish, all the questions and answers should go to the backend
+    function submitQuestions() {
+        //actually save the questions to the backend
+    }
+
 </script>
 
 <!--Modal for selecting a book-->
@@ -48,9 +123,6 @@
       <div class="modal-body">
         ~book
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Select</button>
-      </div>
     </div>
   </div>
 </div>
@@ -58,7 +130,7 @@
 <!--Overall container for pages and quiz questions-->
 <div class="container">
     <div class="row">
-        <div class="col scrollable-auto" id="book-images-list">
+        <div class="col overflow-auto" style="max-height: 500px" id="book-images-list">
         </div>
 
         <div class="col container">
@@ -71,28 +143,53 @@
                             <a class="nav-link" href="#SA" data-toggle="tab" role="tab">Short Answer</a>
                         </nav>
 
+                        <label for="where-to-insert-question">Question will be inserted after this page</label>
+                        <select class="form-select" id="insert-question">
+                            <option disabled selected>Please select a page</option>
+                        </select>
+
                         <div class="tab-content my-tab">
                             <div class="tab-pane active" id="MC">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="form-group">
+                                        <div class="form-group" id="inserting-question">
+                                            <small class="form-text text-muted">Required</small>
+                                        </div>
+                                        <div class="form-group" id="multiple-choice-form">
                                             <label for="input_MC_question">Enter Your Question</label>
                                             <input type="text" class="form-control" id="input_MC_question" placeholder="???">
                                             <small class="form-text text-muted">Required</small>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="input_MC_options">Add Answer Choices</label>
-                                            <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addQ()">Add Answer Choice</a>                                      
-                                            <small class="form-text text-muted">Required</small>
-                                        </div>
-                                        <button type="submit" class="btn btn-atts btn-info">Add Question</button>
+
+                                        <button id="add-choiceA-button" type="button" class="btn btn-atts btn-info" onclick="addChoiceA()">Add Answer Choice</button>
+                                        <template id="template-new-mc-answer-choice">
+                                            <div class="input-group" id="new-mc-answer-choice">
+                                                <div class="input-group-prepend">
+                                                    <div class="input-group-text">
+                                                        <input class="mr-1" type="checkbox" aria-label="Checkbox for following text input"> Correct</input>
+                                                    </div>
+                                                </div>
+                                                <input type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon1">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button" onclick="$(this).parent().parent().remove()">Delete</button>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <div id="mc-answer-choice-holder"></div>
+
+                                        <button type="submit" class="btn btn-atts btn-info" onclick="multChoiceNewQuizQ()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
+
                             <div class="tab-pane" id="SA">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <div class="form-group">
+                                        <div class="form-group" id="inserting-question">
+                                            <small class="form-text text-muted">Required</small>
+                                        </div>
+                                        <div class="form-group" id="short-answer-form">
                                             <label for="input_SA_question">Enter Your Question</label>
                                             <input type="text" class="form-control" id="input_SA_question" placeholder="???">
                                             <small class="form-text text-muted">Required</small>
@@ -102,7 +199,7 @@
                                             <textarea type="text" class="form-control" id="input_SA_answer" placeholder="Please type your response here"></textarea>
                                             <small class="form-text text-muted">Optional</small>
                                         </div>
-                                        <button type="submit" class="btn btn-atts btn-info">Add Question</button>
+                                        <button type="submit" class="btn btn-atts btn-info" onclick="shortAnswerNewQuizQ()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
@@ -116,10 +213,9 @@
 </div> 
 
 <!--Save and Publish buttons-->
-<div class="row justify-content--center">
+<div class="row mt-3 justify-content--center">
   <div class="col text-center col_atts">
     <a type="button" class="btn btn-atts bg-info" data-toggle="modal" data-target="#selectBookModal">Change Book</a>
-    <a href="/admin/" class="btn btn-atts bg-info" role="button" aria-pressed="true">Save</a>
-    <a href="/admin/" class="btn btn-atts bg-info" role="button" aria-pressed="true">Publish</a>
+    <a type="button" class="btn btn-atts bg-info" role="button" aria-pressed="true" onclick="submitQuestions()">Save & Publish</a>
   </div>  
 </div>  

@@ -1,3 +1,7 @@
+# General Checklist
+
+- [ ] Think critically: Could this database update break backend or frontend code? If so, @ the issue creator, and start a conversation.
+
 # Checklist for exporting the DDL to docs/499_Schema.sql
 
 - [ ] Open **SQLDeveloper**

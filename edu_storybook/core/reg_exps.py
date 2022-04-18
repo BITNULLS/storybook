@@ -3,6 +3,7 @@ reg_exps.py
 
 Contains all the regular expressions used in the app.
 """
+
 import re
 
 re_alphanumeric = re.compile(r"[a-zA-Z0-9]")
