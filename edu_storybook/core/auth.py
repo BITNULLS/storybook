@@ -79,10 +79,26 @@ def validate_login(auth: str, permission: int=0):
             "status": "fail",
             "fail_no": 1,
             "message": "The Authorization header was not provided."
-        }
+        }, 400, {"Content-Type": "application/json"}
+
+    if 'Bearer' not in auth:
+        c_auth_log.debug('User provided an invalid Authorization header, missing Bearer keyword')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Invalid Authorization header was provided",
+        }, 400, {"Content-Type": "application/json"}
 
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
+
+    if re_jwt.match(auth) is None:
+        c_auth_log.debug('User provided malformed JWT token.')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "The JSON Web Token (JWT) was incorrectly formatted",
+        }, 400, {"Content-Type": "application/json"}
 
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
     t = int(time.time())
