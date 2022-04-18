@@ -31,7 +31,7 @@ import json
 from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
-from edu_storybook.core.config import config
+from edu_storybook.core.config import Config
 from edu_storybook.core.db import connection, conn_lock
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.remove_watchdog import future_del_temp
@@ -40,7 +40,7 @@ from edu_storybook.core.reg_exps import *
 a_index = Blueprint('a_index', __name__)
 
 a_index_log = logging.getLogger('api.index')
-if config['production'] == False:
+if Config.production == False:
     a_index_log.setLevel(logging.DEBUG)
 
 @a_index.route("/api/")
@@ -281,11 +281,11 @@ def login():
         "session": session_id,
         "sub": user_id,
         "permission": result['ADMIN']
-    }, jwt_key, algorithm=config['jwt_alg'])
+    }, jwt_key, algorithm=Config.jwt_alg)
     res.set_cookie(
         "Authorization",
         "Bearer " + token,
-        max_age=config["login_duration"],
+        max_age=Config.login_duration,
         # domain=domain_name#, # TODO: uncomment in production
         # secure=True,
         # httponly=True
@@ -325,7 +325,7 @@ def logout():
 
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     cursor = connection.cursor()
     try:
@@ -475,7 +475,7 @@ def get_users_books():
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # connect to database
     cursor = connection.cursor()

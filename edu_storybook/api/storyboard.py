@@ -23,7 +23,7 @@ import logging
 
 from edu_storybook.core.auth import validate_login
 from edu_storybook.core.bucket import download_bucket_file
-from edu_storybook.core.config import config
+from edu_storybook.core.config import Config
 from edu_storybook.core.db import connection, conn_lock
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.sensitive import jwt_key
@@ -32,7 +32,7 @@ from edu_storybook.core.reg_exps import *
 a_storyboard = Blueprint('a_storyboard', __name__)
 
 a_storyboard_log = logging.getLogger('api.storyboard')
-if config['production'] == False:
+if Config.production == False:
     a_storyboard_log.setLevel(logging.DEBUG)
 
 @a_storyboard.route("/api/storyboard/page/<int:book_id_in>/<int:page_number_in>", methods=['GET'])
@@ -84,7 +84,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
         auth = auth.replace('Bearer ', '', 1)
 
     # TODO: Token is not checked
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # sanitize inputs: make sure book_id, page_number are ints
     try:
@@ -147,6 +147,9 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "correct_answer": quiz_question_info['ANSWER']
         }
 
+    # TODO: mental note, this will need to be changed to
+    # connection = pool.acquire()
+    # when PR #397 is merged. And the conn_lock will need to be removed.
     cursor = connection.cursor()
     try:
         conn_lock.acquire()
@@ -204,7 +207,7 @@ def storyboard_get_pagecount(book_id_in: int):
         auth = auth.replace('Bearer ', '', 1)
 
     # TODO: verify token
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # sanitize inputs: make sure book_id, page_number are ints
     try:
@@ -265,7 +268,7 @@ def storyboard_save_user_action():
         auth = auth.replace('Bearer ', '', 1)
 
     # TODO: verify token
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # check that all expected inputs are received
     try:

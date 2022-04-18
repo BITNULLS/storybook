@@ -4,7 +4,7 @@ email.py
 Initialization and interface for email functions.
 """
 
-from .config import config
+from .config import Config
 from . import sensitive as sensitive
 
 import smtplib
@@ -12,7 +12,7 @@ import smtplib
 import logging
 
 c_email_log = logging.getLogger('core.email')
-if config['production'] == False:
+if Config.production == False:
     c_email_log.setLevel(logging.DEBUG)
 
 def send_email(user_name: str,
@@ -34,7 +34,7 @@ def send_email(user_name: str,
 
     Returns: Boolean on whether or not the email was sent.
     """
-    if config['production'] == False:
+    if Config.production == False:
         return True
 
     # Write Email

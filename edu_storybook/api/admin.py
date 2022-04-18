@@ -45,7 +45,7 @@ from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.bucket import upload_bucket_file, download_bucket_file
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
-from edu_storybook.core.config import config, temp_folder
+from edu_storybook.core.config import Config, temp_folder
 from edu_storybook.core.db import connection, conn_lock
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.remove_watchdog import future_del_temp
@@ -55,7 +55,7 @@ from edu_storybook.core.helper import sanitize_redirects
 a_admin = Blueprint('a_admin', __name__)
 
 a_admin_log = logging.getLogger('api.admin')
-if config['production'] == False:
+if Config.production == False:
     a_admin_log.setLevel(logging.DEBUG)
 
 @a_admin.route("/api/admin/book/download", methods=['POST'])
@@ -427,7 +427,7 @@ def admin_page_handler():
 
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     if request.method == 'POST':
         # check to make sure you have a book_id
@@ -745,7 +745,7 @@ def admin_download_user_data():
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
-            data = f.read(config['buffer_size'])
+            data = f.read(Config.buffer_size)
             if not data:
                 break
             sha1.update(data)
@@ -841,7 +841,7 @@ def admin_download_action_data():
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
-            data = f.read(config['buffer_size'])
+            data = f.read(Config.buffer_size)
             if not data:
                 break
             sha1.update(data)
@@ -891,7 +891,7 @@ def admin_get_users():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # check to make sure you have a offset
     try:
@@ -969,14 +969,14 @@ def admin_get_books(offset: int):
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # connect to database
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK OFFSET "+ 
+            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK OFFSET "+
             str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
@@ -1014,7 +1014,7 @@ def admin_study_user():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     #check for study_id and user_id
     try:
@@ -1100,7 +1100,7 @@ def admin_school():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # return the full list of schools
     if request.method =='GET':
@@ -1244,9 +1244,9 @@ def admin_update_books():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
-    # check to make sure you have a book name and book_description 
+    # check to make sure you have a book name and book_description
     try:
         assert 'book_name' in request.form
         assert 'book_description' in request.form

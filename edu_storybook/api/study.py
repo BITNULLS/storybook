@@ -19,7 +19,7 @@ import logging
 
 from edu_storybook.core.auth import validate_login
 from edu_storybook.core.bucket import bucket
-from edu_storybook.core.config import config
+from edu_storybook.core.config import Config
 from edu_storybook.core.db import connection, conn_lock
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.sensitive import jwt_key
@@ -28,7 +28,7 @@ from edu_storybook.core.reg_exps import *
 a_study = Blueprint('a_study', __name__)
 
 a_study_log = logging.getLogger('api.study')
-if config['production'] == False:
+if Config.production == False:
     a_study_log.setLevel(logging.DEBUG)
 
 @a_study.route("/api/studies/<int:offset>", methods=['GET'])

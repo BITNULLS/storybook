@@ -1,6 +1,6 @@
 {
     "production": false,
-    "_production": "true means live website, false means development mode.",
+    "_production": "True means live website, false means development mode",
     "domain": "https://www.edustorybooks.tk",
     "_domain": "The domain where this application will be hosted on. Must not have a trailing slash",
     "last_mod": "2022-04-20",

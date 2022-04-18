@@ -13,13 +13,13 @@ import logging
 from flask import make_response
 
 from .sensitive import jwt_key
-from .config import config
+from .config import Config
 from .helper import label_results_from
 from .email import send_email
 from .reg_exps import *
 
 c_auth_log = logging.getLogger('core.auth')
-if config['production'] == False:
+if Config.production == False:
     c_auth_log.setLevel(logging.DEBUG)
 
 
@@ -34,17 +34,17 @@ def issue_auth_token(res, token):
     """
     if 'Bearer ' in token:
         token = token.replace('Bearer ', '', 1)
-    old_token = jwt.decode(token, jwt_key, algorithms=config['jwt_alg'])
+    old_token = jwt.decode(token, jwt_key, algorithms=Config.jwt_alg)
     new_token = jwt.encode({
         "iat": int(time.time()),
         "session": old_token['session'],
         "sub": old_token['sub'],
         "permission": old_token['permission']
-    }, jwt_key, algorithm=config['jwt_alg'])
+    }, jwt_key, algorithm=Config.jwt_alg)
     res.set_cookie(
         "Authorization",
         "Bearer " + new_token,
-        max_age=config["login_duration"],
+        max_age=Config.login_duration,
         domain="localhost",
         samesite="Lax"
         # secure=True,
@@ -84,10 +84,10 @@ def validate_login(auth: str, permission: int=0):
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config["jwt_alg"])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
     t = int(time.time())
 
-    if token['iat'] + config['login_duration'] < t:
+    if token['iat'] + Config.login_duration < t:
         c_auth_log.debug('User provided an expired token')
         return {
             "status": "fail",
@@ -95,7 +95,7 @@ def validate_login(auth: str, permission: int=0):
             "message": "Session is expired. Please log in again.",
             "details": {
                 "iat": token['iat'],
-                "age": config['login_duration'],
+                "age": Config.login_duration,
                 "time": t
             }
         }, 400, {"Content-Type": "application/json"}
