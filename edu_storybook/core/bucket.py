@@ -11,12 +11,12 @@ import os
 from .filepath import fix_filepath
 from tempfile import TemporaryDirectory
 from typing import List
-from .config import config, temp_folder
+from .config import Config, temp_folder
 
 import logging
 
 c_bucket_log = logging.getLogger('core.bucket')
-if config['production'] == False:
+if Config.production == False:
     c_bucket_log.setLevel(logging.DEBUG)
 
 # Sen_Files Downloader setup - Only used to download project configuration files

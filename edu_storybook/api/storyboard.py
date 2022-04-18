@@ -1,7 +1,15 @@
 """
 storyboard.py
 
-Routes beginning with `/api/storyboard/`
+Routes beginning with `/api/storyboard/`.
+
+Routes:
+
+```
+/api/storyboard/page/<int:book_id_in>/<int:page_number_in>
+/api/storyboard/pagecount/<int:book_id_in>
+/api/storyboard/cover/<int:book_id_in>
+```
 """
 
 from flask import request
@@ -15,7 +23,7 @@ import logging
 
 from edu_storybook.core.auth import validate_login
 from edu_storybook.core.bucket import download_bucket_file
-from edu_storybook.core.config import config, temp_folder
+from edu_storybook.core.config import Config, temp_folder
 from edu_storybook.core.db import pool
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.sensitive import jwt_key
@@ -24,11 +32,45 @@ from edu_storybook.core.reg_exps import *
 a_storyboard = Blueprint('a_storyboard', __name__)
 
 a_storyboard_log = logging.getLogger('api.storyboard')
-if config['production'] == False:
+if Config.production == False:
     a_storyboard_log.setLevel(logging.DEBUG)
 
 @a_storyboard.route("/api/storyboard/page/<int:book_id_in>/<int:page_number_in>", methods=['GET'])
 def storyboard_get_page(book_id_in: int, page_number_in: int):
+    '''
+    Gets a single page of the a book. If there is a question that a user must
+    answer before opening a page, that question will be presented until the user
+    answers the question.
+
+    Expects:
+     - book_id_in (URL parameter): The ID of the book being requested.
+     - page_number_in (URL parameter): The page number of the book being
+     requested.
+
+    Fails:
+     - `1` to `3`: Validate login errors
+     - `4`: Either `book_id_in` or `page_number_in` failed a sanitize check.
+     - `5`: Error accessing database for quiz questions.
+     - `6`: Could not get image file of book page.
+
+    Returns: Either the image of the book page as JPEG or PNG, or a quiz
+    question in JSON, arranged as
+
+    ```
+    {
+        "status": "ok",
+        "question_id" : 1,
+        "question" : "What is red?",
+        "options" : [
+            "A color",
+            "Something",
+            "Something else",
+            ...
+        ],
+        "correct_answer": 2
+    }
+    ```
+    '''
     # make sure user is authenticated
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -42,7 +84,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
         auth = auth.replace('Bearer ', '', 1)
 
     # TODO: Token is not checked
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # sanitize inputs: make sure book_id, page_number are ints
     try:
@@ -53,7 +95,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             'A user HTTP GET non-int values to an int endpoint')
         return {
             "status": "fail",
-            "fail_no": 2,
+            "fail_no": 4,
             "message": "The book_id or page_number failed a sanitize check." +\
                 "The POSTed fields should be an integer."
         }, 400, {"Content-Type": "application/json"}
@@ -80,8 +122,8 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
         a_storyboard_log.warning(e)
         return {
             "status": "fail",
-            "fail_no": 4,
-            "message": "error accessing quiz questions and its answers"
+            "fail_no": 5,
+            "message": "Error accessing quiz questions and its answers"
         }, 400, {"Content-Type": "application/json"}
 
     quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
@@ -106,6 +148,25 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "correct_answer": quiz_question_info['ANSWER']
         }
 
+    cursor = connection.cursor()
+    try:
+        cursor.callproc("track_last_page",\
+            [token['sub'],\
+            book_id_in,\
+            page_number_in,\
+            token['permission']])
+        # commit changes to db
+        connection.commit()
+    except cx_Oracle.Error as e:
+        a_storyboard_log.warning('Error when accessing the database')
+        a_storyboard_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 6,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
     # Return page assuming current page has no quiz question
     try:
         return send_file(download_bucket_file(fileInput, folder=temp_folder))
@@ -114,13 +175,21 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
         a_storyboard_log.warning(e)
         return {
             "status": "fail",
-            "fail_no": 5,
-            "message": "could not get image"
+            "fail_no": 6,
+            "message": "Could not get image"
         }, 400, {"Content-Type": "application/json"}
 
 
 @a_storyboard.route("/api/storyboard/pagecount/<int:book_id_in>", methods=['GET'])
 def storyboard_get_pagecount(book_id_in: int):
+    '''
+    Get the page count of a book.
+
+    Expects:
+     - book_id_in (URL parameter): The ID of the book.
+
+    Returns: A JSON like `{"page_count": 48}`
+    '''
     # make sure user is authenticated
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -134,7 +203,7 @@ def storyboard_get_pagecount(book_id_in: int):
         auth = auth.replace('Bearer ', '', 1)
 
     # TODO: verify token
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # sanitize inputs: make sure book_id, page_number are ints
     try:
@@ -177,12 +246,13 @@ def storyboard_get_pagecount(book_id_in: int):
 @a_storyboard.route("/api/storyboard/action", methods=['POST'])
 def storyboard_save_user_action():
     '''
-    Code the storyboard_save_user_action() function in the same style as logout()
-    Screenshot a successful POST request to the /storyboard/action endpoint.
-    Add to the backend/API.md the relevant documentation for the
-    /storyboard/action endpoint in the same style as the login/ endpoint
-    documentation.
+    Saves a user action.
     '''
+    # Code the storyboard_save_user_action() function in the same style as logout()
+    # Screenshot a successful POST request to the /storyboard/action endpoint.
+    # Add to the backend/API.md the relevant documentation for the
+    # /storyboard/action endpoint in the same style as the login/ endpoint
+    # documentation.
     # make sure user is authenticated
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -196,7 +266,7 @@ def storyboard_save_user_action():
         auth = auth.replace('Bearer ', '', 1)
 
     # TODO: verify token
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # check that all expected inputs are received
     try:
@@ -281,6 +351,16 @@ def storyboard_save_user_action():
 
 
 def get_book_image_path(book_id, page_number):
+    '''
+    Get the filepath of a book image in the bucket.
+
+    Expects:
+     - book_id: The ID of the book.
+     - page_number: The page number in the book.
+
+    Returns: A filepath like `1294912_book1_images/1294912_book1_3.png` which
+    can be used in the `edu_storybook.core.bucket` module.
+    '''
     connection = pool.acquire()
     cursor = connection.cursor()
     try:
@@ -301,6 +381,14 @@ def get_book_image_path(book_id, page_number):
 
 @a_storyboard.route("/api/storyboard/cover/<int:book_id_in>", methods=['GET'])
 def storyboard_get_cover_image(book_id_in):
+    '''
+    Get the cover image of a book.
+
+    Expects:
+     - book_id_in (URL parameter): The ID of the book being requested.
+
+    Returns: The image of the first page of the book.
+    '''
     # make sure user is authenticated
     auth = request.cookies.get('Authorization')
     vl = validate_login(

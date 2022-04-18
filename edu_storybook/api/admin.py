@@ -1,18 +1,22 @@
 """
 admin.py
-    Routes beginning with /api/admin/
+
+Routes beginning with `/api/admin/`.
 
 Routes:
-    /api/admin/book/download
-    /api/admin/book/upload
-    /api/admin/book/grant
-    /api/admin/page
-    /api/admin/download/user
-    /api/admin/download/action
-    /api/admin/get/user
-    /api/admin/study/user
-    /api/admin/school
-    /api/admin/book/update
+
+```
+/api/admin/book/download
+/api/admin/book/upload
+/api/admin/book/grant
+/api/admin/page
+/api/admin/download/user
+/api/admin/download/action
+/api/admin/get/user
+/api/admin/study/user
+/api/admin/school
+/api/admin/book/update
+```
 """
 
 from pydoc import Helper
@@ -41,7 +45,7 @@ from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.bucket import upload_bucket_file, download_bucket_file
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
-from edu_storybook.core.config import config, temp_folder
+from edu_storybook.core.config import Config, temp_folder
 from edu_storybook.core.db import pool
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.remove_watchdog import future_del_temp
@@ -51,7 +55,7 @@ from edu_storybook.core.helper import sanitize_redirects
 a_admin = Blueprint('a_admin', __name__)
 
 a_admin_log = logging.getLogger('api.admin')
-if config['production'] == False:
+if Config.production == False:
     a_admin_log.setLevel(logging.DEBUG)
 
 @a_admin.route("/api/admin/book/download", methods=['POST'])
@@ -64,6 +68,8 @@ def admin_download_book():
 
     Fails:
      - `14`: Unable to download and/or send file.
+
+    Returns: The file requested to be downloaded from the bucket.
     """
     # validate that user has admin rights to download books
     auth = request.cookies.get('Authorization')
@@ -122,7 +128,12 @@ def admin_book_upload():
      - `10`: No file uploaded.
      - `11`: Filename was an empty string.
      - `12`: Error when uploading file to server data bucket.
-     - `13`: Error when querying database
+     - `13`: Error when querying database.
+
+    Returns: If everything worked, and no redirect was specified, then
+    `{"status": "ok"}`. If everything worked, and a redirect was specified, then
+    the user will be redirected. If there was a problem, then
+    `{"status": "fail", ...}`.
     """
     # validate that user has admin rights to upload books
     auth = request.cookies.get('Authorization')
@@ -323,8 +334,12 @@ def admin_book_upload():
             "message": "invalid file format or file"
         }, 400, {"Content-Type": "application/json"}
 
+
 @a_admin.route("/api/admin/book/grant", methods=['POST'])
 def admin_add_book_to_study():
+    '''
+    Add a book to a study.
+    '''
     # validate that user can access data
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -387,7 +402,8 @@ def admin_add_book_to_study():
 @a_admin.route("/api/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
 def admin_page_handler():
     """
-    This endpoint handles quiz questions and answers
+    This endpoint handles quiz questions and answers. This allows an admin to
+    create, get, update, or delete quiz questions and their answers.
     """
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -399,7 +415,7 @@ def admin_page_handler():
 
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # grab a connection
     connection = pool.acquire()
@@ -640,12 +656,12 @@ def admin_page_handler():
 @a_admin.route("/api/admin/download/user", methods=['GET'])
 def admin_download_user_data():
     """
-    Exports user profile data to a csv file
+    Exports user profile data to a csv file.
 
-    - Connects to database
-    - Computes a select query to get user profile data
-    - calls create_csv(query_results, headers) to create csv-formatted string
-    - creates and returns csv file using csv-formatted string
+    - Connects to database.
+    - Computes a select query to get user profile data.
+    - calls create_csv(query_results, headers) to create csv-formatted string.
+    - creates and returns csv file using csv-formatted string.
     """
     # validate that user can access data
     auth = request.cookies.get('Authorization')
@@ -711,7 +727,7 @@ def admin_download_user_data():
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
-            data = f.read(config['buffer_size'])
+            data = f.read(Config.buffer_size)
             if not data:
                 break
             sha1.update(data)
@@ -735,12 +751,12 @@ def admin_download_user_data():
 @a_admin.route("/api/admin/download/action", methods=['GET'])
 def admin_download_action_data():
     """
-    Exports user action data to a csv file
+    Exports user action data to a csv file.
 
-    - Connects to database
-    - Computes a select query to get user profile data
-    - calls create_csv(query_results, headers) to create csv-formatted string
-    - creates and returns csv file using csv-formatted string
+    - Connects to database.
+    - Computes a select query to get user profile data.
+    - calls create_csv(query_results, headers) to create csv-formatted string.
+    - creates and returns csv file using csv-formatted string.
     """
     # validate that user can access data
     auth = request.cookies.get('Authorization')
@@ -808,7 +824,7 @@ def admin_download_action_data():
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
-            data = f.read(config['buffer_size'])
+            data = f.read(Config.buffer_size)
             if not data:
                 break
             sha1.update(data)
@@ -833,14 +849,16 @@ def admin_download_action_data():
 @a_admin.route("/api/admin/get/user", methods=['GET'])
 def admin_get_users():
     """
-    Exports user data to a json
+    Exports user data to a JSON.
 
-    - Connects to database
-    - Computes a select query to get user data
+    - Connects to database.
+    - Computes a select query to get user data.
     - return USER_ID, USERNAME (full), STUDY that they currently belong to.
-        Important: Sort by join date, or login date, or something. We want fresh users first.
+        Important: Sort by join date, or login date, or something. We want fresh
+        users first.
     - Allow an admin to retrieve a JSON list of all of the users.
-        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows.
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset
+        to grab the first 50 rows, then next 50 rows.
         Make offset an input parameter (int).
     """
 
@@ -856,7 +874,7 @@ def admin_get_users():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # check to make sure you have a offset
     try:
@@ -935,7 +953,7 @@ def admin_get_books(offset: int):
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # connect to database
     connection = pool.acquire()
@@ -943,7 +961,7 @@ def admin_get_books(offset: int):
 
     try:
         cursor.execute(
-            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK OFFSET "+ 
+            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK OFFSET "+
             str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
@@ -963,6 +981,7 @@ def admin_get_books(offset: int):
         "books": books
     }
 
+
 @a_admin.route("/api/admin/study/user", methods=['POST', 'DELETE'])
 def admin_study_user():
     '''
@@ -980,7 +999,7 @@ def admin_study_user():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     #check for study_id and user_id
     try:
@@ -1047,7 +1066,7 @@ def admin_study_user():
             }, 400, {"Content-Type": "application/json"}
 
 
-    return{
+    return {
         'status':  'ok'
     }
 
@@ -1069,7 +1088,7 @@ def admin_school():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # grab db connection
     connection = pool.acquire()
@@ -1100,7 +1119,7 @@ def admin_school():
             "schools": schools
         }
 
-    #check for school_id and school_name
+    # check for school_id and school_name
     try:
         assert 'school_name' in request.form
     except AssertionError:
@@ -1174,7 +1193,7 @@ def admin_school():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
 
-    #TODO: Fix cascading delete with schools that reference delete
+    # TODO: Fix cascading delete with schools that reference delete
     # check if school name and id and then delete it
     '''
     elif request.method == 'DELETE':
@@ -1198,12 +1217,12 @@ def admin_school():
         'status':  'ok'
     }
 
+
 @a_admin.route("/api/admin/book/update", methods=['POST'])
 def admin_update_books():
     """
-    Updates the book name and description
+    Updates the name and description of a book.
     """
-
     # validate that user has rights to access books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -1216,9 +1235,9 @@ def admin_update_books():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
-    # check to make sure you have a book name and book_description 
+    # check to make sure you have a book name and book_description
     try:
         assert 'book_name' in request.form
         assert 'book_description' in request.form

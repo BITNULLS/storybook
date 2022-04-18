@@ -47,7 +47,7 @@
     <main class="pdoc">
             <section>
                     <h1 class="modulename">
-<a href="./../../edu_storybook.html">edu_storybook</a><wbr>.<a href="./../core.html">core</a><wbr>.email    </h1>
+edu_storybook<wbr>.<a href="./../core.html">core</a><wbr>.email    </h1>
 
                         <div class="docstring"><p>email.py</p>
 
@@ -73,16 +73,24 @@
 <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
     <span class="n">c_email_log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">send_email</span><span class="p">(</span><span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">admin_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">admin_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">send_email</span><span class="p">(</span><span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">user_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">admin_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">admin_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">subject</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Creates and sends an email to a user</span>
-<span class="sd">    :param user_name: The name of the user</span>
-<span class="sd">    :param to_email: The email of the user</span>
-<span class="sd">    :param admin_name: Admin of user&#39;s study</span>
-<span class="sd">    :param admin_email: Admin&#39;s email</span>
-<span class="sd">    :param subject: Subject of the email</span>
-<span class="sd">    :param body: Body of the email; where actual text is placed</span>
-<span class="sd">    :return: Boolean on whether or not the email was sent.</span>
+<span class="sd">    Creates and sends an email to a user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     - user_name: The name of the user.</span>
+<span class="sd">     - to_email: The email of the user.</span>
+<span class="sd">     - admin_name: Admin of user&#39;s study.</span>
+<span class="sd">     -  admin_email: Admin&#39;s email.</span>
+<span class="sd">     - subject: Subject of the email.</span>
+<span class="sd">     -  body: Body of the email; where actual text is placed.</span>
+
+<span class="sd">    Returns: Boolean on whether or not the email was sent.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -134,16 +142,24 @@
 
             <details>
             <summary>View Source</summary>
-            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">send_email</span><span class="p">(</span><span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">admin_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">admin_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">subject</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">def</span> <span class="nf">send_email</span><span class="p">(</span><span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">user_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">admin_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">admin_email</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">subject</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Creates and sends an email to a user</span>
-<span class="sd">    :param user_name: The name of the user</span>
-<span class="sd">    :param to_email: The email of the user</span>
-<span class="sd">    :param admin_name: Admin of user&#39;s study</span>
-<span class="sd">    :param admin_email: Admin&#39;s email</span>
-<span class="sd">    :param subject: Subject of the email</span>
-<span class="sd">    :param body: Body of the email; where actual text is placed</span>
-<span class="sd">    :return: Boolean on whether or not the email was sent.</span>
+<span class="sd">    Creates and sends an email to a user.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">     - user_name: The name of the user.</span>
+<span class="sd">     - to_email: The email of the user.</span>
+<span class="sd">     - admin_name: Admin of user&#39;s study.</span>
+<span class="sd">     -  admin_email: Admin&#39;s email.</span>
+<span class="sd">     - subject: Subject of the email.</span>
+<span class="sd">     -  body: Body of the email; where actual text is placed.</span>
+
+<span class="sd">    Returns: Boolean on whether or not the email was sent.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -177,14 +193,20 @@
 
         </details>
 
-            <div class="docstring"><p>Creates and sends an email to a user
-:param user_name: The name of the user
-:param to_email: The email of the user
-:param admin_name: Admin of user's study
-:param admin_email: Admin's email
-:param subject: Subject of the email
-:param body: Body of the email; where actual text is placed
-:return: Boolean on whether or not the email was sent.</p>
+            <div class="docstring"><p>Creates and sends an email to a user.</p>
+
+<p>Args:</p>
+
+<ul>
+<li>user_name: The name of the user.</li>
+<li>to_email: The email of the user.</li>
+<li>admin_name: Admin of user's study.</li>
+<li>admin_email: Admin's email.</li>
+<li>subject: Subject of the email.</li>
+<li>body: Body of the email; where actual text is placed.</li>
+</ul>
+
+<p>Returns: Boolean on whether or not the email was sent.</p>
 </div>
 
 

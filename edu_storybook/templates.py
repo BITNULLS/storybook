@@ -2,17 +2,22 @@
 templates.py
 
 Initializes all of the templates used in the web app.
+
+**NOTE**: It is strongly preferred that you use the Template class for referring
+to templates. It is safer since it is type-hinted and checked at compile time
+rather runtime.
 """
 
+from json import load
 import logging
-from edu_storybook.core.config import config
+from edu_storybook.core.config import Config
 from edu_storybook.core.filepath import fix_filepath
 
 from string import Template
 import os
 
 log = logging.getLogger('templates')
-if config['production'] == False:
+if Config.production == False:
     log.setLevel(logging.DEBUG)
 
 
@@ -66,7 +71,11 @@ TEMPLATES = {
         "index": load_template("templates/story_selection/index.html")
     },
     "storyboard": {
-        "quiz": load_template("templates/storyboard/quiz.html"),
+        "quiz": {
+            "fr": load_template("templates/storyboard/quiz_fr.html"),
+            "mc_item": load_template("templates/storyboard/quiz_mc_item.html"),
+            "mc": load_template("templates/storyboard/quiz_mc.html")
+        },
         "viewer": load_template("templates/storyboard/viewer.html")
     },
     "errors": {
@@ -91,22 +100,111 @@ class Templates:
 
     This class will help type safety, and make it easier for our contributors.
     '''
+
     admin_book: Template = TEMPLATES['admin']['book']
+    '''
+    Admin Book Index template.
+    '''
+
     admin_book_manager: Template = TEMPLATES['admin']['book_manager']
+    '''
+    Admin Book Manager template.
+    '''
+
     admin_edit_book: Template = TEMPLATES['admin']['edit_book']
+    '''
+    Admin Edit Book template.
+    '''
+
     admin_index: Template = TEMPLATES['admin']['index']
+    '''
+    Admin Index template.
+    '''
+
     admin_study_mananger: Template = TEMPLATES['admin']['study_manager']
+    '''
+    Admin Study Manager template.
+    '''
+
     admin_upload_book: Template = TEMPLATES['admin']['upload_book']
+    '''
+    Admin Upload Book template.
+    '''
+
     navbar_logged_admin: Template = TEMPLATES['navbar']['logged_admin']
+    '''
+    Navbar Logged In Admin template.
+    '''
+
     navbar_logged_out: Template = TEMPLATES['navbar']['logged_out']
+    '''
+    Navbar Logged Out template.
+    '''
+
     navbar_logged_user: Template = TEMPLATES['navbar']['logged_user']
+    '''
+    Navbar Logged In User template.
+    '''
+
     password_forgot: Template = TEMPLATES['password']['forgot']
+    '''
+    Password Forgot template.
+    '''
+
     password_reset: Template = TEMPLATES['password']['reset']
+    '''
+    Password Reset template.
+    '''
+
     story_selection_book: Template = TEMPLATES['story_selection']['book']
+    '''
+    Book template that appears in the Story Selection Index template.
+    '''
+
     story_selection_index: Template = TEMPLATES['story_selection']['index']
-    storyboard_quiz: Template = TEMPLATES['storyboard']['quiz']
+    '''
+    Story Selection template, that contains multiple `story_selection_book`
+    templates (for each book).
+    '''
+
+    storyboard_quiz_fr: Template = TEMPLATES['storyboard']['quiz']['fr']
+    '''
+    Storyboard Quiz Free Response (FR) template.
+    '''
+
+    storyboard_quiz_mc_item: Template = TEMPLATES['storyboard']['quiz']['mc_item']
+    '''
+    Storyboard Quiz Multiple Choice (MC) item template, which appears in the
+    Storyboard Quiz MC template. This is the individual MC answer, of which,
+    likely multiple will appear for a multiple choice question.
+    '''
+
+    storyboard_quiz_mc: Template = TEMPLATES['storyboard']['quiz']['mc']
+    '''
+    Storyboard Quiz Multiple Choice (MC) template.
+    '''
+
     storyboard_viewer: Template = TEMPLATES['storyboard']['viewer']
+    '''
+    Storyboard Viewer template.
+    '''
+
     _base: Template = TEMPLATES['_base']
+    '''
+    The base template that every other template should be baked into.
+    '''
+
     index: Template = TEMPLATES['index']
+    '''
+    Index template. The homepage of the website.
+    '''
+
     login: Template = TEMPLATES['login']
+    '''
+    Login template.
+    '''
+
     register: Template = TEMPLATES['register']
+    '''
+    Register template.
+    '''

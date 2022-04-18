@@ -1,0 +1,25 @@
+<div class="container mt-5">
+    <div class="row">
+
+        <h1>Check for Understanding</h1>
+
+        <h4>~question</h4>
+
+        <form action="/api/quiz/submit" method="POST">
+            <input type="hidden" name="redirect" value="~url">
+            <input type="hidden" name="type" value="fr">
+            <input type="hidden" name="question_id" value="~question_id">
+            <div class="card">
+                <div class="card-body">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Your response</span>
+                        </div>
+                        <textarea class="form-control" aria-label="With textarea"></textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>

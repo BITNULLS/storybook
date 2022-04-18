@@ -1,7 +1,7 @@
 """
 helper.py
 
-Helper functions not distinctly part of auth, bucket, db, or other "parts" of 
+Helper functions not distinctly part of auth, bucket, db, or other "parts" of
 our app.
 """
 
@@ -11,12 +11,12 @@ from edu_storybook.core import sensitive as sensitive
 import os
 import logging
 from edu_storybook.core.reg_exps import re_redirect_link
-from edu_storybook.core.config import config
+from edu_storybook.core.config import Config
 
 ALLOWED_EXTENSIONS = {'pdf', 'ppt', 'pptx'}
 
 c_helper_log = logging.getLogger('core.helper')
-if config['production'] == False:
+if Config.production == False:
     c_helper_log.setLevel(logging.DEBUG)
 
 

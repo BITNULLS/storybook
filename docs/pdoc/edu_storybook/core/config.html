@@ -28,6 +28,43 @@
 
 
 
+        <h2>API Documentation</h2>
+            <ul class="memberlist">
+            <li>
+                    <a class="class" href="#Config">Config</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#Config.__init__">Config</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.production">production</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.domain">domain</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.last_mod">last_mod</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.login_duration">login_duration</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.buffer_size">buffer_size</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.temp_folder">temp_folder</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.temp_file_expire">temp_file_expire</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Config.jwt_alg">jwt_alg</a>
+                        </li>
+                </ul>
+
+            </li>
+    </ul>
+
 
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev">
@@ -40,17 +77,19 @@
     <main class="pdoc">
             <section>
                     <h1 class="modulename">
-<a href="./../../edu_storybook.html">edu_storybook</a><wbr>.<a href="./../core.html">core</a><wbr>.config    </h1>
+edu_storybook<wbr>.<a href="./../core.html">core</a><wbr>.config    </h1>
 
-                        <div class="docstring"><p>config.py
-    Just loads the configuration file in.</p>
+                        <div class="docstring"><p>config.py</p>
+
+<p>Just loads the configuration file (<code>data/config.json</code>) in.</p>
 </div>
 
                         <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">config.py</span>
-<span class="sd">    Just loads the configuration file in.</span>
+
+<span class="sd">Just loads the configuration file (`data/config.json`) in.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">.filepath</span> <span class="kn">import</span> <span class="n">fix_filepath</span>
@@ -64,11 +103,157 @@
 <span class="n">temp_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)),</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;temp_folder&#39;</span><span class="p">]</span> <span class="p">)</span>
 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">temp_folder</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">temp_folder</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This Config class just holds references to `config` where the are actually </span>
+<span class="sd">    loaded and initialized.</span>
+
+<span class="sd">    This class will help type safety, and make it easier for our contributors.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">production</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">]</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span>
+    <span class="n">last_mod</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;last_mod&#39;</span><span class="p">]</span>
+    <span class="n">login_duration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;login_duration&#39;</span><span class="p">]</span>
+    <span class="n">buffer_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;buffer_size&#39;</span><span class="p">]</span>
+    <span class="n">temp_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;temp_folder&#39;</span><span class="p">]</span>
+    <span class="n">temp_file_expire</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;temp_file_expire&#39;</span><span class="p">]</span>
+    <span class="n">jwt_alg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;jwt_alg&#39;</span><span class="p">]</span>
 </pre></div>
 
         </details>
 
             </section>
+                <section id="Config">
+                                <div class="attr class">
+        <a class="headerlink" href="#Config">#&nbsp;&nbsp</a>
+
+        
+        <span class="def">class</span>
+        <span class="name">Config</span>:
+    </div>
+
+            <details>
+            <summary>View Source</summary>
+            <div class="pdoc-code codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This Config class just holds references to `config` where the are actually </span>
+<span class="sd">    loaded and initialized.</span>
+
+<span class="sd">    This class will help type safety, and make it easier for our contributors.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">production</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">]</span>
+    <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;domain&#39;</span><span class="p">]</span>
+    <span class="n">last_mod</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;last_mod&#39;</span><span class="p">]</span>
+    <span class="n">login_duration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;login_duration&#39;</span><span class="p">]</span>
+    <span class="n">buffer_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;buffer_size&#39;</span><span class="p">]</span>
+    <span class="n">temp_folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;temp_folder&#39;</span><span class="p">]</span>
+    <span class="n">temp_file_expire</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;temp_file_expire&#39;</span><span class="p">]</span>
+    <span class="n">jwt_alg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;jwt_alg&#39;</span><span class="p">]</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>This Config class just holds references to <code>config</code> where the are actually 
+loaded and initialized.</p>
+
+<p>This class will help type safety, and make it easier for our contributors.</p>
+</div>
+
+
+                            <div id="Config.__init__" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#Config.__init__">#&nbsp;&nbsp</a>
+
+        
+            <span class="name">Config</span><span class="signature">()</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.production" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.production">#&nbsp;&nbsp</a>
+
+        <span class="name">production</span><span class="annotation">: bool</span><span class="default_value"> = False</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.domain" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.domain">#&nbsp;&nbsp</a>
+
+        <span class="name">domain</span><span class="annotation">: str</span><span class="default_value"> = &#39;https://www.edustorybooks.tk&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.last_mod" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.last_mod">#&nbsp;&nbsp</a>
+
+        <span class="name">last_mod</span><span class="annotation">: str</span><span class="default_value"> = &#39;2022-04-20&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.login_duration" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.login_duration">#&nbsp;&nbsp</a>
+
+        <span class="name">login_duration</span><span class="annotation">: int</span><span class="default_value"> = 86400</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.buffer_size" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.buffer_size">#&nbsp;&nbsp</a>
+
+        <span class="name">buffer_size</span><span class="annotation">: int</span><span class="default_value"> = 65536</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.temp_folder" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.temp_folder">#&nbsp;&nbsp</a>
+
+        <span class="name">temp_folder</span><span class="annotation">: str</span><span class="default_value"> = &#39;../temp/&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.temp_file_expire" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.temp_file_expire">#&nbsp;&nbsp</a>
+
+        <span class="name">temp_file_expire</span><span class="annotation">: int</span><span class="default_value"> = 300</span>
+    </div>
+
+    
+    
+
+                            </div>
+                            <div id="Config.jwt_alg" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Config.jwt_alg">#&nbsp;&nbsp</a>
+
+        <span class="name">jwt_alg</span><span class="annotation">: str</span><span class="default_value"> = &#39;HS256&#39;</span>
+    </div>
+
+    
+    
+
+                            </div>
+                </section>
     </main>
 <script>
     function escapeHTML(html) {

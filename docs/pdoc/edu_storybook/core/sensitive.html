@@ -40,19 +40,38 @@
     <main class="pdoc">
             <section>
                     <h1 class="modulename">
-<a href="./../../edu_storybook.html">edu_storybook</a><wbr>.<a href="./../core.html">core</a><wbr>.sensitive    </h1>
+edu_storybook<wbr>.<a href="./../core.html">core</a><wbr>.sensitive    </h1>
 
-                        <div class="docstring"><p>sensitive.py
-    Downloads, loads in, and then deletes all sensitive data files.
-    Any error here is critical, and should stop execution of the app.</p>
+                        <div class="docstring"><p>sensitive.py</p>
+
+<p>Downloads, loads in, and then deletes all sensitive data files.
+Any error here is critical, and should stop execution of the app.</p>
+
+<p>The following behaviors are implemented:</p>
+
+<ul>
+<li>Unzip Oracle wallet</li>
+<li>Get domain name</li>
+<li>Log into email client</li>
+<li>Initialize <code>jwt_key</code></li>
+<li>Setup Oracle login info (Oracle Key)</li>
+</ul>
 </div>
 
                         <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">sensitive.py</span>
-<span class="sd">    Downloads, loads in, and then deletes all sensitive data files.</span>
-<span class="sd">    Any error here is critical, and should stop execution of the app.</span>
+
+<span class="sd">Downloads, loads in, and then deletes all sensitive data files.</span>
+<span class="sd">Any error here is critical, and should stop execution of the app.</span>
+
+<span class="sd">The following behaviors are implemented:</span>
+<span class="sd"> - Unzip Oracle wallet</span>
+<span class="sd"> - Get domain name</span>
+<span class="sd"> - Log into email client</span>
+<span class="sd"> - Initialize `jwt_key`</span>
+<span class="sd"> - Setup Oracle login info (Oracle Key)</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -67,6 +86,7 @@
 <span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">config</span>
 
 <span class="n">c_sensitive_log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;core.sensitive&#39;</span><span class="p">)</span>
+
 <span class="k">if</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;production&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
     <span class="n">c_sensitive_log</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
@@ -114,7 +134,6 @@
     <span class="n">c_sensitive_log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">c_sensitive_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Logged into email account&#39;</span><span class="p">)</span>
-
 
 <span class="c1"># jwt_key Initialization</span>
 <span class="n">c_sensitive_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Loading in jwt_key...&#39;</span><span class="p">)</span>
