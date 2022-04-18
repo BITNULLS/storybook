@@ -17,10 +17,6 @@
         $("#selectBookModal").modal('show'); 
     });
 
-    function addQ() {
-        //$('#createQ').append;
-    } 
-
     function displaySelectedBook(book_id, page_count) {
         $('#selectBookModal').modal('hide');
         for(var page = 1; page < page_count; page++) {
@@ -41,6 +37,14 @@
     }
 
     var quizQuestionsToAdd = [];
+
+    var answerChoiceList = []
+
+    function addChoiceA() {
+        $('#mc-answer-choice-holder').append( 
+            $('#template-new-mc-answer-choice').html()
+        );
+    }
 
     function multChoiceNewQuizQ() {
         let insertAfter = $('#insert-question').val();
@@ -64,6 +68,7 @@
     function submitQuestions() {
         //actually save the questions to the backend
     }
+
 </script>
 
 <!--Modal for selecting a book-->
@@ -116,15 +121,29 @@
                                             <input type="text" class="form-control" id="input_MC_question" placeholder="???">
                                             <small class="form-text text-muted">Required</small>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="input_MC_options">Add Answer Choices</label>
-                                            <a type="submit" class="btn btn-atts btn-info" id="add-answer-choices" onclick="addSA()">Add Answer Choice</a>                                      
-                                            <small class="form-text text-muted">Required</small>
-                                        </div>
+
+                                        <button id="add-choiceA-button" type="button" class="btn btn-atts btn-info" onclick="addChoiceA()">Add Answer Choice</button>
+                                        <template id="template-new-mc-answer-choice">
+                                            <div class="input-group" id="new-mc-answer-choice">
+                                                <div class="input-group-prepend">
+                                                    <div class="input-group-text">
+                                                    <input type="checkbox" id="is-correct-choice" aria-label="Checkbox for following text input"> Correct</input>
+                                                    </div>
+                                                </div>
+                                                <input type="text" class="form-control" id="choice-option" placeholder="" aria-label="" aria-describedby="basic-addon1">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" id="delete-choice" type="button" onclick="$(this).parent().parent().remove()">Delete</button>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <div id="mc-answer-choice-holder"></div>
+
                                         <button type="submit" class="btn btn-atts btn-info" onclick="multChoiceNewQuizQ()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
+
                             <div class="tab-pane" id="SA">
                                 <div class="row">
                                     <div class="col-md-12">
