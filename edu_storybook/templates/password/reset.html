@@ -33,16 +33,9 @@
         title="Must contain at least:&#013;- 8 characters,&#013;- a lowercase letter,&#013;- a capital letter,&#013;- a number,&#013;- a special character (@$_*)"></i>
 
         <input id="confirm_pass" type="password" name="confirm_pass" class="form-control" required minLength="8" 
-        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" oninput="match(this)" >
-
-        <script language='javascript' type='text/javascript'>
-            function match(input) {
-                if (input.value != document.getElementById('new_pass').value) 
-                    input.setCustomValidity('Passwords do not match.');
-            }
-        </script>
-
-      </div>
+        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" oninput="match(this, 'new_pass')" >
+      
+    </div>
       <div class="text-center form-group">
         <button class="btn btn-primary">Confirm</button>
       </div>
