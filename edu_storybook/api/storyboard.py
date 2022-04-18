@@ -23,7 +23,7 @@ import logging
 
 from edu_storybook.core.auth import validate_login
 from edu_storybook.core.bucket import download_bucket_file
-from edu_storybook.core.config import Config
+from edu_storybook.core.config import Config, temp_folder
 from edu_storybook.core.db import pool
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.sensitive import jwt_key
@@ -148,12 +148,8 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "correct_answer": quiz_question_info['ANSWER']
         }
 
-    # TODO: mental note, this will need to be changed to
-    # connection = pool.acquire()
-    # when PR #397 is merged. And the conn_lock will need to be removed.
     cursor = connection.cursor()
     try:
-        conn_lock.acquire()
         cursor.callproc("track_last_page",\
             [token['sub'],\
             book_id_in,\
@@ -170,8 +166,6 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    finally:
-        conn_lock.release()
 
     # Return page assuming current page has no quiz question
     try:

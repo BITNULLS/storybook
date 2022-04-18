@@ -11,7 +11,7 @@ import os
 from .filepath import fix_filepath
 from tempfile import TemporaryDirectory
 from typing import List
-from .config import Config
+from .config import Config, temp_folder
 
 import logging
 
