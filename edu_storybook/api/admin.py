@@ -42,7 +42,7 @@ from edu_storybook.core.bucket import upload_bucket_file, download_bucket_file
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
 from edu_storybook.core.config import config, temp_folder
-from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.db import pool
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.remove_watchdog import future_del_temp
 from edu_storybook.core.reg_exps import *
@@ -237,18 +237,16 @@ def admin_book_upload():
             }, 400, {"Content-Type": "application/json"}
 
         # connect to database
+        connection = pool.acquire()
         cursor = connection.cursor()
 
         # 2) insert book into 'book' table
         try:
-            conn_lock.acquire()
-
             cursor.execute("INSERT into BOOK (book_name, description, folder, page_count) VALUES ('"
                            + book_name + "', '"
                            + book_description + "', '"
                            + filename + "', "
                            + str(len(book_pngs)) + ")")
-
             # commit to database
             connection.commit()
         except cx_Oracle.Error as e:
@@ -260,12 +258,9 @@ def admin_book_upload():
                 "message": "Error when querying database. 1159",
                 "database_message": str(e)
             }
-        finally:
-            conn_lock.release()
 
         # 3) Get book_id from 'book' table (given book name and its description) to insert entries in 'book_study' later
         try:
-            conn_lock.acquire()
             cursor.execute("SELECT BOOK_ID FROM BOOK " +
                            "WHERE BOOK_NAME='" + book_name + "' AND DESCRIPTION='" + book_description + "'")
             label_results_from(cursor)
@@ -278,8 +273,6 @@ def admin_book_upload():
                 "message": "Error when querying database. 1160",
                 "database_message": str(e)
             }
-        finally:
-            conn_lock.release()
 
         book_id = cursor.fetchone()
         if book_id is None:
@@ -293,7 +286,6 @@ def admin_book_upload():
 
         # 4) insert studies assigned to a book in 'book_study' table
         try:
-            conn_lock.acquire()
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
@@ -310,8 +302,6 @@ def admin_book_upload():
                 "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
-        finally:
-            conn_lock.release()
 
         res = None
         if 'redirect' in request.form:
@@ -369,11 +359,11 @@ def admin_add_book_to_study():
     # book_id and created_on handled by trigger
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     # insert query
     try:
-        conn_lock.acquire()
         cursor.execute("INSERT into BOOK (book_name, url, description, study_id) VALUES ('"
                        + book_name + "', '"
                        + book_url + "', '"
@@ -392,8 +382,6 @@ def admin_add_book_to_study():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-    finally:
-        conn_lock.release()
 
 
 @a_admin.route("/api/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
@@ -412,6 +400,9 @@ def admin_page_handler():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # grab a connection
+    connection = pool.acquire()
 
     if request.method == 'POST':
         # check to make sure you have a book_id
@@ -448,11 +439,9 @@ def admin_page_handler():
 
         # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
         # regex is not very efficient method here for sql injection check
-
         cursor = connection.cursor()
 
         try:
-            conn_lock.acquire()
             cursor.callproc("insert_question_proc",\
                 [request.form['question_in'],\
                     request.form['school_id_in'],\
@@ -471,8 +460,6 @@ def admin_page_handler():
                 "message": "Error when querying database. line 889",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        finally:
-            conn_lock.release()
 
         return {
           "status": "ok"
@@ -505,7 +492,6 @@ def admin_page_handler():
             }, 400, {"Content-Type": "application/json"}
 
         try:
-            conn_lock.acquire()
             cursor.execute(
                 "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION " +
                 "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID " +
@@ -522,8 +508,6 @@ def admin_page_handler():
                 "message": "Error when querying database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        finally:
-            conn_lock.release()
 
         # fetching all the questions and storing them in questions array
         questions = []
@@ -576,7 +560,6 @@ def admin_page_handler():
         # try query calling procedure "edit_question_proc"
         cursor = connection.cursor()
         try:
-            conn_lock.acquire()
             cursor.callproc("edit_question_proc",\
                 [request.form['question_id_in'],\
                     request.form['question_in'],\
@@ -592,8 +575,6 @@ def admin_page_handler():
                 "message": "Error when querying database. line 889",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        finally:
-            conn_lock.release()
 
         return {
           "status": "ok"
@@ -676,6 +657,7 @@ def admin_download_user_data():
         return vl
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     # select query
@@ -770,6 +752,7 @@ def admin_download_action_data():
         return vl
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     # select query
@@ -900,6 +883,7 @@ def admin_get_users():
         }, 400, {"Content-Type": "application/json"}
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
@@ -954,6 +938,7 @@ def admin_get_books(offset: int):
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
@@ -1008,8 +993,10 @@ def admin_study_user():
             "message": "study_id or user_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
-    #make sure study_id is an int
-    
+    # grab db connection
+    connection = pool.acquire()
+
+    # make sure study_id is an int
     try:
         study_id = int(request.form['study_id'])
     except ValueError:
@@ -1020,7 +1007,6 @@ def admin_study_user():
         }, 400, {"Content-Type": "application/json"}
 
     # do the right method
-
     if request.method =='POST':
         cursor = connection.cursor()
 
@@ -1084,6 +1070,9 @@ def admin_school():
         auth = auth.replace('Bearer ', '', 1)
 
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # grab db connection
+    connection = pool.acquire()
 
     # return the full list of schools
     if request.method =='GET':
@@ -1255,6 +1244,7 @@ def admin_update_books():
         }, 400, {"Content-Type": "application/json"}
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:

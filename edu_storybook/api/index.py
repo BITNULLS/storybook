@@ -20,8 +20,8 @@ import json
 from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
-from edu_storybook.core.config import config
-from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.config import Config
+from edu_storybook.core.db import pool
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.remove_watchdog import future_del_temp
 from edu_storybook.core.reg_exps import *
@@ -29,7 +29,7 @@ from edu_storybook.core.reg_exps import *
 a_index = Blueprint('a_index', __name__)
 
 a_index_log = logging.getLogger('api.index')
-if config['production'] == False:
+if Config.production == False:
     a_index_log.setLevel(logging.DEBUG)
 
 @a_index.route("/api/")
@@ -73,6 +73,7 @@ def get_book_info(book_id_in: int):
     book_id = int(book_id_in)
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     # Removing Column "CREATED_ON" since that would create a problem for converting to JSON
@@ -81,7 +82,7 @@ def get_book_info(book_id_in: int):
             "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK "+
             "WHERE book_id= '"+ str(book_id) +"'"
         )
-    except cx_Oracle.Error as e:
+    except cx_Oracle.DatabaseError as e:
         a_index_log.warning('Error when accessing database')
         a_index_log.warning(e)
         return {
@@ -144,6 +145,7 @@ def get_schools():
         }, 400, {"Content-Type": "application/json"}
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
@@ -197,7 +199,9 @@ def login():
     # all good, now query database
     email = (request.form['email']).lower().strip()
 
+    connection = pool.acquire()
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             "select * from USER_PROFILE where email='" + email + "'"
@@ -235,7 +239,6 @@ def login():
     session_id = str(uuid.uuid4())  # generate a unique token for a user
 
     try:
-        conn_lock.acquire()
         cursor.execute(
             "update USER_SESSION set session_id='" + session_id +
             "', active=1 where user_id='" + str(user_id) + "'"
@@ -250,8 +253,6 @@ def login():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    finally:
-        conn_lock.release()
 
     iat = int(time.time())
 
@@ -270,18 +271,17 @@ def login():
         "session": session_id,
         "sub": user_id,
         "permission": result['ADMIN']
-    }, jwt_key, algorithm=config['jwt_alg'])
+    }, jwt_key, algorithm=Config.jwt_alg)
     res.set_cookie(
         "Authorization",
         "Bearer " + token,
-        max_age=config["login_duration"],
+        max_age=Config.login_duration,
         # domain=domain_name#, # TODO: uncomment in production
         # secure=True,
         # httponly=True
     )
 
     try:
-        conn_lock.acquire()
         cursor.execute(
             "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" +
             str(user_id) + "'"
@@ -296,8 +296,6 @@ def login():
             "message": "Error when updating database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    finally:
-        conn_lock.release()
 
     return res
 
@@ -314,11 +312,12 @@ def logout():
 
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
+    connection = pool.acquire()
     cursor = connection.cursor()
+
     try:
-        conn_lock.acquire()
         cursor.execute(
             "update USER_SESSION set active=0 where user_id='" +
             token['sub'] + "'"
@@ -333,8 +332,6 @@ def logout():
             "message": "Error when updating database.",
             "database_message": str(e)
         }
-    finally:
-        conn_lock.release()
 
     res = None
     if 'redirect' in request.form:
@@ -387,7 +384,9 @@ def register():
     school_id = int(request.form['school_id'])
     study_invite_code = (request.form['study_invite_code']).strip()
 
+    connection = pool.acquire()
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             "select * from USER_PROFILE where email='" + email + "'"
@@ -423,11 +422,9 @@ def register():
         request.form['password'].encode('utf8'), bcrypt.gensalt())
 
     try:
-        conn_lock.acquire()
         cursor.callproc("insert_user_register_proc",\
             [first_name, last_name, email, school_id, study_invite_code, hashed.decode('utf8')])
         connection.commit()
-
     except cx_Oracle.Error as e:
         a_index_log.warning('Error when accessing database')
         a_index_log.warning(e)
@@ -438,12 +435,9 @@ def register():
             "database_message": str(e)
         }
 
-    finally:
-        conn_lock.release()
-
-        send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com',
-                   'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' +
-                   '\n\nThanks for registering an account with Edu Storybooks! :)')
+    send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com',
+                'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' +
+                '\n\nThanks for registering an account with Edu Storybooks! :)')
     res = None
     if 'redirect' in request.form:
         user_redirect_url = sanitize_redirects(request.form['redirect'])
@@ -469,9 +463,10 @@ def get_users_books():
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
