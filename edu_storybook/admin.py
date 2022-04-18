@@ -98,8 +98,8 @@ def gen_admin_book_mananger():
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
             book_id = b["BOOK_ID"],
-            book_pages = b['PAGE_COUNT'],
-            book_cover = '/api/storyboard/cover/' + str(b['BOOK_ID']), 
+            #book_pages = b['PAGE_COUNT'],
+            book_cover = '/api/storyboard/cover/' + str(b['BOOK_ID']),
             book_study = b['STUDY_ID']
         )
     addStudy = ""
@@ -115,7 +115,7 @@ def gen_admin_book_mananger():
         description = "A motivational storybook that helps students learn.",
         body = Templates.admin_book_manager.substitute(
             navbar = make_navbar( auth ),
-            book = all_books, 
+            book = all_books,
             addStudy= addStudy
         )
     )
@@ -154,14 +154,14 @@ def gen_admin_edit_book():
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
             book_id = b["BOOK_ID"],
-            book_pages = b["PAGE_COUNT"]
+            #book_pages = b["PAGE_COUNT"]
         )
 
     edit_book_page = Templates._base.substitute(
         title = "Admin: Edit Book",
         description = "A motivational storybook that helps students learn.",
         body = Templates.admin_edit_book.substitute(
-            navbar = make_navbar( auth ), 
+            navbar = make_navbar( auth ),
             book = all_books
         )
     )
@@ -198,8 +198,8 @@ def gen_admin_upload_book():
     addStudy = ""
     for s in get_studies(0)['studies']:
         addStudy += Templates.admin_add_study.substitute(
-            study_id = s['STUDY_ID'], 
-            study_name = s['STUDY_NAME'], 
+            study_id = s['STUDY_ID'],
+            study_name = s['STUDY_NAME'],
             school_name = s['SCHOOL_NAME']
         )
 
@@ -244,22 +244,29 @@ def gen_admin_study_manager():
     addStudy = ""
     for s in get_studies(0)['studies']:
         studies += Templates.admin_study_list.substitute(
-            study_id = s['STUDY_ID'], 
-            study_name = s['STUDY_NAME'], 
+            study_id = s['STUDY_ID'],
+            study_name = s['STUDY_NAME'],
             school_name = s['SCHOOL_NAME']
         )
         addStudy += Templates.admin_add_study.substitute(
-            study_id = s['STUDY_ID'], 
-            study_name = s['STUDY_NAME'], 
+            study_id = s['STUDY_ID'],
+            study_name = s['STUDY_NAME'],
             school_name = s['SCHOOL_NAME']
         )
-
-    users = ""
+    users =""
+    addUsers = ""
     for u in admin_get_users(0)['users']:
+        addUsers += Templates.admin_add_user.substitute(
+            user_email = u['EMAIL'],
+            user_name = u['FIRST_NAME'],
+            user_last = u['LAST_NAME'],
+            user_id = u['USER_ID']
+        )
         users += Templates.admin_user_list.substitute(
             user_email = u['EMAIL'],
             user_name = u['FIRST_NAME'],
-            user_last = u['LAST_NAME']
+            user_last = u['LAST_NAME'],
+            user_id = u['USER_ID']
         )
 
     addBooks = ""
@@ -268,8 +275,8 @@ def gen_admin_study_manager():
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
             book_id = b["BOOK_ID"],
-            book_pages = b['PAGE_COUNT'],
-            book_study = b['STUDY_ID']
+            #book_pages = b['PAGE_COUNT'],
+            #book_study = b['STUDY_ID']
         )
     study_manager_page = Templates._base.substitute(
         title = "Admin: Study Manager",
@@ -278,7 +285,8 @@ def gen_admin_study_manager():
             navbar = make_navbar( auth ),
             study_list = studies,
             add_study = addStudy,
-            user_list= users,
+            user_list = users,
+            add_user= addUsers,
             add_book = addBooks
         )
     )
