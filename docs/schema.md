@@ -19,7 +19,7 @@ Table of Contents:
  - [`BOOK_STUDY`](#BOOK_STUDY)
  - [`LAST_PAGE`](#LAST_PAGE)
  - [`STATIC_PAGE`](#STATIC_PAGE)
-
+ - [`USER_FREE_RESPONSE`](#USER_FREE_RESPONSE)
 <br>
 
 # ACTION
@@ -232,3 +232,16 @@ This table stores static pages (e.g. about page, data disclosure, consent, etc.)
 | CREATED_ON | Date when the static page is created on|
 | LAST_UPDATE | Date when the static page is last updated on|
 | CONTENT | Full content that the static page holds |
+
+<br>
+
+# USER_FREE_RESPONSE
+
+This table will keep track of user free responses (their answers to free response questions)
+
+| column name | description |
+|---|---|
+| USER_ID | ID to uniquely identify a user |
+| QUESTION_ID | Number ID to uniquely identify question |
+| RESPONSE | Response provided by the user to the free response question |
+| SUBMITTED_ON | Date when the user response to the free response question is submitted |

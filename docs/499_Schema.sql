@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for March 29, 2022
+-- Updated Schema for April 20, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -35,12 +35,12 @@
 --  DDL for Sequence SCHOOL_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "SCHOOL_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 21 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "SCHOOL_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 41 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence STUDY_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 61 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 81 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 
 --------------------------------------------------------
 --  TABLES
@@ -166,6 +166,16 @@
 	"SCHOOL_ID" NUMBER, 
 	"STUDY_NAME" VARCHAR2(40 BYTE) COLLATE "USING_NLS_COMP", 
 	"STUDY_INVITE_CODE" VARCHAR2(64 BYTE) COLLATE "USING_NLS_COMP"
+   )  DEFAULT COLLATION "USING_NLS_COMP" ;
+--------------------------------------------------------
+--  DDL for Table USER_FREE_RESPONSE
+--------------------------------------------------------
+
+  CREATE TABLE "USER_FREE_RESPONSE" 
+   (	"USER_ID" VARCHAR2(36 BYTE) COLLATE "USING_NLS_COMP", 
+	"QUESTION_ID" NUMBER, 
+	"RESPONSE" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
+	"SUBMITTED_ON" DATE
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table USER_PROFILE
@@ -569,6 +579,18 @@ END;
 /
 ALTER TRIGGER "STUDY_TRG" ENABLE;
 --------------------------------------------------------
+--  DDL for Trigger USER_FREE_RESPONSE_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "USER_FREE_RESPONSE_TRG" 
+BEFORE INSERT ON USER_FREE_RESPONSE 
+FOR EACH ROW
+BEGIN
+  :NEW.SUBMITTED_ON := SYSDATE;
+END;
+/
+ALTER TRIGGER "USER_FREE_RESPONSE_TRG" ENABLE;
+--------------------------------------------------------
 --  DDL for Trigger USER_ID_TRG
 --------------------------------------------------------
 
@@ -909,6 +931,24 @@ END DELETE_QUESTION_ANSWER_PROC;
 
 /
 --------------------------------------------------------
+--  DDL for Procedure DELETE_SCHOOL_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "DELETE_SCHOOL_PROC" 
+(
+  SCHOOL_ID_IN IN NUMBER, 
+  SCHOOL_NAME_IN IN VARCHAR2
+) AS 
+BEGIN
+    DELETE FROM SCHOOL WHERE SCHOOL_ID = SCHOOL_ID_IN and SCHOOL_NAME = SCHOOL_NAME_IN;
+    --gotta cascade for the rest
+    -- delete where school_id for study, user_profile, book
+
+END DELETE_SCHOOL_PROC;
+
+/
+--------------------------------------------------------
 --  DDL for Procedure DELETE_USER_STUDY_PROC
 --------------------------------------------------------
 set define off;
@@ -922,6 +962,24 @@ BEGIN
     DELETE FROM USER_STUDY WHERE USER_ID = USER_ID_IN AND STUDY_ID = STUDY_ID_IN;
 
 END DELETE_USER_STUDY_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure EDIT_BOOK_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "EDIT_BOOK_PROC" 
+(
+  BOOK_ID_IN IN NUMBER 
+, BOOK_NAME_IN IN VARCHAR2 
+, BOOK_DESC_IN IN VARCHAR2 
+) AS 
+BEGIN
+  UPDATE BOOK set BOOK_NAME = BOOK_NAME_IN, DESCRIPTION = BOOK_DESC_IN 
+    where BOOK_ID = BOOK_ID_IN;
+  
+END EDIT_BOOK_PROC;
 
 /
 --------------------------------------------------------
@@ -969,6 +1027,21 @@ BEGIN
 
     END;
 END edit_question_proc;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure EDIT_SCHOOL_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "EDIT_SCHOOL_PROC" 
+(
+  SCHOOL_ID_IN IN NUMBER 
+, SCHOOL_NAME_IN IN VARCHAR2 
+) AS 
+BEGIN
+  UPDATE SCHOOL SET SCHOOL_NAME = SCHOOL_NAME_IN WHERE SCHOOL_ID= SCHOOL_ID_IN;
+END EDIT_SCHOOL_PROC;
 
 /
 --------------------------------------------------------
@@ -1038,6 +1111,117 @@ END insert_question_proc;
 
 /
 --------------------------------------------------------
+--  DDL for Procedure INSERT_SCHOOL_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "INSERT_SCHOOL_PROC" 
+(
+  SCHOOL_NAME_IN IN VARCHAR2 
+) AS 
+BEGIN
+    BEGIN
+    DECLARE
+            school_id_in school.school_id%TYPE;
+            school_name_check school.school_name%TYPE;
+        BEGIN
+        BEGIN
+            SELECT
+                school_name
+                    INTO school_name_check
+                    FROM
+                        school s
+                    WHERE
+                        school_name = school_name_in; -- this is coming from front end
+            EXCEPTION
+                WHEN no_data_found THEN
+                    school_name_check := NULL;
+        END;
+    
+        
+            IF school_name_check IS NULL THEN -- the detail id already exists, run with it
+                INSERT INTO school (
+                    school_name
+                ) VALUES (
+                    school_name_in
+                );
+            END IF;
+            
+            
+        END;
+        END;
+
+END INSERT_SCHOOL_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure INSERT_USER_FREE_RESPONSE_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "INSERT_USER_FREE_RESPONSE_PROC" (
+ USER_ID_IN IN USER_PROFILE.USER_ID%TYPE,
+ QUESTION_ID_IN IN QUESTION.QUESTION_ID%TYPE,
+ RESPONSE_IN IN VARCHAR2
+) AS 
+BEGIN
+  INSERT INTO USER_FREE_RESPONSE(USER_ID, QUESTION_ID, RESPONSE)
+  VALUES (USER_ID_IN, QUESTION_ID_IN, RESPONSE_IN);
+END INSERT_USER_FREE_RESPONSE_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure INSERT_USER_REGISTER_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "INSERT_USER_REGISTER_PROC" 
+(
+  FIRST_NAME_IN IN VARCHAR2 
+, LAST_NAME_IN IN VARCHAR2 
+, EMAIL_IN IN VARCHAR2 
+, SCHOOL_ID_IN IN NUMBER 
+, STUDY_CODE_IN IN VARCHAR2 
+, PASSWORD_IN IN VARCHAR2 
+) AS 
+BEGIN
+
+DECLARE 
+    STUDY_ID_VAR NUMBER;
+    USER_ID_VAR VARCHAR2(32);
+BEGIN
+
+    BEGIN
+    
+    SELECT STUDY_ID INTO STUDY_ID_VAR
+    FROM STUDY 
+    WHERE STUDY_INVITE_CODE = STUDY_CODE_IN;
+    EXCEPTION 
+    WHEN no_data_found THEN
+    STUDY_ID_VAR := 0;
+    END;
+    
+    INSERT INTO USER_PROFILE (EMAIL, FIRST_NAME, LAST_NAME, ADMIN, SCHOOL_ID, PASSWORD)
+    VALUES (EMAIL_IN, FIRST_NAME_IN, LAST_NAME_IN, 0, SCHOOL_ID_IN, PASSWORD_IN);
+        
+    BEGIN
+    SELECT USER_ID INTO USER_ID_VAR
+    FROM USER_PROFILE
+    WHERE EMAIL = EMAIL_IN AND PASSWORD = PASSWORD_IN;   
+    EXCEPTION 
+    WHEN no_data_found THEN
+    USER_ID_VAR := '';
+    END;
+    
+    INSERT INTO USER_STUDY (USER_ID, STUDY_ID)
+    VALUES (USER_ID_VAR, STUDY_ID_VAR); 
+
+END;
+    
+END INSERT_USER_REGISTER_PROC;
+
+/
+--------------------------------------------------------
 --  DDL for Procedure INSERT_USER_STUDY_PROC
 --------------------------------------------------------
 set define off;
@@ -1079,6 +1263,97 @@ BEGIN
 
     END;
 END insert_user_study_proc;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure TRACK_LAST_PAGE
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "TRACK_LAST_PAGE" (
+    user_id_in IN user_profile.user_id%TYPE,
+        -- the ID of a user 
+    book_id_in IN book.book_id%TYPE,
+        -- the ID of a book
+    book_page_in IN number,
+        -- the page of a book [1, book.page_count]
+    bypass IN number
+        -- If 0 (means regular user), then throw an exception if 
+        -- ... book_page_in > last_page + 1, as a user is not allowed to skip
+        -- ... more than one page in advance. If 1 (means admin or above), then
+        -- ... skip this check.
+) as
+
+BEGIN
+    DECLARE
+        current_last_page NUMBER;
+            -- if it exists, the last page a user was on
+        current_furthest_read NUMBER;
+            -- if it exists, the furthest page in a book a user has read
+        user_read_too_far_ex EXCEPTION;
+        PRAGMA exception_init( user_read_too_far_ex, -20111 );
+    BEGIN
+        SELECT 
+            last_page,
+            furthest_read
+        INTO
+            current_last_page,
+            current_furthest_read
+        FROM 
+            last_page 
+        WHERE
+            user_id = user_id_in
+            AND
+            book_id = book_id_in;
+        IF current_last_page IS NULL THEN
+            -- if the last page does not exist, insert it
+            INSERT INTO last_page 
+                (
+                    user_id, 
+                    book_id, 
+                    last_page, 
+                    furthest_read
+                )
+            VALUES
+                (
+                    user_id_in,
+                    book_id_in,
+                    book_page_in,
+                    book_page_in
+                );
+        ELSE
+            -- if the last page entry does exist, update it, 
+            -- but first check if a user is skipping too far in advance
+            IF bypass = 0 and book_page_in > current_furthest_read + 1 THEN
+                raise_application_error(
+                    -20111, 
+                    'A user can only skip one page at a time from the ' + 
+                    'furthest page in a book they have read.'
+                );
+            ELSE
+                -- if the last page does exist, update it
+                IF book_page_in > current_furthest_read THEN
+                    -- if the book_page that the user is reading is past 
+                    -- furthest_read, then update it
+                    UPDATE last_page
+                    SET
+                        last_page = book_page_in,
+                        furthest_read = book_page_in
+                    WHERE
+                        user_id = user_id_in;
+                ELSE
+                    -- if the book_page is not past furthest_read, then keep it
+                    -- the same.
+                    UPDATE last_page
+                    SET
+                        last_page = book_page_in
+                    WHERE
+                        user_id = user_id_in;
+                END IF;
+            END IF;
+        END IF;
+    END;
+END track_last_page;
 
 /
 
@@ -1232,6 +1507,8 @@ END check_detail_id_fcn;
 --  Constraints for Table LAST_PAGE
 --------------------------------------------------------
 
+  ALTER TABLE "LAST_PAGE" ADD CONSTRAINT "LAST_PAGE_PK" PRIMARY KEY ("USER_ID")
+  USING INDEX  ENABLE;
   ALTER TABLE "LAST_PAGE" MODIFY ("BOOK_ID" NOT NULL ENABLE);
   ALTER TABLE "LAST_PAGE" MODIFY ("LAST_PAGE" NOT NULL ENABLE);
   ALTER TABLE "LAST_PAGE" MODIFY ("USER_ID" NOT NULL ENABLE);
@@ -1285,6 +1562,14 @@ END check_detail_id_fcn;
   ALTER TABLE "STUDY" MODIFY ("STUDY_NAME" NOT NULL ENABLE);
   ALTER TABLE "STUDY" ADD CONSTRAINT "STUDY_PK" PRIMARY KEY ("STUDY_ID")
   USING INDEX  ENABLE;
+--------------------------------------------------------
+--  Constraints for Table USER_FREE_RESPONSE
+--------------------------------------------------------
+
+  ALTER TABLE "USER_FREE_RESPONSE" MODIFY ("QUESTION_ID" NOT NULL ENABLE);
+  ALTER TABLE "USER_FREE_RESPONSE" MODIFY ("RESPONSE" NOT NULL ENABLE);
+  ALTER TABLE "USER_FREE_RESPONSE" MODIFY ("SUBMITTED_ON" NOT NULL ENABLE);
+  ALTER TABLE "USER_FREE_RESPONSE" MODIFY ("USER_ID" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table USER_PROFILE
 --------------------------------------------------------
@@ -1430,6 +1715,14 @@ END check_detail_id_fcn;
 
   ALTER TABLE "STUDY" ADD CONSTRAINT "STUDY_SCHOOL_ID_FK" FOREIGN KEY ("SCHOOL_ID")
 	  REFERENCES "SCHOOL" ("SCHOOL_ID") ENABLE;
+--------------------------------------------------------
+--  Ref Constraints for Table USER_FREE_RESPONSE
+--------------------------------------------------------
+
+  ALTER TABLE "USER_FREE_RESPONSE" ADD CONSTRAINT "USER_FREE_RESPONSE_FK1" FOREIGN KEY ("USER_ID")
+	  REFERENCES "USER_PROFILE" ("USER_ID") ENABLE;
+  ALTER TABLE "USER_FREE_RESPONSE" ADD CONSTRAINT "USER_FREE_RESPONSE_FK2" FOREIGN KEY ("QUESTION_ID")
+	  REFERENCES "QUESTION" ("QUESTION_ID") ENABLE;
 --------------------------------------------------------
 --  Ref Constraints for Table USER_PROFILE
 --------------------------------------------------------
