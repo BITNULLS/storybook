@@ -19,9 +19,27 @@ Tracking actions for the /storyboard/122/7 or the ebook pages only
 
 */
 
+function calculateTime() {
+    const currDate = new Date();
+
+    const dateString = 
+    currDate.getFullYear() + '-' + 
+    ('0' + (currDate.getMonth()+1)).slice(-2) + '-' +
+    ('0' + currDate.getDate()).slice(-2) + " " + 
+    ('0' + currDate.getHours()).slice(-2) + ":" + 
+    ('0' + currDate.getMinutes()).slice(-2) + ":" +
+    ('0' + currDate.getSeconds()).slice(-2);
+
+    return dateString;
+}
+
+var lastAction = calculateTime();
+
 function trackEvent(actionStart, actionStop, actionID, description) {
 
-    var book_id = $('#book_id').val();
+    // error with open_book() so hardcoded book_id
+    // var book_id = $('#book_id').val();
+    var book_id = 122;
     $.ajax( {
         type: "POST",
         url: "/api/storyboard/action",
@@ -39,130 +57,111 @@ function trackEvent(actionStart, actionStop, actionID, description) {
             console.log("Error");
         },
         datatype: String
-    });  
+    }); 
 }
 
-function calculateTime() {
-    const currDate = new Date();
-
-    const dateString = 
-    currDate.getFullYear() + '-' + 
-    ('0' + (currDate.getMonth()+1)).slice(-2) + '-' +
-    ('0' + currDate.getDate()).slice(-2) + " " + 
-    ('0' + currDate.getHours()).slice(-2) + ":" + 
-    ('0' + currDate.getMinutes()).slice(-2) + ":" +
-    ('0' + currDate.getSeconds()).slice(-2);
-
-    return dateString;
-}
-
-// ? not working
 function open_book() {
-    var actionTime = calculateTime();
-    console.log("User opened book");
-    trackEvent(actionTime, actionTime, 0, 'User opened the book from the book dashboard.');
+    var actionTime = calculateTime();    
+//  console.log("User opened book");
+    trackEvent(lastAction, actionTime, 0, 'User opened the book from the book dashboard.');
+    lastAction = actionTime;
 }
 
-// ? How to see if user closed book
 function close_book() {
     var actionTime = calculateTime();
-//    trackEvent(actionTime, actionTime, 1, '');
+//    console.log("User closed book");
+    trackEvent(lastAction, actionTime, 1, 'User exited the book back to some other page.');
+    lastAction = actionTime;
 }
 
+// ! fixed for png images for now
 function click_page() {
     var actionTime = calculateTime();
-    console.log("Click on page");
-    trackEvent(actionTime, actionTime, 2, 'User clicked somewhere on the page (not a link, forward or backwards, textbox, etc).');
+ //   console.log("Click on page");
+    trackEvent(lastAction, actionTime, 2, 'User clicked somewhere on the page (not a link, forward or backwards, textbox, etc).');
+    lastAction = actionTime;
 }
 
-/* wait until all pages have accessible links
+// ? wait until all pages have accessible links
 function click_link() {
     var actionTime = calculateTime();
-      //  trackEvent(actionTime, actionTime, 3, "User clicked a link.");
-} */
+//  trackEvent(lastAction, actionTime, 3, "User clicked a link.");
+} 
 
-
-// Fix exit
 function exit_mouse_page() {
-    document.addEventListener("mouseleave", () => {
+    document.addEventListener("mouseleave", (event) => {
     var actionTime = calculateTime();
-   // trackEvent(actionTime, actionTime, 4, 'Mouse of user left the webpage.')
-    setTimeout(function() {
-        console.log("BYE")
-    }, 3000);
-}
-);
+    
+    if (event.clientY <= 0 || event.clientX <= 0 || (event.clientX >= window.innerWidth || event.clientY >= window.innerHeight)) {
+   //   console.log("I'm out");
+      trackEvent(lastAction, actionTime, 4, 'Mouse of user left the webpage.')
+      lastAction = actionTime;
+      }
+   });
 }
 
-// Fix enter
 function enter_mouse_page() {
-    document.addEventListener("mouseenter", () => {
+    document.addEventListener("mouseenter", (event) => {
     var actionTime = calculateTime();
-    setTimeout(function() {
-     //   console.log("HELLO")
-    }, 3000)
-}
-  //  trackEvent(actionTime, actionTime, 5, '');
-)
+
+    if ((event.clientY > 0 && event.clientY < window.innerHeight) && (event.clientX > 0 && event.clientX < window.innerWidth)) {
+     //   console.log("I'm in");
+        trackEvent(lastAction, actionTime, 5, 'Mouse of user re-entered the webpage.')
+        lastAction = actionTime;
+       }
+    });
 }
 
-//done
 function exit_tab() {
     document.addEventListener("visibilitychange", () => {
         var actionTime = calculateTime();
         if (document.visibilityState != "visible") {
-            console.log("Tab is inactive");
-//          trackEvent(actionTime, actionTime, 7, '');
+      //      console.log("Tab is inactive");
+            trackEvent(lastAction, actionTime, 6, 'User switched to another tab.');
+            lastAction = actionTime;
         }
-    })
+    });
 }
 
-//done
 function enter_tab() {
     document.addEventListener("visibilitychange", () => {
         var actionTime = calculateTime();
         if (document.visibilityState == "visible") {
-            console.log("Tab is active");
-//          trackEvent(actionTime, actionTime, 7, '');
+   //         console.log("Tab is active");
+            trackEvent(lastAction, actionTime, 7, 'User switched back to our webpage tab.');
+            lastAction = actionTime;
         }
-    })
+    });
 }
 
-//done
 function turn_page_forward() {
     var actionTime = calculateTime();
-    console.log("User turned page forward at " + actionTime);
-    trackEvent(actionTime, actionTime, 10, 'User turned forward a page.');
+    trackEvent(lastAction, actionTime, 10, 'User turned forward a page.');
+    lastAction = actionTime;
 }
 
-// done
 function turn_page_backward() {    
     var actionTime = calculateTime();
-    console.log("User turned page backward at " + actionTime);
-    trackEvent(actionTime, actionTime, 11, 'User turned backward a page.');
+  //  console.log("User turned page backward at " + actionTime);
+    trackEvent(lastAction, actionTime, 11, 'User turned backward a page.');
+    lastAction = actionTime;
 }
-
-
 
 // Work on adding MC and free response first
 function answered_question() {
-//    trackEvent(dateString, dateString, 8, '');
-
+//    trackEvent(lastAction, dateString, 8, '');
 }
 function change_answer_question() {
-//    trackEvent(dateString, dateString, 9, '');
-
+//    trackEvent(lastAction, dateString, 9, '');
 }
 function enter_text_response() {
-//    trackEvent(dateString, dateString, 12, '');
-
+//    trackEvent(lastAction, dateString, 12, '');
 }
 function exit_text_response() {
-//    trackEvent(dateString, dateString, 13, '');
-
+//    trackEvent(lastAction, dateString, 13, '');
 }
 
-enter_tab();
-exit_tab();
-enter_mouse_page();
-exit_mouse_page();
+//enter_tab();
+//exit_tab();
+//enter_mouse_page();
+//exit_mouse_page();

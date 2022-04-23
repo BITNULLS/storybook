@@ -268,6 +268,8 @@ def storyboard_save_user_action():
     # TODO: verify token
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
+    print(request.form)
+
     # check that all expected inputs are received
     try:
         assert 'book_id' in request.form
