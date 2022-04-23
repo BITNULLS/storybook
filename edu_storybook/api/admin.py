@@ -16,6 +16,7 @@ Routes:
 /api/admin/study/user
 /api/admin/school
 /api/admin/book/update
+/api/admin/download/free_response
 ```
 """
 
@@ -754,7 +755,7 @@ def admin_download_action_data():
     Exports user action data to a csv file.
 
     - Connects to database.
-    - Computes a select query to get user profile data.
+    - Calls a procedure to get user profile data.
     - calls create_csv(query_results, headers) to create csv-formatted string.
     - creates and returns csv file using csv-formatted string.
     """
@@ -773,17 +774,10 @@ def admin_download_action_data():
 
     # select query
     try:
-        cursor.execute("select user_profile.email, \
-        action.action_start, \
-        action.action_stop, \
-        book.book_name, \
-        action_key.action_name, \
-        action_detail.detail_description \
-        from user_profile \
-        inner join action on user_profile.user_id = action.user_id \
-        inner join book on action.book_id = book.book_id \
-        inner join action_detail on action_detail.detail_id = action.detail_id \
-        inner join action_key on action_detail.action_key_id = action_key.action_key_id")
+        result = cursor.var(cx_Oracle.CURSOR)
+        cursor.callproc("GET_USER_PROFILE_DATA_PROC", \
+            [result])
+        
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)
@@ -795,7 +789,7 @@ def admin_download_action_data():
         }
 
     # assign variable data to cursor.fetchall(). if i do not assign it to a variable, Response() sees it as an empty string
-    data = cursor.fetchall()
+    data = result.getvalue().fetchall()
 
     # column headers for csv
     headers = [
@@ -808,7 +802,7 @@ def admin_download_action_data():
     ]
 
     # create filename with unique guid to prevent duplicates
-    filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
+    filename = temp_folder + "csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
     with open(filename, 'w', newline='') as csvfile:
@@ -1283,3 +1277,93 @@ def admin_update_books():
     return {
         "status": "ok"
     }
+
+@a_admin.route("/api/admin/download/free_response", methods=['GET'])
+def admin_download_free_response():
+    """
+    Exports user free response data to a csv file.
+
+    - Connects to database.
+    - Calls a procedure to get user free response data.
+    - calls create_csv(query_results, headers) to create csv-formatted string.
+    - creates and returns csv file using csv-formatted string.
+    """
+    # validate that user can access data
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    # connect to database
+    connection = pool.acquire()
+    cursor = connection.cursor()
+
+    # select query
+    try:
+        result = cursor.var(cx_Oracle.CURSOR)
+        cursor.callproc("GET_USER_FREE_RESPONSE_DATA_PROC", \
+            [result])
+        
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall(). if i do not assign it to a variable, Response() sees it as an empty string
+    data = result.getvalue().fetchall()
+
+    # column headers for csv
+    headers = [
+        "Email",
+        "First Name",
+        "Last Name",
+        "Question",
+        "Response",
+        "Book Name",
+        "Submitted On"
+    ]
+
+    # create filename with unique guid to prevent duplicates
+    filename = temp_folder + "csv_export_" + str(uuid.uuid4()) + ".csv"
+
+    # write data to new csv file in data/csv_exports
+    with open(filename, 'w', newline='') as csvfile:
+        # init csv writer
+        writer = csv.writer(csvfile)
+        # add headers
+        writer.writerow(headers)
+        # iterate through data -> data is a list of tuples
+        for row in list(map(lambda x: tuple(map(lambda i: str(i), x)), data)):
+            writer.writerow(row)
+
+    # calculate etag
+    sha1 = hashlib.sha1()
+    with open(filename, 'rb') as f:
+        while True:
+            data = f.read(Config.buffer_size)
+            if not data:
+                break
+            sha1.update(data)
+
+    # queue the file to be removed
+    future_del_temp(filename)
+
+    try: # return response
+        return send_file(filename, mimetype="text/csv", attachment_filename="free_response.csv", as_attachment=True, etag=sha1.hexdigest())
+    except Exception as e:
+        a_admin_log.warning('Error when sending CSV data file to user')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 9,
+            "message": "Error when sending csv file.",
+            "flask_message": str(e)
+        }
