@@ -78,6 +78,7 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
         description = 'Make an account with our website',
         body = Templates.storyboard_viewer.substitute(
             navbar = make_navbar( auth ),
+            id_of_book = book_id,
             book_name = name,
             current_page = "/api/storyboard/page/" + str(book_id) + "/" + str(page_number),
             id = str(book_id),

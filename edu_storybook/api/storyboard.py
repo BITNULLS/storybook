@@ -296,6 +296,7 @@ def storyboard_save_user_action():
             "message": "The book_id or action_key_id failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
         }, 400, {"Content-Type": "application/json"}
 
+    print(request.form['action_start'], request.form['action_stop'], request.form['detail_description'])
     # sanitize inputs: make sure action_start and action_stop are in correct format
     if re_timestamp.match(request.form["action_start"]) is None or \
             re_timestamp.match(request.form["action_stop"]) is None or \
@@ -309,6 +310,7 @@ def storyboard_save_user_action():
 
     connection = pool.acquire()
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             "DECLARE " +
@@ -336,6 +338,7 @@ def storyboard_save_user_action():
             "END;"
         )
         connection.commit()
+
     except cx_Oracle.Error as e:
         a_storyboard_log.warning('Error when accessing database')
         a_storyboard_log.warning(e)
