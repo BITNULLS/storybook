@@ -104,7 +104,7 @@
         let insertAfter = $('#insert-question').val();
         let question = $('#input_SA_question').val();
         let randQuestionID = 'sap-' + Math.round(Math.random() * 1000000000);
-        let questionPreview = $('<div id="' + randQuestionID + '">' + question + '</div>');
+        let questionPreview = $('<div class=mb-3 id="' + randQuestionID + '">' + question + '</div>');
 
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
@@ -174,7 +174,7 @@
 
                                         <button id="add-choiceA-button" type="button" class="btn btn-atts btn-info" onclick="addChoiceA()">Add Answer Choice</button>
                                         <template id="template-new-mc-answer-choice">
-                                            <div class="input-group" id="new-mc-answer-choice">
+                                            <div class="input-group mb-1" id="new-mc-answer-choice">
                                                 <div class="input-group-prepend">
                                                     <div class="input-group-text">
                                                         <input class="mr-1" type="checkbox" aria-label="Checkbox for following text input"> Correct</input>
