@@ -54,7 +54,8 @@
 
         let insertAfter = $('#insert-question').val(); //this is the page the admin selected to insert the question
         let question = $('#input_MC_question').val(); //this is the question being asked 
-        let questionPreview = $('<p>' + question + '</p>'); //styling of the question
+        let randQuestionID = 'sap-' + Math.round(Math.random() * 1000000000);
+        let questionPreview = $('<div id="' + randQuestionID + '">' + question + '</div>'); //styling of the question
 
         var answers = []
 
@@ -65,19 +66,23 @@
             answers.push(ans);
         });
 
-        let card_class = document.createElement("div");
-        card_class.setAttribute("name", "card-class");
         let main_question = questionPreview; //this is the header
         
-        let answer_choices = '<div class="card-body">' //this is the card body
+        let answer_choices = '<div id=' + randQuestionID + ' class="card-body">' //this is the card body
         for(var choice = 0; choice < answers.length; choice++) {
             let choice2 = '<p>' + answers[choice].content + '</p>';
-            answer_choices += choice2 + '</p>';
+            answer_choices += choice2;
         }
         answer_choices += '</div>';
         answer_choices = $(answer_choices);
+
+        let deleteButton = $('<button>Delete</button>');
+        deleteButton.attr("class", "btn btn-outline-secondary float-right");
+        deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
         
-        $('#page-' + insertAfter).after(answer_choices).after(main_question).after(card_class);
+        let card_class = document.createElement("div");
+        card_class.attr($('#page-' + insertAfter).after(main_question.append(deleteButton).append(answer_choices)));
+        
         
         /**
         {
@@ -98,9 +103,15 @@
     function shortAnswerNewQuizQ() {
         let insertAfter = $('#insert-question').val();
         let question = $('#input_SA_question').val();
-        let questionPreview = $('<p>' + question + '</p>');
-        $('#page-' + insertAfter).after(questionPreview);
+        let randQuestionID = 'sap-' + Math.round(Math.random() * 1000000000);
+        let questionPreview = $('<div class=mb-3 id="' + randQuestionID + '">' + question + '</div>');
 
+        let deleteButton = $('<button>Delete</button>');
+        deleteButton.attr("class", "btn btn-outline-secondary float-right");
+        deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
+
+        let card_class = document.createElement("div");
+        card_class.attr($('#page-' + insertAfter).after(questionPreview.append(deleteButton)));
     }
 
     //when admin clicks Save & Publish, all the questions and answers should go to the backend
@@ -163,7 +174,7 @@
 
                                         <button id="add-choiceA-button" type="button" class="btn btn-atts btn-info" onclick="addChoiceA()">Add Answer Choice</button>
                                         <template id="template-new-mc-answer-choice">
-                                            <div class="input-group" id="new-mc-answer-choice">
+                                            <div class="input-group mb-1" id="new-mc-answer-choice">
                                                 <div class="input-group-prepend">
                                                     <div class="input-group-text">
                                                         <input class="mr-1" type="checkbox" aria-label="Checkbox for following text input"> Correct</input>
