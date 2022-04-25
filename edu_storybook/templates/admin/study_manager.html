@@ -20,73 +20,36 @@ suggestion from @lisapat
             $('#addBookToStudy').modal('show')
         }
 
-        function addStudyToUser(study_id) {
+        /*function addStudyToUser(study_id) {
             $('#studyId').val(study_id);
             $('#addStudyToUser').modal('show')
-        }
+        }*/
 
         function showUsers(study_id) {
+            print(study_id);
+            fetch("/api/admin/study/user").then(function(response) {
+            return response.json();
+            }).then(function(data) {
+            console.log(data);
+            }).catch(function() {
+            console.log("Booo");
+            });
             $('#studyId').val(study_id);
             $('#showUsers').modal('show');
+            // want this function to call the get method?
+        }
+
+        function addStudyToUser(user_id){
+            $('#userId').val(user_id);
+            $('#addStudyToUser').modal('show');
         }
     </script>
-    <!--Modal for Create New Study-->
-    <div class="modal fade" id="createNewStudyModal" tabindex="-1" role="dialog"
-        aria-labelledby="createNewStudyModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="selectBookModalLabel">Create a New Study</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form action="/api/admin/study" method="POST" enctype="multipart/form-data">
-                        <label for="message-text" class="col-form-label">Study ID:</label>
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" id="study_id" placeholder="123456"
-                                aria-label="123456" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <!--TODO: Actually generate a random code and place in the input area-->
-                                <button type="button" class="btn btn-random bg-info" id="new_id"
-                                    onclick="generateNewID()">Randomize</button>
-                            </div>
-                        </div>
-                        <label for="message-text" class="col-form-label">Description:</label>
-                        <div class="form-group">
-                            <textarea class="form-control" id="study_description"
-                                placeholder="Lorem ipsum dolor sit amet. Est dolorum labore quo saepe officiis in soluta laborum."></textarea>
-                        </div>
-                        <label for="message-text" class="col-form-label">School:</label>
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" href="#" id="school_id"
-                                placeholder="University of Delaware" aria-label="University of Delaware"
-                                aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button type="button" class="btn btn-random bg-info dropdown-toggle" id="school_id"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
-                                <div class="dropdown-menu dropdown-menu-left" role="menu">
-                                    <!--TODO: Replace hard coded list for list of schools-->
-                                    <!--Placeholder for the list of school to show up in the dropdown-->
-                                    <a class="dropdown-item" data-value="1"><a href="#">One</a></a>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Create</button>
-                    <!--TODO: make info transfer to backend-->
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!--Modal for Adding a Book to this Study -->
     <div class="modal fade" id="addBookToStudy" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
-        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data">
+        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data" onsubmit="setTimeout(function(){window.location.reload();},10);">
+            <input type="hidden" name="redirect" value="/admin/study_manager">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -108,8 +71,9 @@ suggestion from @lisapat
 
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-atts bg-info">Save</button>
-                        <!--TODO: make info transfer to backend-->
+                        <a href="/admin/study_manager">
+                        <button type="submit" class="btn btn-atts bg-info" >Save</button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -119,7 +83,7 @@ suggestion from @lisapat
     <!-- Adding/Editing User to be in Studies -->
     <div class="modal fade" id="addStudyToUser" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
-        <form action="/api/admin/study/user" method="POST" enctype="multipart/form-data">
+        <form action="/api/admin/study/user" method="POST" enctype="multipart/form-data" >
             <input type="hidden" name="redirect" value="/admin/study_manager">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -171,7 +135,7 @@ suggestion from @lisapat
                             </thead>
                             <tbody>
                                 <tr>
-                                    ~user_list
+                                    <!--~user_list-->
                                     <!--admin_study_user-->
                                 </tr>
                             </tbody>

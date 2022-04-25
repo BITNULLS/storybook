@@ -20,7 +20,7 @@ suggestion from: @lisapat -->
     <!--Modal for Add to Study-->
     <div class="modal fade" id="addStudyToBook" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
-        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data">
+        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data"  onsubmit="setTimeout(function(){window.location.reload();},10);">
             <input type="hidden" name="redirect" value="/admin/book_manager">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">

@@ -425,9 +425,12 @@ def admin_book_study():
             print("bye", book_ids)
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for book_id in book_ids:
-                cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
-                    + str(book_id)+ ", "
-                    + request.form['study_id'] +")")
+                print('INSERT into BOOK_STUDY (book_id, study_id) VALUES ('
+                    + str(book_id)+ ', '
+                    + request.form['study_id'] +')')
+                cursor.execute('INSERT into BOOK_STUDY (book_id, study_id) VALUES ('
+                    + str(book_id)+ ', '
+                    + request.form['study_id'] +')')
                 # commit to database
                 connection.commit()
 
@@ -1060,8 +1063,8 @@ def admin_get_books(offset: int):
     try:
         cursor.execute(
             "SELECT BOOK.BOOK_ID, BOOK.BOOK_NAME, BOOK.DESCRIPTION, BOOK_STUDY.STUDY_ID FROM BOOK " +
-            "LEFT JOIN BOOK_STUDY ON BOOK_STUDY.BOOK_ID = BOOK.BOOK_ID "+
-            "OFFSET "+ 
+            "INNER JOIN BOOK_STUDY ON BOOK_STUDY.BOOK_ID = BOOK.BOOK_ID "+
+            "OFFSET "+
             str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
@@ -1125,6 +1128,7 @@ def admin_study_user():
 
 
     #check for study_id and user_id
+#    print(request.form['user_id'])
     try:
         #assert 'study_id' in request.form
         assert 'user_id' in request.form
@@ -1132,7 +1136,7 @@ def admin_study_user():
         return {
             "status": "fail",
             "fail_no": 1,
-            "message": "study_id or user_id was not provided."
+            "message": "user_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
     #make sure study_id is an int
@@ -1149,20 +1153,17 @@ def admin_study_user():
     # do the right method
 
     if request.method =='POST':
+        study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
+
         cursor = connection.cursor()
 
         try:
-            #cursor.execute(
-             #   "INSERT INTO user_study(user_id, study_id) VALUES( '"
-              #      + request.form['user_id']+ "', '" +request.form[study_id]+"')")
-            study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
             for study_id in study_ids:
+                print('INSERT INTO user_study(user_id, study_id) VALUES('
+                   + request.form['user_id']+ ', ' +str(study_id)+')')
                 cursor.execute(
-               "INSERT INTO user_study(user_id, study_id) VALUES( '"
-                   + request.form['user_id']+ "', '" +str(study_id)+"')")
-                #print(request.form['study_id'], request.form['user_id'])
-                #cursor.callproc("INSERT_USER_STUDY_PROC",\
-                 #   [request.form['user_id'], int(study_id)])
+               'INSERT INTO user_study(user_id, study_id) VALUES('
+                   + request.form['user_id']+ ', ' +str(study_id)+')')
 
             # commit changes to db
             connection.commit()
