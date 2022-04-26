@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for April 20, 2022
+-- Updated Schema for April 23, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -10,7 +10,7 @@
 --  DDL for Sequence ACTION_DETAIL_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "ACTION_DETAIL_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 48 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "ACTION_DETAIL_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 68 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence ANSWER_SEQ
 --------------------------------------------------------
@@ -304,10 +304,10 @@
   CREATE UNIQUE INDEX "USER_PROFILE_PK" ON "USER_PROFILE" ("USER_ID") 
   ;
 --------------------------------------------------------
---  DDL for Index USER_SESSION_INDEX1
+--  DDL for Index LAST_PAGE_PK
 --------------------------------------------------------
 
-  CREATE UNIQUE INDEX "USER_SESSION_INDEX1" ON "USER_SESSION" ("SESSION_ID") 
+  CREATE UNIQUE INDEX "LAST_PAGE_PK" ON "LAST_PAGE" ("USER_ID") 
   ;
 --------------------------------------------------------
 --  DDL for Index STUDY_PK
@@ -1042,6 +1042,58 @@ set define off;
 BEGIN
   UPDATE SCHOOL SET SCHOOL_NAME = SCHOOL_NAME_IN WHERE SCHOOL_ID= SCHOOL_ID_IN;
 END EDIT_SCHOOL_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure GET_USER_FREE_RESPONSE_DATA_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "GET_USER_FREE_RESPONSE_DATA_PROC" 
+(
+  RESULT OUT SYS_REFCURSOR 
+) AS 
+BEGIN
+  OPEN result FOR SELECT
+                                user_profile.email,
+                                user_profile.first_name,
+                                user_profile.last_name,
+                                question.question,
+                                user_free_response.response,
+                                book.book_name,
+                                user_free_response.submitted_on
+                            FROM
+                                     user_free_response
+                                INNER JOIN user_profile ON user_profile.user_id = user_free_response.user_id
+                                INNER JOIN question ON question.question_id = user_free_response.question_id
+                                INNER JOIN book ON question.book_id = book.book_id;
+END GET_USER_FREE_RESPONSE_DATA_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure GET_USER_PROFILE_DATA_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "GET_USER_PROFILE_DATA_PROC" (
+    result OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN result FOR SELECT
+                                user_profile.email,
+                                action.action_start,
+                                action.action_stop,
+                                book.book_name,
+                                action_key.action_name,
+                                action_detail.detail_description
+                            FROM
+                                     user_profile
+                                INNER JOIN action ON user_profile.user_id = action.user_id
+                                INNER JOIN book ON action.book_id = book.book_id
+                                INNER JOIN action_detail ON action_detail.detail_id = action.detail_id
+                                INNER JOIN action_key ON action_detail.action_key_id = action_key.action_key_id;
+
+END get_user_profile_data_proc;
 
 /
 --------------------------------------------------------
