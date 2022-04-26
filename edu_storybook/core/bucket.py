@@ -75,7 +75,7 @@ def get_bucket_file_link(filepath: str) -> str:
     :return: The url to directly access the file
     """
     try:
-        return oracle_cloud_client.create_preauthenticated_request(
+        return 'https://objectstorage.us-ashburn-1.oraclecloud.com' + oracle_cloud_client.create_preauthenticated_request(
             namespace_name=bucket['namespace'],
             bucket_name=bucket['name'],
             create_preauthenticated_request_details=oci.object_storage.models.CreatePreauthenticatedRequestDetails(
