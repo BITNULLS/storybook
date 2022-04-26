@@ -1108,9 +1108,18 @@ def admin_study_user():
         cursor = connection.cursor()
 
         try:
+            study_id = int(request.args.get('study_id'))
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "study_id failed a sanitize check. The POSTed field should be an integer."
+            }, 400, {"Content-Type": "application/json"}
+
+        try:
             cursor.execute("SELECT * from user_study "
                     +  "full outer join user_profile on user_study.user_id = user_profile.user_id "
-                    + "where user_study.study_id = "+ request.form['study_id'])
+                    + "where user_study.study_id = "+ str(study_id))
             label_results_from(cursor)
             users = cursor.fetchall()
 
@@ -1126,9 +1135,9 @@ def admin_study_user():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
 
-
     #check for study_id and user_id
 #    print(request.form['user_id'])
+
     try:
         #assert 'study_id' in request.form
         assert 'user_id' in request.form
@@ -1159,11 +1168,9 @@ def admin_study_user():
 
         try:
             for study_id in study_ids:
-                print('INSERT INTO user_study(user_id, study_id) VALUES('
-                   + request.form['user_id']+ ', ' +str(study_id)+')')
                 cursor.execute(
-               'INSERT INTO user_study(user_id, study_id) VALUES('
-                   + request.form['user_id']+ ', ' +str(study_id)+')')
+               "INSERT INTO user_study(user_id, study_id) VALUES('"
+                   + request.form['user_id']+ "', " +str(study_id)+")")
 
             # commit changes to db
             connection.commit()
