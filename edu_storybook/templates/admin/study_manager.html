@@ -39,18 +39,6 @@ suggestion from @lisapat
                     $('#showUsersTable').empty();
 
                     users.forEach(function(element, index) {
-                        /*
-                        "ADMIN": 0,
-                        "CREATED_ON": "Tue, 07 Dec 2021 19:28:38 GMT",
-                        "EMAIL": "participant@udel.edu",
-                        "FIRST_NAME": "John",
-                        "LAST_LOGIN": "Tue, 26 Apr 2022 15:28:34 GMT",
-                        "LAST_NAME": "Doe",
-                        "PASSWORD": "$2b$12$cNEkD5ARBryluM97JIHBketWCtKzb8Kwk2nWQjVCwSR6b6IbXwCj6",
-                        "SCHOOL_ID": 1,
-                        "STUDY_ID": 3,
-                        "USER_ID": "D294615162F8ACA
-                        */
                         var user_row = $(`<tr><td>${element["EMAIL"]}</td><td>${element["FIRST_NAME"]}</td><td>${element["LAST_NAME"]}</td></tr>`);
                         $('#showUsersTable').append(user_row);
                     });
