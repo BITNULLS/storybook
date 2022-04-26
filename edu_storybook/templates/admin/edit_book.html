@@ -38,9 +38,17 @@
         }
     }
 
-    //dictionary with 3 attributes, question, pg before and answers, and correct answer
-    var answerCreated = []
-    var answerDeleted = []
+    //list of dictionaries with the following information 
+    /**
+    *   assert 'book_id_in' in request.form
+    *   assert 'school_id_in' in request.form
+    *   assert 'question_in' in request.form
+    *   assert 'page_prev_in' in request.form
+    *   assert 'page_next_in' in request.form
+    *   assert 'answers_in' in request.form
+    */
+    var questionsCreated = []
+    var questionsDeleted = []
 
     //adds spot to put in a new answer choice by the admin for a question
     function addChoiceA() {
@@ -85,17 +93,30 @@
         
         
         /**
-        {
-            "question": "What is red",
-            "page_prev": 5,
-            "answers": [
-                {
-                    "content": "An apple",
-                    "correct": true
-                },
-                ...
-            ]
+         * //where I want to store all of the questions created 
+         * var questionsCreated = [
+         *  { ... }
+         * ]
+         * 
+         * //everytime they click add question, the dictionary should be added to the array
+         * //in the following format (but there is more to this, check endpoint admin/page\) 
+         * {
+            "question_in": "What is red",
+            "page_prev_in": 5,
+            "answers": "Apple ~!~ Banana"
         }
+         * 
+         //when the admin clicks Save + Publish, do this 
+         * function submitNewAndDeleteQs() { ... }
+         * questionCreated.forEach(function(e))
+         * $.ajax({
+         *  url: '/api/admin/page',
+         *  method: 'POST',
+         *  data: e
+         * })
+         * 
+         * 
+        
         */
     } 
 
