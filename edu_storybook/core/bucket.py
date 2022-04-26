@@ -8,6 +8,7 @@ Provides simple functions for accessing the bucket.
 import oci
 import json
 import os
+from datetime import datetime, timedelta
 from .filepath import fix_filepath
 from tempfile import TemporaryDirectory
 from typing import List
@@ -64,6 +65,26 @@ def download_bucket_file(filename: str, folder = temp_folder) -> str:
         return new_file
     except oci.exceptions.ServiceError as e:
         c_bucket_log.warning("The object '" + filename + "' does not exist in bucket.")
+        return None
+
+
+def get_bucket_file_link(filepath: str) -> str:
+    """
+    Creates a Pre Authenticated Request for the given filepath
+    :param filepath: The path of the file in the Oracle Bucket
+    :return: The url to directly access the file
+    """
+    try:
+        return oracle_cloud_client.create_preauthenticated_request(
+            namespace_name=bucket['namespace'],
+            bucket_name=bucket['name'],
+            create_preauthenticated_request_details=oci.object_storage.models.CreatePreauthenticatedRequestDetails(
+                name="Getting file: " + filepath,
+                access_type="ObjectRead",
+                time_expires=datetime.utcnow() + timedelta(minutes=2),
+                object_name=filepath)).data.access_uri
+    except oci.exceptions.ServiceError as e:
+        c_bucket_log.warning("Oracle error creating Pre Authenticated Request")
         return None
 
 
