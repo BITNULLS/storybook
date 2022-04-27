@@ -38,15 +38,7 @@
         }
     }
 
-    //list of dictionaries with the following information 
-    /**
-    *   assert 'book_id_in' in request.form
-    *   assert 'school_id_in' in request.form
-    *   assert 'question_in' in request.form
-    *   assert 'page_prev_in' in request.form
-    *   assert 'page_next_in' in request.form
-    *   assert 'answers_in' in request.form
-    */
+    //list of dictionaries to be sent to backend 
     var questionsCreated = []
     var questionsDeleted = []
 
@@ -91,33 +83,32 @@
         let card_class = document.createElement("div");
         card_class.attr($('#page-' + insertAfter).after(main_question.append(deleteButton).append(answer_choices)));
         
-        
-        /**
-         * //where I want to store all of the questions created 
-         * var questionsCreated = [
-         *  { ... }
-         * ]
-         * 
-         * //everytime they click add question, the dictionary should be added to the array
-         * //in the following format (but there is more to this, check endpoint admin/page\) 
-         * {
-            "question_in": "What is red",
-            "page_prev_in": 5,
-            "answers": "Apple ~!~ Banana"
-        }
-         * 
-         //when the admin clicks Save + Publish, do this 
-         * function submitNewAndDeleteQs() { ... }
-         * questionCreated.forEach(function(e))
-         * $.ajax({
-         *  url: '/api/admin/page',
-         *  method: 'POST',
-         *  data: e
-         * })
-         * 
-         * 
-        
+        //adding the question that was created to the array 
+        //first getting all the information - check endpoint admin/page
+        /** 
+        let book_id_in = book_id;
+        let school_id_in = school_id;
+        let question_in = question; 
+        let page_prev_in = insertAfter; //page before question
+        let page_next_in = insertAfter + 1; //page after question
+
+        //all answers, separated by {space}{tilde}{back tick}{tilde}{space} (that is ~`~)
+        let answers_in = "";
+        answers.forEach(function(e) {
+            answers_in.append(e + " ~`~ ");
+        })
+
+        let thisNewQ = {
+                            "book_id_in": book_id_in,
+                            "school_id_in": school_id_in,
+                            "question_in": question_in,
+                            "page_prev_in": page_prev_in,
+                            "page_next_in": page_next_in, 
+                            "answers_in": answers_in 
+                        }
+        questionsCreated.push(thisNewQ);
         */
+
     } 
 
     //invoked when admin clicks Add Question button for short answer
@@ -133,11 +124,39 @@
 
         let card_class = document.createElement("div");
         card_class.attr($('#page-' + insertAfter).after(questionPreview.append(deleteButton)));
+
+        /** 
+        let book_id_in = book_id;
+        let school_id_in = school_id;
+        let question_in = question; 
+        let page_prev_in = insertAfter; //page before question
+        let page_next_in = insertAfter + 1; //page after question
+        let answers_in = "";
+
+        let thisNewQ = {
+                            "book_id_in": book_id_in,
+                            "school_id_in": school_id_in,
+                            "question_in": question_in,
+                            "page_prev_in": page_prev_in,
+                            "page_next_in": page_next_in, 
+                            "answers_in": answers_in 
+                        }
+        questionsCreated.push(thisNewQ);
+        */
+
     }
 
-    //when admin clicks Save & Publish, all the questions and answers should go to the backend
+    //when admin clicks Save & Publish
     function submitQuestions() {
-        //actually save the questions to the backend
+        //for everything in the questionsCreated array, send it to the backend
+        /**
+        questionCreated.forEach(function(e) {
+            $.ajax({
+            url: '/api/admin/page',
+            method: 'POST',
+            data: e
+        })
+        */
     }
 
 </script>
