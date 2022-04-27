@@ -26,43 +26,37 @@ with open(fix_filepath(__file__, config['sensitives']['files']['oracle_dir'])) a
 assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives'][
     'folders']['oracle_dir'] + ' is empty, it needs the filepath to the Oracle Instant Client'
 
-cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
+try:
+    cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
+except cx_Oracle.ProgrammingError:
+    c_db_log.warning("Ignoring cx_Oracle's stupid initialization error")
 
 oracle_configs = sensitive.oracle_config
 
-connection = None
 pool = None
 
-def connect_db():
-    '''
-    Launch the connection to the database. This was moved to a function so that
-    it can be called again if a `DPI-1010: not connected` error occurs.
-    '''
-    global connection
-    global pool
-    # hacky solution for Python relative importing
-    # so that running this regularly and unit testing works
-    corrected_connect_string = oracle_configs['connect_string'].replace(
-        'data/Wallet_EDUStorybook',
-        __file__.replace('db.py', '', 1) + 'data/Wallet_EDUStorybook',
-        1 # replace once
-    )
-    c_db_log.debug('Corrected Oracle Wallet connect string is ' + corrected_connect_string)
-    connection = cx_Oracle.connect(
-        oracle_configs['username'],
-        oracle_configs['password'],
-        corrected_connect_string
-    )
+# hacky solution for Python relative importing
+# so that running this regularly and unit testing works
+corrected_connect_string = oracle_configs['connect_string'].replace(
+    'data/Wallet_EDUStorybook',
+    __file__.replace('db.py', '', 1) + 'data/Wallet_EDUStorybook',
+    1 # replace once
+)
+c_db_log.debug('Corrected Oracle Wallet connect string is ' + corrected_connect_string)
 
-    pool = cx_Oracle.SessionPool(
-        oracle_configs['username'],
-        oracle_configs['password'],
-        corrected_connect_string
-    )
-    pool.reconfigure(min=10, max=10, increment=0)
-    pool.wait_timeout = 1000
+pool = cx_Oracle.SessionPool(
+    oracle_configs['username'],
+    oracle_configs['password'],
+    corrected_connect_string
+)
 
-connect_db()
+c_db_log.debug('Established database pool')
+
+pool.reconfigure(min=10, max=10, increment=0)
+
+c_db_log.debug('Reconfigured database pool')
+
+pool.wait_timeout = 1000
 
 c_db_log.info('Connected to database')
 
