@@ -21,6 +21,9 @@ Tracking actions for the /storyboard/122/7 or the ebook pages only
 
 var book_id_val = null;
 var page_num_val = null;
+var page_num_next_val = null;
+var page_num_back_val = null;
+
 
 function calculateTime() {
     const currDate = new Date();
@@ -39,14 +42,12 @@ function calculateTime() {
 var lastAction = calculateTime();
 
 function trackEvent(actionStart, actionStop, actionID, description) {
-     var book_id = $('#book_id').val();
-     var book_id = 122;
     
    $.ajax( {
         type: "POST",
         url: "/api/storyboard/action",
         data: {
-            book_id:book_id,
+            book_id:book_id_val,
             detail_description:description,
             action_key_id:actionID,
             action_start:actionStart,
@@ -81,21 +82,21 @@ function close_book() {
 }
 
 // ! fixed for png images for now
-function click_page(book_id, page_num) {
+function click_page() {
     var actionTime = calculateTime();
 
-    alert("Click on page where book_id:" + book_id_val + "and page_num:" + page_num_val);
+  //  alert('User clicked on the page ' + page_num_val + ' on book ' + book_id_val + ' (not a link, forward or backwards, textbox, etc).');
     trackEvent(lastAction, actionTime, 2, 'User clicked on the page ' + page_num_val + ' on book ' + book_id_val + ' (not a link, forward or backwards, textbox, etc).');
     lastAction = actionTime;
 }
 
 // ? wait until all pages have accessible links
-function click_link(book_id, page_num) {
+function click_link() {
     var actionTime = calculateTime();
 //  trackEvent(lastAction, actionTime, 3, "User clicked a link.");
 } 
 
-function exit_mouse_page(book_id, page_num) {
+function exit_mouse_page() {
    /* document.addEventListener("mouseleave", (event) => {
     var actionTime = calculateTime();
     
@@ -119,40 +120,41 @@ function enter_mouse_page() {
     }); */
 }
 
-function exit_tab(book_id) {
+function exit_tab() {
     document.addEventListener("visibilitychange", () => {
         var actionTime = calculateTime();
+        
         if (document.visibilityState != "visible") {
-       //     alert("Tab is inactive");
-            trackEvent(lastAction, actionTime, 6, 'User switched to another tab.');
+       //     alert('User switched to another tab on book ' + book_id_val);
+            trackEvent(lastAction, actionTime, 6, 'User switched to another tab on book ' + book_id_val);
             lastAction = actionTime;
         }
     });
 }
 
-function enter_tab(book_id) {
+function enter_tab() {
     document.addEventListener("visibilitychange", () => {
         var actionTime = calculateTime();
+
         if (document.visibilityState == "visible") {
-         //   alert("Tab is active");
-            trackEvent(lastAction, actionTime, 7, 'User switched back to our webpage tab on book ' + book_id);
+            alert('User switched back to our webpage tab on book ' + book_id_val);
+            trackEvent(lastAction, actionTime, 7, 'User switched back to our webpage tab on book ' + book_id_val);
             lastAction = actionTime;
         }
     });
 }
 
-function turn_page_forward(book_id, page_num) {
+function turn_page_forward() {
     var actionTime = calculateTime();
-    alert("Print the next page");
-    trackEvent(lastAction, actionTime, 10, 'User turned forward at page ' + page_num + 'on book ' + book_id);
+  //  alert('User turned forward to page ' + page_num_next_val + ' on book ' + book_id_val);
+    trackEvent(lastAction, actionTime, 10, 'User turned forward to page ' + page_num_next_val + ' on book ' + book_id_val);
     lastAction = actionTime;
 }
 
-// ?
-function turn_page_backward(book_id, page_num) {    
+function turn_page_backward() {    
     var actionTime = calculateTime();
- //   alert("User turned page backward at " + actionTime);
-    trackEvent(lastAction, actionTime, 11, 'User turned backward at page ' + page_num + 'on book ' + book_id);
+   // alert('User turned backward at page ' + page_num_back_val + ' on book ' + book_id_val);
+    trackEvent(lastAction, actionTime, 11, 'User turned backward to page ' + page_num_back_val + ' on book ' + book_id_val);
     lastAction = actionTime;
 }
 
@@ -178,5 +180,7 @@ window.onload = function afterWebPageLoad() {
     if (bookId != null) {
         book_id_val = bookId.book_id_name.value;
         page_num_val = bookId.page_id_name.value;
+        page_num_next_val = bookId.page_next_name.value;
+        page_num_back_val = bookId.page_back_name.value;
     }
 }
