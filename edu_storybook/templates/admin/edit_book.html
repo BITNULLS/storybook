@@ -1,4 +1,4 @@
-~navbar
+¶navbar
 
 <!--Creating Space at the top of the page-->
 <div class="row mt-5">
@@ -21,6 +21,7 @@
     //modal for the admin to select which book to edit 
     function displaySelectedBook(book_id, page_count) {
         $('#selectBookModal').modal('hide');
+        var importantPages = 3;
         for(var page = 1; page < page_count; page++) {
             var pageOption = $('<option value="' + page + '">' + page + '</option>');
             $('#insert-question').append(pageOption);
@@ -33,6 +34,13 @@
                 '/api/storyboard/page/' + book_id + '/' + page
             );
             singlePage.setAttribute("id", "page-" + page);
+            singlePage.setAttribute("loading", "lazy");
+            if(importantPages > 0)
+                singlePage.setAttribute("fetchpriority", "high");
+            else
+                singlePage.setAttribute("fetchpriority", "low");
+            importantPages--;
+            
             $('#book-images-list').append(pageIndicator);
             $('#book-images-list').append(singlePage);
         }
@@ -172,7 +180,7 @@
         </button>
       </div>
       <div class="modal-body">
-        ~book
+        ¶book
       </div>
     </div>
   </div>

@@ -26,7 +26,7 @@ class EduTemplate(Template):
     Update regular `string.Template` to use a new delimiter, `~`, and make the
     `idpattern` more narrow (`a-z`, `_`, and `0-9`).
     '''
-    delimiter = '~'
+    delimiter = '¶'
     idpattern = r'[a-z][_a-z0-9]*'
 
 
