@@ -38,9 +38,9 @@
         }
     }
 
-    //dictionary with 3 attributes, question, pg before and answers, and correct answer
-    var answerCreated = []
-    var answerDeleted = []
+    //list of dictionaries to be sent to backend 
+    var questionsCreated = []
+    var questionsDeleted = []
 
     //adds spot to put in a new answer choice by the admin for a question
     function addChoiceA() {
@@ -108,7 +108,7 @@
                         }
         questionsCreated.push(thisNewQ);
         */
-       
+
     } 
 
     //invoked when admin clicks Add Question button for short answer
