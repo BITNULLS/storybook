@@ -77,6 +77,7 @@
         $('#mc-answer-choice-holder').children().each(function (index, element) {
             var ans = {};
             ans['correct'] = $(element).children('.input-group.input-group-prepend.input').val();
+            //console.log(ans['correct']);
             ans['content'] = $(element).children('input').val();
             answers.push(ans);
         });
@@ -106,7 +107,25 @@
         let question_in = question; 
         let page_prev_in = parseInt(insertAfter); //page before question
         let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
-        let answers_in = answers.map(o => o.content).join(" ~`~ ");
+
+        //answers is an array with all the answers choices for the question
+        let correct_ans_temp = "";
+        let answers_in_temp_all = []
+        for(var choice = 0; choice < answers.length; choice++) { //for everything in the answers array
+            if (answers[choice].correct.checked) { //if the answer is the correct choice
+                correct_ans_temp = '^^^:' + answers[choice].content; //append the string to the content
+                answers_in_temp_all.push(correct_ans_temp); //put it in the new array 
+            }
+            else {
+                correct_ans_temp = answers[choice].content;
+                answers_in_temp_all.push(correct_ans_temp);
+            }
+            /**
+            else {
+                console.log("Error with saving which question is correct into array");
+            }*/
+        }
+        let answers_in = answers_in_temp_all.map(o => o.content).join(" ~`~ ");
 
         let thisNewQ = {
                             "book_id_in": book_id_in,
