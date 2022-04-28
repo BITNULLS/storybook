@@ -1,22 +1,6 @@
-/*  Create a function, trackEvent(actionStart, actionStop, actionID, description) 
-where:
-actionStart,
-actionStop, 
-actionID is a key in the action_labels.csv
-description is a short string that states what the user did in a consistent way 
-            (e.g. user changed from page 1 to page 2).
- 
-This function should fire off an $.ajax(...) request to /api/storyboard/action.
-
-In the JavaScript, add event handlers to track user movements and events,
-calling on the previously defined trackEvent function.
-
-NOTE: Not all of the features are implemented yet, and are therefore not trackable. 
-Since quiz questions do not appear, yet, they do not need to be tracked, now.
-Use docs/action_labels.csv as a reference to what actions we are tracking
-
-Tracking actions for the /storyboard/122/7 or the ebook pages only
-
+/*
+Tracks the user's actions within the ebook pages (/storyboard/122/7)
+Use docs/action_labels.csv as a reference to what actions we are tracking.
 */
 
 var book_id_val = null;
@@ -24,15 +8,14 @@ var page_num_val = null;
 var page_num_next_val = null;
 var page_num_back_val = null;
 
-
 function calculateTime() {
     const currDate = new Date();
 
-    const dateString = 
-    currDate.getFullYear() + '-' + 
+    const dateString =
+    currDate.getFullYear() + '-' +
     ('0' + (currDate.getMonth()+1)).slice(-2) + '-' +
-    ('0' + currDate.getDate()).slice(-2) + " " + 
-    ('0' + currDate.getHours()).slice(-2) + ":" + 
+    ('0' + currDate.getDate()).slice(-2) + " " +
+    ('0' + currDate.getHours()).slice(-2) + ":" +
     ('0' + currDate.getMinutes()).slice(-2) + ":" +
     ('0' + currDate.getSeconds()).slice(-2);
 
@@ -42,7 +25,7 @@ function calculateTime() {
 var lastAction = calculateTime();
 
 function trackEvent(actionStart, actionStop, actionID, description) {
-    
+
    $.ajax( {
         type: "POST",
         url: "/api/storyboard/action",
@@ -60,72 +43,75 @@ function trackEvent(actionStart, actionStop, actionID, description) {
             console.log("Error");
         },
         datatype: String
-    }); 
+    });
 }
 
+// references story_selection/book.html
 function open_book() {
-    var actionTime = calculateTime();  
-   // alert("User opened book at book_id:" + book_id);
+    var actionTime = calculateTime();
+    // alert("User opened book at book_id:" + book_id);
 
     trackEvent(lastAction, actionTime, 0, 'User opened the book ' + book_id_val + ' from the book dashboard.');
     lastAction = actionTime;
 }
 
+// references navbar/logged_user.html
 function close_book() {
     var actionTime = calculateTime();
+    // alert("User closed book at book_id:" + book_id_val);
 
-    if (book_id_val != null) {
-       // alert("User closed book at book_id:" + book_id_val);
-        trackEvent(lastAction, actionTime, 1, 'User exited the book ' + book_id_val + ' back to some other page.');
-        lastAction = actionTime;
-    }
+    trackEvent(lastAction, actionTime, 1, 'User exited the book ' + book_id_val + ' back to some other page.');
+    lastAction = actionTime;
 }
 
-// ! fixed for png images for now
+// references viewer.html
+// !! works for png images for now
 function click_page() {
     var actionTime = calculateTime();
+    //  alert('User clicked on the page ' + page_num_val + ' on book ' + book_id_val + ' (not a link, forward or backwards, textbox, etc).');
 
-  //  alert('User clicked on the page ' + page_num_val + ' on book ' + book_id_val + ' (not a link, forward or backwards, textbox, etc).');
     trackEvent(lastAction, actionTime, 2, 'User clicked on the page ' + page_num_val + ' on book ' + book_id_val + ' (not a link, forward or backwards, textbox, etc).');
     lastAction = actionTime;
 }
 
 // ? wait until all pages have accessible links
 function click_link() {
-    var actionTime = calculateTime();
-//  trackEvent(lastAction, actionTime, 3, "User clicked a link.");
-} 
-
-function exit_mouse_page() {
-   /* document.addEventListener("mouseleave", (event) => {
-    var actionTime = calculateTime();
-    
-    if (event.clientY <= 0 || event.clientX <= 0 || (event.clientX >= window.innerWidth || event.clientY >= window.innerHeight)) {
-  //    alert('Mouse of user left the webpage on page ' + page_num  + 'at book ' + book_id);
-      trackEvent(lastAction, actionTime, 4, 'Mouse of user left the webpage on page ' + page_num + 'at book ' + book_id);
-      lastAction = actionTime;
-      }
-   }); */
+    //  var actionTime = calculateTime();
+    //  trackEvent(lastAction, actionTime, 3, "User clicked a link.");
 }
 
-function enter_mouse_page() {
-   /* document.addEventListener("mouseenter", (event) => {
-    var actionTime = calculateTime();
+// references index.html
+function exit_mouse_page() {
+    document.addEventListener("mouseleave", (event) => {
+        var actionTime = calculateTime();
 
-    if ((event.clientY > 0 && event.clientY < window.innerHeight) && (event.clientX > 0 && event.clientX < window.innerWidth)) {
-      //  alert('Mouse of user re-entered the webpage on page ' + page_num  + 'at book ' + book_id);
-        trackEvent(lastAction, actionTime, 5, 'Mouse of user re-entered the webpage on page ' + page_num_val + 'at book ' + book_id_val)
-        lastAction = actionTime;
-       }
-    }); */
+        if (event.clientY <= 0 || event.clientX <= 0 || (event.clientX >= window.innerWidth || event.clientY >= window.innerHeight)) {
+            // alert('Mouse of user left the webpage on page ' + page_num_val  + ' at book ' + book_id_val);
+            trackEvent(lastAction, actionTime, 4, 'Mouse of user left the webpage on page ' + page_num_val + ' at book ' + book_id_val);
+            lastAction = actionTime;
+        }
+   });
+}
+
+// references index.html
+function enter_mouse_page() {
+    document.addEventListener("mouseenter", (event) => {
+        var actionTime = calculateTime();
+
+        if ((event.clientY > 0 && event.clientY < window.innerHeight) && (event.clientX > 0 && event.clientX < window.innerWidth)) {
+            // alert('Mouse of user re-entered the webpage on page ' + page_num_val  + ' at book ' + book_id_val);
+            trackEvent(lastAction, actionTime, 5, 'Mouse of user re-entered the webpage on page ' + page_num_val + ' at book ' + book_id_val)
+            lastAction = actionTime;
+        }
+    });
 }
 
 function exit_tab() {
     document.addEventListener("visibilitychange", () => {
         var actionTime = calculateTime();
-        
+
         if (document.visibilityState != "visible") {
-       //     alert('User switched to another tab on book ' + book_id_val);
+            // alert('User switched to another tab on book ' + book_id_val);
             trackEvent(lastAction, actionTime, 6, 'User switched to another tab on book ' + book_id_val);
             lastAction = actionTime;
         }
@@ -137,23 +123,27 @@ function enter_tab() {
         var actionTime = calculateTime();
 
         if (document.visibilityState == "visible") {
-            alert('User switched back to our webpage tab on book ' + book_id_val);
+            // alert('User switched back to our webpage tab on book ' + book_id_val);
             trackEvent(lastAction, actionTime, 7, 'User switched back to our webpage tab on book ' + book_id_val);
             lastAction = actionTime;
         }
     });
 }
 
+// references viewer.html
 function turn_page_forward() {
     var actionTime = calculateTime();
-  //  alert('User turned forward to page ' + page_num_next_val + ' on book ' + book_id_val);
+    // alert('User turned forward to page ' + page_num_next_val + ' on book ' + book_id_val);
+
     trackEvent(lastAction, actionTime, 10, 'User turned forward to page ' + page_num_next_val + ' on book ' + book_id_val);
     lastAction = actionTime;
 }
 
-function turn_page_backward() {    
+// references viewer.html
+function turn_page_backward() {
     var actionTime = calculateTime();
-   // alert('User turned backward at page ' + page_num_back_val + ' on book ' + book_id_val);
+    // alert('User turned backward at page ' + page_num_back_val + ' on book ' + book_id_val);
+
     trackEvent(lastAction, actionTime, 11, 'User turned backward to page ' + page_num_back_val + ' on book ' + book_id_val);
     lastAction = actionTime;
 }
@@ -172,6 +162,10 @@ function exit_text_response() {
 //    trackEvent(lastAction, dateString, 13, '');
 }
 
+enter_tab();
+exit_tab();
+enter_mouse_page()
+exit_mouse_page()
 
 window.onload = function afterWebPageLoad() {
 

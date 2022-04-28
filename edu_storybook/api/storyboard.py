@@ -268,8 +268,6 @@ def storyboard_save_user_action():
     # TODO: verify token
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
-    print(request.form)
-
     # check that all expected inputs are received
     try:
         assert 'book_id' in request.form
@@ -298,7 +296,6 @@ def storyboard_save_user_action():
             "message": "The book_id or action_key_id failed a sanitize check. The POSTed fields should be an integer for book_id or action_id."
         }, 400, {"Content-Type": "application/json"}
 
-    print(request.form['action_start'], request.form['action_stop'], request.form['detail_description'])
     # sanitize inputs: make sure action_start and action_stop are in correct format
     if re_timestamp.match(request.form["action_start"]) is None or \
             re_timestamp.match(request.form["action_stop"]) is None or \
