@@ -106,47 +106,11 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
     cursor = connection.cursor()
 
     fileInput = get_book_image_path(book_id, page_number)
-
-    try:
-        # get quiz questions and answers and more information about those
-        cursor.execute(
-            "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
-            "INNER JOIN BOOK ON QUESTION.BOOK_ID = BOOK.BOOK_ID " +
-            "INNER JOIN ANSWER ON QUESTION.QUESTION_ID = ANSWER.QUESTION_ID " +
-            "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") " +
-            "ORDER BY QUESTION_ID,CORRECT"
-        )
-        label_results_from(cursor)
-    except cx_Oracle.Error as e:
-        a_storyboard_log.warning('Error when acessing database')
-        a_storyboard_log.warning(e)
-        return {
-            "status": "fail",
-            "fail_no": 5,
-            "message": "Error accessing quiz questions and its answers"
-        }, 400, {"Content-Type": "application/json"}
-
-    quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
-
-    # check if current page has any quiz question (this assumes only a single question would be there in a page)
-    # Future concern: What if there are back-to-back questions on a single page?
-    # append options of that question onto a list
-    options = []
-    quiz_question_info = None
-    for question in quizQuestions:
-        if page_number in range(question['PAGE_PREV'], question['PAGE_NEXT']):
-            quiz_question_info = question
-            options.append(question['ANSWER'])
-
-    # This detects whether we have a quiz question on page or not
-    if(quiz_question_info is not None):
-        return {
-            "status": "ok",
-            "question_id" : quiz_question_info['QUESTION_ID'],
-            "question" : quiz_question_info['QUESTION'],
-            "options" : options,
-            "correct_answer": quiz_question_info['ANSWER']
-        }
+        
+    quiz_question = check_quiz_question(book_id, page_number)
+    
+    if(quiz_question != False):
+        return quiz_question
 
     cursor = connection.cursor()
     try:
@@ -179,7 +143,96 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "message": "Could not get image"
         }, 400, {"Content-Type": "application/json"}
 
+def check_quiz_question(book_id: int, page_number: int):
+    '''
+    This is the logic for checking if there's a quiz question for a book with given book_id and given current
+    page number page_number
+    
+    Parameters: book_id (int) - ID of the book
+                page_number(int) - Current page number of a book
+    
+    Return: question in dictionary format OR boolean value False if there's no quiz question OR Oracle Error
+            for not accessing quiz questions from DB correctly
+    '''
+    
+    # goes into database and gets the bucket folder.
+    # goes into bucket and then says I want this image from this folder.
+    connection = pool.acquire()
+    cursor = connection.cursor()
+    
+    try:
+        # get quiz questions and answers and more information about those
+        cursor.execute(
+            "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.QUESTION_TYPE, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
+            "INNER JOIN BOOK ON QUESTION.BOOK_ID = BOOK.BOOK_ID " +
+            "INNER JOIN ANSWER ON QUESTION.QUESTION_ID = ANSWER.QUESTION_ID " +
+            "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") " +
+            "ORDER BY QUESTION_ID,CORRECT"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_storyboard_log.warning('Error when acessing database')
+        a_storyboard_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Error accessing quiz questions and its answers"
+        }, 400, {"Content-Type": "application/json"}
 
+    quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
+    
+    '''
+    Database records organized as List Of Tuples (this is how quizQuestions would show results)
+[    
+    (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	Her dream of one day being a Chemist. , 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	Marta is taking a science test about the ecosystems in her state., 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3,	128 )
+    (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	How well she did on her math test yesterday., 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	Her teacher’s compliment of her answer to a question, 1, storybook,	Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (4,	What is red, 0,	Apple,	0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (4,	What is red, 0,	Banana,	1, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (42,	testing edit from postman,	0,	testing postman edit2 blah, 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (42,	testing edit from postman,	0,	testing postman edit1 blah,	0,	storybook,	Supporting Student Motivation in Online and Technology Contexts, 2,	3, 128 )
+    (42,	testing edit from postman,	0,	postman4,	0,	storybook,	Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (42,	testing edit from postman,	0,	testing postman edit3 blah,	1,	storybook,	Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (87,	testing postman with " ~`~ ", 1, TESTANSWER 2, 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (87,	testing postman with " ~`~ ", 1, TESTANSWER 1, 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+    (87,	testing postman with " ~`~ ", 1, TEST~ANS~`~WER, 3,	1, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
+]
+    '''
+    answers = []
+    curr_question_id = None
+    full_question = None
+    question_type = None
+    correct_answer = None
+    for question in quizQuestions:
+        
+        # This is the assumption that only one question appears per page (whether free response or MC)
+        
+        if curr_question_id == None:
+            curr_question_id = question['QUESTION_ID']
+            full_question = question['QUESTION']
+            question_type = question['QUESTION_TYPE']
+            answers.append(question['ANSWER'])
+            if question['CORRECT'] == 1:
+                correct_answer = question['ANSWER']
+                
+        elif question['QUESTION_ID'] == curr_question_id:
+            answers.append(question['ANSWER'])
+            if question['CORRECT'] == 1:
+                correct_answer = question['ANSWER']
+            
+            
+    if(curr_question_id is not None):
+        return {
+            "question_id": curr_question_id,
+            "question": full_question,
+            "question_type": question_type,
+            "answers": answers,
+            "correct_answer": correct_answer
+        }
+    else:
+        return False
+    
 @a_storyboard.route("/api/storyboard/pagecount/<int:book_id_in>", methods=['GET'])
 def storyboard_get_pagecount(book_id_in: int):
     '''

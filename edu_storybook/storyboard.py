@@ -18,8 +18,8 @@ from edu_storybook.core.auth import validate_login
 from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
 
-from edu_storybook.api.storyboard import storyboard_get_pagecount
 from edu_storybook.api.index import get_book_info
+from edu_storybook.api.storyboard import check_quiz_question
 
 from edu_storybook.navbar import make_navbar
 
@@ -71,6 +71,42 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
         next_link_visibility = "display: none"
     else:
         next_link_visibility = "display: block"
+    
+    quiz_question = check_quiz_question(book_id, page_number)
+    
+    if(quiz_question != False):
+        print(quiz_question)
+        
+        # Assuming from DB that MC has question type 0 and Free Response has question type 1
+        if(quiz_question['question_type'] == 0):
+            
+            display_question = quiz_question['question']
+            answer_choices = quiz_question['answers']
+            
+            quiz_page = Templates._base.substitute(
+                title = 'Quiz Page',
+                description = 'Check Your Understanding So Far',
+                body = Templates.storyboard_quiz_mc.substitute(
+                    question = display_question,
+                    mc_items = answer_choices
+                )
+            )
+        else:
+            display_question = quiz_question['question']
+            display_question_id = quiz_question['question_id']
+            
+            quiz_page = Templates._base.substitute(
+                title = 'Quiz Page',
+                description = 'Check Your Understanding So Far',
+                body = Templates.storyboard_quiz_fr.substitute(
+                    question = display_question,
+                    question_id = display_question_id
+                )
+            )
+            
+        return quiz_page
+            
+        
 
     # Generate Storyboard Viewer page
     storyboard_page = Templates._base.substitute(
