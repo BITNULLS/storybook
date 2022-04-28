@@ -382,10 +382,8 @@ def admin_book_study():
 
         try:
             conn_lock.acquire()
-            print("bye")
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
-                print("1", study_id)
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
                     + request.form['book_id'] + ", "
                     + str(study_id) + ")")
@@ -419,15 +417,11 @@ def admin_book_study():
 
         book_ids = request.form.getlist('book_id') # Gives us the list of all study ids that are being selected on frontend
         cursor = connection.cursor()
-        print("test123")
+
         try:
             conn_lock.acquire()
-            print("bye", book_ids)
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for book_id in book_ids:
-                print('INSERT into BOOK_STUDY (book_id, study_id) VALUES ('
-                    + str(book_id)+ ', '
-                    + request.form['study_id'] +')')
                 cursor.execute('INSERT into BOOK_STUDY (book_id, study_id) VALUES ('
                     + str(book_id)+ ', '
                     + request.form['study_id'] +')')
@@ -446,9 +440,15 @@ def admin_book_study():
         finally:
             conn_lock.release()
 
-    return{
-        "status": "ok"
-    }
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+    return res
 
 @a_admin.route("/api/admin/book/grant", methods=['POST'])
 def admin_add_book_to_study():
@@ -992,19 +992,6 @@ def admin_get_users(offset:int):
 
     token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
 
-    # sanitize inputs: make sure offset is int
-    try:
-        offset = int(offset)
-    except ValueError:
-        a_admin_log.debug(
-            'User requested list of users with a non-int offset param'
-        )
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "offset failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
-
     # connect to database
     cursor = connection.cursor()
 
@@ -1136,7 +1123,6 @@ def admin_study_user():
             }, 400, {"Content-Type": "application/json"}
 
     #check for study_id and user_id
-#    print(request.form['user_id'])
 
     try:
         #assert 'study_id' in request.form
@@ -1148,17 +1134,6 @@ def admin_study_user():
             "message": "user_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
-    #make sure study_id is an int
-    '''
-    try:
-        study_id = int(request.form['study_id'])
-    except ValueError:
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "study_id failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
-    '''
     # do the right method
 
     if request.method =='POST':
@@ -1200,9 +1175,15 @@ def admin_study_user():
             }, 400, {"Content-Type": "application/json"}
 
 
-    return{
-        'status':  'ok'
-    }
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+    return res
 
 
 @a_admin.route("/api/admin/school", methods=['GET', 'POST', 'PUT', 'DELETE'])
@@ -1418,7 +1399,8 @@ def admin_update_books():
 @a_admin.route("/api/admin/study", methods=['POST'])
 def admin_create_study():
     """
-    Updates the book name and description
+    Allows admin to create a new study
+    Take in study_id, school_id, study_name, and study_invite_code
     """
 
     # validate that user has rights to access books

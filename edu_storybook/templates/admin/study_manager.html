@@ -20,11 +20,6 @@ suggestion from @lisapat
             $('#addBookToStudy').modal('show')
         }
 
-        /*function addStudyToUser(study_id) {
-            $('#studyId').val(study_id);
-            $('#addStudyToUser').modal('show')
-        }*/
-
         function showUsers(study_id) {
             $.ajax({
                 url: "/api/admin/study/user",
@@ -45,7 +40,6 @@ suggestion from @lisapat
 
                     $('#showUsers').modal('show');
 
-                  //Do Something
                 },
                 failure: function(xhr){
                     alert("ERROR!!!!!!")
@@ -63,7 +57,7 @@ suggestion from @lisapat
     <!--Modal for Adding a Book to this Study -->
     <div class="modal fade" id="addBookToStudy" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
-        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data" onsubmit="setTimeout(function(){window.location.reload();},10);">
+        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="redirect" value="/admin/study_manager">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -98,7 +92,7 @@ suggestion from @lisapat
     <!-- Adding/Editing User to be in Studies -->
     <div class="modal fade" id="addStudyToUser" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
-        <form action="/api/admin/study/user" method="POST" enctype="multipart/form-data" onsubmit="setTimeout(function(){window.location.reload();},10);">
+        <form action="/api/admin/study/user" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="redirect" value="/admin/study_manager">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -149,19 +143,12 @@ suggestion from @lisapat
                                 </tr>
                             </thead>
                             <tbody id="showUsersTable">
-                                <!--
-                                <tr>
-                                    ~user_list
-                                    admin_study_user
-                                </tr>
-                                -->
                             </tbody>
                         </table>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Done</button>
-                    <!--TODO: make info transfer to backend-->
                 </div>
             </div>
         </div>
