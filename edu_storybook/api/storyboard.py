@@ -107,11 +107,13 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
 
     fileInput = get_book_image_path(book_id, page_number)
         
-    quiz_question = check_quiz_question(book_id, page_number, token['sub'])
+    quiz_questions = check_quiz_question(book_id, page_number, token['sub'])
     
-    if(quiz_question != False):
-        return quiz_question
-
+    if(quiz_questions != False):
+        # If there's a quiz question(s) for user to answer, then return the data for the first quiz question
+        # for user to answer
+        return quiz_questions[0]
+    
     cursor = connection.cursor()
     try:
         cursor.callproc("track_last_page",\
@@ -145,29 +147,14 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
 
 def check_quiz_question(book_id: int, page_number: int, user_id: str):
     '''
-    This is the logic for checking if there's a quiz question for a book with given book_id and given current
+    This is the logic for checking if there's a quiz question(s) for a book with given book_id and given current
     page number page_number
     
     Parameters: book_id (int) - ID of the book
                 page_number(int) - Current page number of a book
     
-    Return: question in dictionary format OR boolean value False if there's no quiz question OR Oracle Error
+    Return: list of quiz question(s) OR boolean value False if there's no quiz question OR Oracle Error
             for not accessing quiz questions from DB correctly
-    '''
-    
-    '''
-    Things to work on:
-      - update query in api.storyboard.check_quiz_question to exclude quiz questions that the user has already answered. which means...
-      - check_quiz_question(...) needs to take in a new parameter user_id so that it can check if the user has already answered a quiz question
-      - wherever check_quiz_question(...) is called (just in your gen_storyboard_page pass back the user_id from the token
-      - if there are multiple quiz questions for a single page, just return all of them. in gen_storyboard_page , just select the first quiz question in the list of quiz questions for that page. as the user answers them, they will disappear until none are left for a page
-      - big: if the quiz question is mc (multiple choice), use the quiz_mc_item template for every individual multiple choice answer
-      - for the quiz_mc_item template, the ~url key will be the current url (/storyboard/page/122/5) in the gen_storyboard_page
-      
-      (1) raj fixed that issue
-      (2) there may be multiple quiz questions per page, and we just keep showing one of them until the user answers all of them, and then there'll be none left
-      (3) quiz_mc_items appears for every quiz multiple choice question answer in quiz_mc
-      (4) ~url explained above
     '''
     
     # goes into database and gets the bucket folder.
@@ -178,7 +165,7 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
     try:
         # gets the unanswered quiz questions for a user (checks the user_response table for which questions are answered)
         cursor.execute(
-            "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.QUESTION_TYPE, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
+            "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.QUESTION_TYPE, ANSWER.ANSWER_ID, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
             "INNER JOIN BOOK ON QUESTION.BOOK_ID = BOOK.BOOK_ID " +
             "INNER JOIN ANSWER ON QUESTION.QUESTION_ID = ANSWER.QUESTION_ID " +
             "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") AND NOT EXISTS ( " +
@@ -197,45 +184,40 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
         }, 400, {"Content-Type": "application/json"}
 
     quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
-
-    '''
-[    
-    (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	Her dream of one day being a Chemist. , 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	Marta is taking a science test about the ecosystems in her state., 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3,	128 )
-    (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	How well she did on her math test yesterday., 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	Her teacher’s compliment of her answer to a question, 1, storybook,	Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (4,	What is red, 0,	Apple,	0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (4,	What is red, 0,	Banana,	1, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (42,	testing edit from postman,	0,	testing postman edit2 blah, 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (42,	testing edit from postman,	0,	testing postman edit1 blah,	0,	storybook,	Supporting Student Motivation in Online and Technology Contexts, 2,	3, 128 )
-    (42,	testing edit from postman,	0,	postman4,	0,	storybook,	Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (42,	testing edit from postman,	0,	testing postman edit3 blah,	1,	storybook,	Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (87,	testing postman with " ~`~ ", 1, TESTANSWER 2, 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (87,	testing postman with " ~`~ ", 1, TESTANSWER 1, 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-    (87,	testing postman with " ~`~ ", 1, TEST~ANS~`~WER, 3,	1, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
-]
-
-    '''
+    
     answers = []
     curr_question_id = None
+    curr_answer_id = None
     full_question = None
     question_type = None
     correct_answer = None
     quiz_question_list = []
+    
     for question in quizQuestions:
-        
+    
         if curr_question_id == None:
             curr_question_id = question['QUESTION_ID']
             full_question = question['QUESTION']
             question_type = question['QUESTION_TYPE']
-            answers.append(question['ANSWER'])
+            answers.append({
+                "answer": question['ANSWER'],
+                "answer_id": question['ANSWER_ID']
+            })
             if question['CORRECT'] == 1:
                 correct_answer = question['ANSWER']
-                
+        
+        # This would mean that the question is a MC that has different options coming along        
         elif question['QUESTION_ID'] == curr_question_id:
-            answers.append(question['ANSWER'])
+            answers.append({
+                "answer": question['ANSWER'],
+                "answer_id": question['ANSWER_ID']
+            })
             if question['CORRECT'] == 1:
                 correct_answer = question['ANSWER']
+        
+        # This means that new question came along
+        # Save the output of previous question into quiz_question_list and free the variables to use for
+        # upcoming question
         else:
             quiz_question_list.append(
                 {
@@ -247,25 +229,37 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
                 }
             )
             
-            # Clear up the possible answers list for next question
-            answers.clear()
+            # Reinitializing possible answers list and correct answer for next question
+            answers = []
+            correct_answer = None
             
             curr_question_id = question['QUESTION_ID']
             full_question = question['QUESTION']
             question_type = question['QUESTION_TYPE']
-            answers.append(question['ANSWER'])
+            answers.append({
+                "answer": question['ANSWER'],
+                "answer_id": question['ANSWER_ID']
+            })
             if question['CORRECT'] == 1:
                 correct_answer = question['ANSWER']
             
             
-    if(curr_question_id is not None):
-        return {
-            "question_id": curr_question_id,
-            "question": full_question,
-            "question_type": question_type,
-            "answers": answers,
-            "correct_answer": correct_answer
-        }
+    if(len(quiz_question_list) > 0):
+        
+        # Make sure to append the last question from quizQuestions since the loop would stop without adding
+        # that last question
+        
+        quiz_question_list.append(
+            {
+                "question_id": curr_question_id,
+                "question": full_question,
+                "question_type": question_type,
+                "answers": answers,
+                "correct_answer": correct_answer
+            }
+        )
+        return quiz_question_list
+    
     else:
         return False
     

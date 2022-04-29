@@ -54,6 +54,9 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
             f'An unauthorized, logged out user tried to access the /storyboard/{book_id_in}/{page_number_in} page.'
         )
         abort(403)
+        
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
     
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
     
@@ -77,39 +80,81 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
     else:
         next_link_visibility = "display: block"
     
-    quiz_question = check_quiz_question(book_id, page_number, token['sub'])
+    # Returns the list of quiz question(s) for given book and page number for user to answer
+    quiz_questions = check_quiz_question(book_id, page_number, token['sub'])
     
-    if(quiz_question != False):
-        print(quiz_question)
+    if(quiz_questions != False):
         
-        if(quiz_question['question_type'] == 1):
+        for question in quiz_questions:
+            if(question['question_type'] == 1):
             
-            display_question = quiz_question['question']
-            answer_choices = quiz_question['answers']
+                display_question = question['question']
+                display_question_id = question['question_id']
+                
+                # Check if this is a standard MC question with 4 options
+                if(len(question['answers']) == 4):
+                    display_option_1 = question['answers'][0]['answer']
+                    display_option_2 = question['answers'][1]['answer']
+                    display_option_3 = question['answers'][2]['answer']
+                    display_option_4 = question['answers'][3]['answer']
+                
+                    display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
+                        option_1 = display_option_1,
+                        option_2 = display_option_2,
+                        option_3 = display_option_3,
+                        option_4 = display_option_4,
+                        question_id = display_question_id,
+                        url = "/storyboard/" + str(book_id) + "/" + str(page_number),
+                        answer_id_1 = question['answers'][0]['answer_id'],
+                        answer_id_2 = question['answers'][1]['answer_id'],
+                        answer_id_3 = question['answers'][2]['answer_id'],
+                        answer_id_4 = question['answers'][3]['answer_id'],
+                        fourOptionsVisibility = "display: block",
+                        twoOptionsVisibility = "display: none"
+                    )
+                
+                # This would mean that this is True/False question in MC with just 2 options
+                else:
+                    display_option_1 = question['answers'][0]['answer']
+                    display_option_2 = question['answers'][1]['answer']
+                
+                    display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
+                        option_1 = display_option_1,
+                        option_2 = display_option_2,
+                        question_id = display_question_id,
+                        url = "/storyboard/" + str(book_id) + "/" + str(page_number),
+                        answer_id_1 = question['answers'][1]['answer_id'],
+                        answer_id_2 = question['answers'][2]['answer_id'],
+                        fourOptionsVisibility = "display: none",
+                        twoOptionsVisibility = "display: block"
+                    )
             
-            quiz_page = Templates._base.substitute(
-                title = 'Quiz Page',
-                description = 'Check Your Understanding So Far',
-                body = Templates.storyboard_quiz_mc_item.substitute(
-                    url = "...",
-                    question_id = 1,
-                    answer_id = 1,
+                mc_page = Templates._base.substitute(
+                    title = 'Multiple Choice Quiz',
+                    description = 'Check Your Understanding So Far',
+                    body = Templates.storyboard_quiz_mc.substitute(
+                        question = display_question,
+                        mc_items = display_mc_items                
+                    )
                 )
-            )
-        else:
-            display_question = quiz_question['question']
-            display_question_id = quiz_question['question_id']
+                
+                return mc_page
             
-            quiz_page = Templates._base.substitute(
-                title = 'Quiz Page',
-                description = 'Check Your Understanding So Far',
-                body = Templates.storyboard_quiz_fr.substitute(
-                    question = display_question,
-                    question_id = display_question_id
+            else:
+                display_question = question['question']
+                display_question_id = question['question_id']
+            
+                fr_page = Templates._base.substitute(
+                    title = 'Free Response Quiz',
+                    description = 'Check Your Understanding So Far',
+                    body = Templates.storyboard_quiz_fr.substitute(
+                        url = "/storyboard/" + str(book_id)+ "/" + str(page_number),
+                        question = display_question,
+                        question_id = display_question_id
+                    )
                 )
-            )
-            
-        return quiz_page
+                return fr_page
+
             
         
 
