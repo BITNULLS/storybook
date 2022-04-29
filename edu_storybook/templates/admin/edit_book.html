@@ -182,8 +182,6 @@
         //for everything in the questionsCreated array, send it to the backend
 
         questionsCreated.forEach(function(e) {
-            console.log(e);
-            
             $.ajax({
                 url: '/api/admin/page',
                 type: 'POST',
@@ -195,11 +193,7 @@
                 alert("Cannot send data from questions to backend");
             }
             })
-            
-
         })
-        
-        
     }
 
 </script>
