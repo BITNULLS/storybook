@@ -73,94 +73,13 @@
         let questionPreview = $('<div id="' + randQuestionID + '">' + question + '</div>'); //styling of the question
 
         var answers = []
+        var count = 0;
 
         $('#mc-answer-choice-holder').children().each(function (index, element) {
             var ans = {};
-            ans['correct'] = $(element).children('.input-group.input-group-prepend.input');
+            ans['correct'] = $('.input-group-prepend').children().children()[count].checked;
             ans['content'] = $(element).children('input').val();
-
-            console.log("testing the options");
-            console.log(ans['correct'].val()) //undefined
-            console.log(ans['correct'].prop('checked')); //undefined
-
-            console.log($(element).children('input-group.input-group-prepend.input-group-text.input'));
-            console.log($(element).children('input-group.input-group-prepend.input-group-text.is-correct-checkbox'));
-            console.log($(element).children('input-group.input-group-prepend.input-group-text.is-correct-checkbox.input'));
-
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.input'));
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox'));
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox.input'));
-
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.input').get());
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox').get());
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox.input').get());
-
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.input').prop('checked', 'checked'));
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox').prop('checked', 'checked'));
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox.input').prop('checked', 'checked'));
-
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.input').text());
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox').text());
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox.input').text());
-
-            //gives false
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.input').val());
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox').val());
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox.input').val());
-
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.input').prop('checked'));
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox').prop('checked'));
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox.input').prop('checked'));
-
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.input').is(':checked'));
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox').is(':checked'));
-            console.log($(element).children('.input-group.input-group-prepend.input-group-text.is-correct-checkbox.input').is(':checked'));
-
-
-            console.log($(element).children('input-group.input-group-prepend.input'));
-            console.log($(element).children('input-group.input-group-prepend.is-correct-checkbox'));
-            console.log($(element).children('input-group.input-group-prepend.is-correct-checkbox.input'));
-
-            console.log($(element).children('.input-group.input-group-prepend.input'));
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox'));
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox.input'));
-
-            console.log($(element).children('.input-group.input-group-prepend.input').get());
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox').get());
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox.input').get());
-
-            console.log($(element).children('.input-group.input-group-prepend.input').prop('checked', 'checked'));
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox').prop('checked', 'checked'));
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox.input').prop('checked', 'checked'));
-
-            console.log($(element).children('.input-group.input-group-prepend.input').text());
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox').text());
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox.input').text());
-
-            console.log($(element).children('.input-group.input-group-prepend.input').val());
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox').val());
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox.input').val());
-
-            console.log($(element).children('.input-group.input-group-prepend.input').prop('checked'));
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox').prop('checked'));
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox.input').prop('checked'));
-
-            //gives false
-            console.log($(element).children('.input-group.input-group-prepend.input').is(':checked'));
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox').is(':checked'));
-            console.log($(element).children('.input-group.input-group-prepend.is-correct-checkbox.input').is(':checked'));
-
-            console.log($(element).children('input-group-prepend.input').is(':checked'));
-            console.log($(element).children('input-group-prepend.is-correct-checkbox').is(':checked'));
-            console.log($(element).children('input-group-prepend.is-correct-checkbox.input').is(':checked'));
-
-            //console.log(ans['correct'].is(':checked'));//false
-            //console.log(ans['correct']);
-            //console.log($(element).children('.input-group.input-group-prepend.input'));
-            //console.log($('#is-correct-checkbox').prop('checked')); //true
-            //console.log($(element).prop('checked')); //undefined
-            console.log(ans);
-
+            count = count+1;
             answers.push(ans);
         });
 
@@ -194,9 +113,8 @@
         let correct_ans_temp = "";
         let answers_in_temp_all = []
         for(var choice = 0; choice < answers.length; choice++) { //for everything in the answers array
-            //console.log(answers[choice].correct.prop(':checked'));
-            /**
-            if (answers[choice].correct.checked) { //if the answer is the correct choice
+            
+            if (answers[choice].correct == true) { //if the answer is the correct choice
                 correct_ans_temp = '^^^:' + answers[choice].content; //append the string to the content
                 answers_in_temp_all.push(correct_ans_temp); //put it in the new array 
             }
@@ -204,10 +122,16 @@
                 correct_ans_temp = answers[choice].content;
                 answers_in_temp_all.push(correct_ans_temp);
             }
-            */
            
         }
-        let answers_in = answers_in_temp_all.map(o => o.content).join(" ~`~ ");
+
+        console.log(answers_in_temp_all);
+
+        let answers_in = answers_in_temp_all.map(o => String(o).join(" ~`~ "));
+    
+        console.log(answers_in_temp_all);
+        console.log(answers_in);
+
 
         let thisNewQ = {
                             "book_id_in": book_id_in,
@@ -342,7 +266,7 @@
                                             <div class="input-group mb-1" id="new-mc-answer-choice">
                                                 <div class="input-group-prepend">
                                                     <div class="input-group-text">
-                                                        <input class="mr-1" id="is-correct-checkbox" type="checkbox" aria-label="Checkbox for following text input"> Correct</input>
+                                                        <input class="mr-1" type="checkbox" aria-label="Checkbox for following text input"> Correct</input>
                                                     </div>
                                                 </div>
                                                 <input type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon1">
@@ -351,6 +275,7 @@
                                                 </div>
                                             </div>
                                         </template>
+                                        
 
                                         <div id="mc-answer-choice-holder"></div>
 
