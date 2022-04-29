@@ -11,12 +11,12 @@ import os
 from .filepath import fix_filepath
 from tempfile import TemporaryDirectory
 from typing import List
-from .config import config
+from .config import Config, temp_folder
 
 import logging
 
 c_bucket_log = logging.getLogger('core.bucket')
-if config['production'] == False:
+if Config.production == False:
     c_bucket_log.setLevel(logging.DEBUG)
 
 # Sen_Files Downloader setup - Only used to download project configuration files
@@ -43,7 +43,7 @@ def upload_bucket_file(local_file_path: str, cloud_file_name: str) -> int:
         return oracle_cloud_client.put_object(bucket['namespace'], bucket['name'], cloud_file_name, fh).status
 
 
-def download_bucket_file(filename: str, folder = 'temp') -> str:
+def download_bucket_file(filename: str, folder = temp_folder) -> str:
     """
     Downloads files from cloud bucket
     :param filename: The name of the file to download

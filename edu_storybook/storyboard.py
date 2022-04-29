@@ -55,11 +55,10 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
     book_id = int(book_id_in)
     page_number = int(page_number_in)
 
-    page_count = storyboard_get_pagecount(book_id)['pagecount'] # Get the number of pages based on book_id
-
     # Get book_info based on book_id from latest api endpoint /api/book/book_id
     book_info = json.loads(get_book_info(book_id))
     name = book_info['BOOK_NAME']
+    page_count = book_info['PAGE_COUNT']
 
     # Display/Hide "Previous" link based on current page number
     if page_number == 1:
@@ -79,9 +78,10 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
         description = 'Make an account with our website',
         body = Templates.storyboard_viewer.substitute(
             navbar = make_navbar( auth ),
+            id_of_book = str(book_id),
+            id_of_page = str(page_number),
             book_name = name,
             current_page = "/api/storyboard/page/" + str(book_id) + "/" + str(page_number),
-            id = str(book_id),
             prev_page_num = str(page_number - 1),
             next_page_num = str(page_number + 1),
             show_prev_link = prev_link_visibility,

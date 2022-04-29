@@ -1,20 +1,25 @@
 """
 admin.py
-    Routes beginning with /api/admin/
+
+Routes beginning with `/api/admin/`.
 
 Routes:
-    /api/admin/book/download
-    /api/admin/book/upload
-    /api/admin/book/study
-    /api/admin/book/grant
-    /api/admin/page
-    /api/admin/download/user
-    /api/admin/download/action
-    /api/admin/get/user
-    /api/admin/study/user
-    /api/admin/school
-    /api/admin/book/update
-    /api/admin/study
+
+```
+/api/admin/book/download
+/api/admin/book/upload
+/api/admin/book/study
+/api/admin/book/grant
+/api/admin/page
+/api/admin/download/user
+/api/admin/download/action
+/api/admin/get/user
+/api/admin/study/user
+/api/admin/school
+/api/admin/book/update
+/api/admin/study
+/api/admin/download/free_response
+```
 """
 
 from pydoc import Helper
@@ -43,8 +48,8 @@ from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.bucket import upload_bucket_file, download_bucket_file
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
-from edu_storybook.core.config import config, temp_folder
-from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.config import Config, temp_folder
+from edu_storybook.core.db import pool
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.remove_watchdog import future_del_temp
 from edu_storybook.core.reg_exps import *
@@ -53,7 +58,7 @@ from edu_storybook.core.helper import sanitize_redirects
 a_admin = Blueprint('a_admin', __name__)
 
 a_admin_log = logging.getLogger('api.admin')
-if config['production'] == False:
+if Config.production == False:
     a_admin_log.setLevel(logging.DEBUG)
 
 @a_admin.route("/api/admin/book/download", methods=['POST'])
@@ -66,6 +71,8 @@ def admin_download_book():
 
     Fails:
      - `14`: Unable to download and/or send file.
+
+    Returns: The file requested to be downloaded from the bucket.
     """
     # validate that user has admin rights to download books
     auth = request.cookies.get('Authorization')
@@ -124,7 +131,12 @@ def admin_book_upload():
      - `10`: No file uploaded.
      - `11`: Filename was an empty string.
      - `12`: Error when uploading file to server data bucket.
-     - `13`: Error when querying database
+     - `13`: Error when querying database.
+
+    Returns: If everything worked, and no redirect was specified, then
+    `{"status": "ok"}`. If everything worked, and a redirect was specified, then
+    the user will be redirected. If there was a problem, then
+    `{"status": "fail", ...}`.
     """
     # validate that user has admin rights to upload books
     auth = request.cookies.get('Authorization')
@@ -239,18 +251,16 @@ def admin_book_upload():
             }, 400, {"Content-Type": "application/json"}
 
         # connect to database
+        connection = pool.acquire()
         cursor = connection.cursor()
 
         # 2) insert book into 'book' table
         try:
-            conn_lock.acquire()
-
             cursor.execute("INSERT into BOOK (book_name, description, folder, page_count) VALUES ('"
                            + book_name + "', '"
                            + book_description + "', '"
                            + filename + "', "
                            + str(len(book_pngs)) + ")")
-
             # commit to database
             connection.commit()
         except cx_Oracle.Error as e:
@@ -262,12 +272,9 @@ def admin_book_upload():
                 "message": "Error when querying database. 1159",
                 "database_message": str(e)
             }
-        finally:
-            conn_lock.release()
 
         # 3) Get book_id from 'book' table (given book name and its description) to insert entries in 'book_study' later
         try:
-            conn_lock.acquire()
             cursor.execute("SELECT BOOK_ID FROM BOOK " +
                            "WHERE BOOK_NAME='" + book_name + "' AND DESCRIPTION='" + book_description + "'")
             label_results_from(cursor)
@@ -280,8 +287,6 @@ def admin_book_upload():
                 "message": "Error when querying database. 1160",
                 "database_message": str(e)
             }
-        finally:
-            conn_lock.release()
 
         book_id = cursor.fetchone()
         if book_id is None:
@@ -295,7 +300,6 @@ def admin_book_upload():
 
         # 4) insert studies assigned to a book in 'book_study' table
         try:
-            conn_lock.acquire()
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
@@ -312,8 +316,6 @@ def admin_book_upload():
                 "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
-        finally:
-            conn_lock.release()
 
         res = None
         if 'redirect' in request.form:
@@ -334,6 +336,7 @@ def admin_book_upload():
             "fail_no": 17,
             "message": "invalid file format or file"
         }, 400, {"Content-Type": "application/json"}
+
 
 @a_admin.route("/api/admin/book/study", methods=['POST'])
 def admin_book_study():
@@ -450,8 +453,12 @@ def admin_book_study():
         })
     return res
 
+
 @a_admin.route("/api/admin/book/grant", methods=['POST'])
 def admin_add_book_to_study():
+    '''
+    Add a book to a study.
+    '''
     # validate that user can access data
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -486,11 +493,11 @@ def admin_add_book_to_study():
     # book_id and created_on handled by trigger
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     # insert query
     try:
-        conn_lock.acquire()
         cursor.execute("INSERT into BOOK (book_name, url, description, study_id) VALUES ('"
                        + book_name + "', '"
                        + book_url + "', '"
@@ -509,14 +516,13 @@ def admin_add_book_to_study():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-    finally:
-        conn_lock.release()
 
 
 @a_admin.route("/api/admin/page", methods=['POST', 'GET', 'PUT', 'DELETE'])
 def admin_page_handler():
     """
-    This endpoint handles quiz questions and answers
+    This endpoint handles quiz questions and answers. This allows an admin to
+    create, get, update, or delete quiz questions and their answers.
     """
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -528,7 +534,10 @@ def admin_page_handler():
 
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
+
+    # grab a connection
+    connection = pool.acquire()
 
     if request.method == 'POST':
         # check to make sure you have a book_id
@@ -565,11 +574,9 @@ def admin_page_handler():
 
         # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
         # regex is not very efficient method here for sql injection check
-
         cursor = connection.cursor()
 
         try:
-            conn_lock.acquire()
             cursor.callproc("insert_question_proc",\
                 [request.form['question_in'],\
                     request.form['school_id_in'],\
@@ -588,8 +595,6 @@ def admin_page_handler():
                 "message": "Error when querying database. line 889",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        finally:
-            conn_lock.release()
 
         return {
           "status": "ok"
@@ -622,7 +627,6 @@ def admin_page_handler():
             }, 400, {"Content-Type": "application/json"}
 
         try:
-            conn_lock.acquire()
             cursor.execute(
                 "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION " +
                 "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID " +
@@ -639,8 +643,6 @@ def admin_page_handler():
                 "message": "Error when querying database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        finally:
-            conn_lock.release()
 
         # fetching all the questions and storing them in questions array
         questions = []
@@ -693,7 +695,6 @@ def admin_page_handler():
         # try query calling procedure "edit_question_proc"
         cursor = connection.cursor()
         try:
-            conn_lock.acquire()
             cursor.callproc("edit_question_proc",\
                 [request.form['question_id_in'],\
                     request.form['question_in'],\
@@ -709,8 +710,6 @@ def admin_page_handler():
                 "message": "Error when querying database. line 889",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        finally:
-            conn_lock.release()
 
         return {
           "status": "ok"
@@ -776,12 +775,12 @@ def admin_page_handler():
 @a_admin.route("/api/admin/download/user", methods=['GET'])
 def admin_download_user_data():
     """
-    Exports user profile data to a csv file
+    Exports user profile data to a csv file.
 
-    - Connects to database
-    - Computes a select query to get user profile data
-    - calls create_csv(query_results, headers) to create csv-formatted string
-    - creates and returns csv file using csv-formatted string
+    - Connects to database.
+    - Computes a select query to get user profile data.
+    - calls create_csv(query_results, headers) to create csv-formatted string.
+    - creates and returns csv file using csv-formatted string.
     """
     # validate that user can access data
     auth = request.cookies.get('Authorization')
@@ -793,6 +792,7 @@ def admin_download_user_data():
         return vl
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     # select query
@@ -846,7 +846,7 @@ def admin_download_user_data():
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
-            data = f.read(config['buffer_size'])
+            data = f.read(Config.buffer_size)
             if not data:
                 break
             sha1.update(data)
@@ -870,12 +870,12 @@ def admin_download_user_data():
 @a_admin.route("/api/admin/download/action", methods=['GET'])
 def admin_download_action_data():
     """
-    Exports user action data to a csv file
+    Exports user action data to a csv file.
 
-    - Connects to database
-    - Computes a select query to get user profile data
-    - calls create_csv(query_results, headers) to create csv-formatted string
-    - creates and returns csv file using csv-formatted string
+    - Connects to database.
+    - Calls a procedure to get user profile data.
+    - calls create_csv(query_results, headers) to create csv-formatted string.
+    - creates and returns csv file using csv-formatted string.
     """
     # validate that user can access data
     auth = request.cookies.get('Authorization')
@@ -887,21 +887,15 @@ def admin_download_action_data():
         return vl
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     # select query
     try:
-        cursor.execute("select user_profile.email, \
-        action.action_start, \
-        action.action_stop, \
-        book.book_name, \
-        action_key.action_name, \
-        action_detail.detail_description \
-        from user_profile \
-        inner join action on user_profile.user_id = action.user_id \
-        inner join book on action.book_id = book.book_id \
-        inner join action_detail on action_detail.detail_id = action.detail_id \
-        inner join action_key on action_detail.action_key_id = action_key.action_key_id")
+        result = cursor.var(cx_Oracle.CURSOR)
+        cursor.callproc("GET_USER_PROFILE_DATA_PROC", \
+            [result])
+        
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)
@@ -913,7 +907,7 @@ def admin_download_action_data():
         }
 
     # assign variable data to cursor.fetchall(). if i do not assign it to a variable, Response() sees it as an empty string
-    data = cursor.fetchall()
+    data = result.getvalue().fetchall()
 
     # column headers for csv
     headers = [
@@ -926,7 +920,7 @@ def admin_download_action_data():
     ]
 
     # create filename with unique guid to prevent duplicates
-    filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
+    filename = temp_folder + "csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
     with open(filename, 'w', newline='') as csvfile:
@@ -942,7 +936,7 @@ def admin_download_action_data():
     sha1 = hashlib.sha1()
     with open(filename, 'rb') as f:
         while True:
-            data = f.read(config['buffer_size'])
+            data = f.read(Config.buffer_size)
             if not data:
                 break
             sha1.update(data)
@@ -967,14 +961,16 @@ def admin_download_action_data():
 @a_admin.route("/api/admin/get/user/<int:offset>", methods=['GET'])
 def admin_get_users(offset:int):
     """
-    Exports user data to a json
+    Exports user data to a JSON.
 
-    - Connects to database
-    - Computes a select query to get user data
+    - Connects to database.
+    - Computes a select query to get user data.
     - return USER_ID, USERNAME (full), STUDY that they currently belong to.
-        Important: Sort by join date, or login date, or something. We want fresh users first.
+        Important: Sort by join date, or login date, or something. We want fresh
+        users first.
     - Allow an admin to retrieve a JSON list of all of the users.
-        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset to grab the first 50 rows, then next 50 rows.
+        LIMIT the response to only 50 rows, and use the PL/SQL OFFSET to offset
+        to grab the first 50 rows, then next 50 rows.
         Make offset an input parameter (int).
     """
 
@@ -990,9 +986,10 @@ def admin_get_users(offset:int):
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
@@ -1042,9 +1039,10 @@ def admin_get_books(offset: int):
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
@@ -1071,6 +1069,7 @@ def admin_get_books(offset: int):
         "books": books
     }
 
+
 @a_admin.route("/api/admin/study/user", methods=['GET', 'POST', 'DELETE'])
 def admin_study_user():
     '''
@@ -1089,7 +1088,7 @@ def admin_study_user():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
     if request.method == "GET":
         cursor = connection.cursor()
@@ -1135,7 +1134,6 @@ def admin_study_user():
         }, 400, {"Content-Type": "application/json"}
 
     # do the right method
-
     if request.method =='POST':
         study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
 
@@ -1174,7 +1172,6 @@ def admin_study_user():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
 
-
     res = None
     if 'redirect' in request.form:
         user_redirect_url = sanitize_redirects(request.form['redirect'])
@@ -1203,7 +1200,10 @@ def admin_school():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
+
+    # grab db connection
+    connection = pool.acquire()
 
     # return the full list of schools
     if request.method =='GET':
@@ -1231,7 +1231,7 @@ def admin_school():
             "schools": schools
         }
 
-    #check for school_id and school_name
+    # check for school_id and school_name
     try:
         assert 'school_name' in request.form
     except AssertionError:
@@ -1305,7 +1305,7 @@ def admin_school():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
 
-    #TODO: Fix cascading delete with schools that reference delete
+    # TODO: Fix cascading delete with schools that reference delete
     # check if school name and id and then delete it
     '''
     elif request.method == 'DELETE':
@@ -1329,12 +1329,12 @@ def admin_school():
         'status':  'ok'
     }
 
+
 @a_admin.route("/api/admin/book/update", methods=['POST'])
 def admin_update_books():
     """
-    Updates the book name and description
+    Updates the name and description of a book.
     """
-
     # validate that user has rights to access books
     auth = request.cookies.get('Authorization')
     vl = validate_login(
@@ -1347,9 +1347,9 @@ def admin_update_books():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
-    # check to make sure you have a book name and book_description 
+    # check to make sure you have a book name and book_description
     try:
         assert 'book_name' in request.form
         assert 'book_description' in request.form
@@ -1375,6 +1375,7 @@ def admin_update_books():
         }, 400, {"Content-Type": "application/json"}
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
@@ -1396,6 +1397,7 @@ def admin_update_books():
     }
 
 
+
 @a_admin.route("/api/admin/study", methods=['POST'])
 def admin_create_study():
     """
@@ -1411,6 +1413,7 @@ def admin_create_study():
     )
     if vl != True:
         return vl
+
 
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
@@ -1468,3 +1471,94 @@ def admin_create_study():
     return {
         "status": "ok"
     }
+
+
+@a_admin.route("/api/admin/download/free_response", methods=['GET'])
+def admin_download_free_response():
+    """
+    Exports user free response data to a csv file.
+
+    - Connects to database.
+    - Calls a procedure to get user free response data.
+    - calls create_csv(query_results, headers) to create csv-formatted string.
+    - creates and returns csv file using csv-formatted string.
+    """
+    # validate that user can access data
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    # connect to database
+    connection = pool.acquire()
+    cursor = connection.cursor()
+
+    # select query
+    try:
+        result = cursor.var(cx_Oracle.CURSOR)
+        cursor.callproc("GET_USER_FREE_RESPONSE_DATA_PROC", \
+            [result])
+        
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall(). if i do not assign it to a variable, Response() sees it as an empty string
+    data = result.getvalue().fetchall()
+
+    # column headers for csv
+    headers = [
+        "Email",
+        "First Name",
+        "Last Name",
+        "Question",
+        "Response",
+        "Book Name",
+        "Submitted On"
+    ]
+
+    # create filename with unique guid to prevent duplicates
+    filename = temp_folder + "csv_export_" + str(uuid.uuid4()) + ".csv"
+
+    # write data to new csv file in data/csv_exports
+    with open(filename, 'w', newline='') as csvfile:
+        # init csv writer
+        writer = csv.writer(csvfile)
+        # add headers
+        writer.writerow(headers)
+        # iterate through data -> data is a list of tuples
+        for row in list(map(lambda x: tuple(map(lambda i: str(i), x)), data)):
+            writer.writerow(row)
+
+    # calculate etag
+    sha1 = hashlib.sha1()
+    with open(filename, 'rb') as f:
+        while True:
+            data = f.read(Config.buffer_size)
+            if not data:
+                break
+            sha1.update(data)
+
+    # queue the file to be removed
+    future_del_temp(filename)
+
+    try: # return response
+        return send_file(filename, mimetype="text/csv", attachment_filename="free_response.csv", as_attachment=True, etag=sha1.hexdigest())
+    except Exception as e:
+        a_admin_log.warning('Error when sending CSV data file to user')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 9,
+            "message": "Error when sending csv file.",
+            "flask_message": str(e)
+        }

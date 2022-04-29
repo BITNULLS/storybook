@@ -3,6 +3,7 @@ reg_exps.py
 
 Contains all the regular expressions used in the app.
 """
+
 import re
 
 re_alphanumeric = re.compile(r"[a-zA-Z0-9]")
@@ -15,3 +16,4 @@ re_email = re.compile(r"[^@]+@[^@]+\.[^@]+")
 re_timestamp = re.compile(
     r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
 re_redirect_link = re.compile(r"^/([\w.]*/?)*")
+re_jwt = re.compile(r"[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]+")

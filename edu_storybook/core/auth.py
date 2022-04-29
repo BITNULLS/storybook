@@ -1,11 +1,7 @@
 """
 auth.py
-    ...
 
-Functions:
-    login()
-    logout()
-    register()
+Holds the critical authentication functions that are used throughout the app.
 """
 
 import jwt
@@ -17,13 +13,13 @@ import logging
 from flask import make_response
 
 from .sensitive import jwt_key
-from .config import config
+from .config import Config
 from .helper import label_results_from
 from .email import send_email
 from .reg_exps import *
 
 c_auth_log = logging.getLogger('core.auth')
-if config['production'] == False:
+if Config.production == False:
     c_auth_log.setLevel(logging.DEBUG)
 
 
@@ -38,17 +34,17 @@ def issue_auth_token(res, token):
     """
     if 'Bearer ' in token:
         token = token.replace('Bearer ', '', 1)
-    old_token = jwt.decode(token, jwt_key, algorithms=config['jwt_alg'])
+    old_token = jwt.decode(token, jwt_key, algorithms=Config.jwt_alg)
     new_token = jwt.encode({
         "iat": int(time.time()),
         "session": old_token['session'],
         "sub": old_token['sub'],
         "permission": old_token['permission']
-    }, jwt_key, algorithm=config['jwt_alg'])
+    }, jwt_key, algorithm=Config.jwt_alg)
     res.set_cookie(
         "Authorization",
         "Bearer " + new_token,
-        max_age=config["login_duration"],
+        max_age=Config.login_duration,
         domain="localhost",
         samesite="Lax"
         # secure=True,
@@ -62,7 +58,7 @@ def validate_login(auth: str, permission: int=0):
     permissions granted.
 
     NOTE:  For creating sequential "fail_no" (fail numbers), start at 8, as this
-    function may produce fail numbers 1 through 7.
+    function may produce fail numbers 1 through 3.
 
     Args:
      - auth (str): The Authorization cookie given to the user.
@@ -83,23 +79,39 @@ def validate_login(auth: str, permission: int=0):
             "status": "fail",
             "fail_no": 1,
             "message": "The Authorization header was not provided."
-        }
+        }, 400, {"Content-Type": "application/json"}
+
+    if 'Bearer' not in auth:
+        c_auth_log.debug('User provided an invalid Authorization header, missing Bearer keyword')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "Invalid Authorization header was provided",
+        }, 400, {"Content-Type": "application/json"}
 
     if 'Bearer' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config["jwt_alg"])
+    if re_jwt.match(auth) is None:
+        c_auth_log.debug('User provided malformed JWT token.')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "The JSON Web Token (JWT) was incorrectly formatted",
+        }, 400, {"Content-Type": "application/json"}
+
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
     t = int(time.time())
 
-    if token['iat'] + config['login_duration'] < t:
+    if token['iat'] + Config.login_duration < t:
         c_auth_log.debug('User provided an expired token')
         return {
             "status": "fail",
-            "fail_no": "2",
+            "fail_no": 2,
             "message": "Session is expired. Please log in again.",
             "details": {
                 "iat": token['iat'],
-                "age": config['login_duration'],
+                "age": Config.login_duration,
                 "time": t
             }
         }, 400, {"Content-Type": "application/json"}
@@ -108,7 +120,7 @@ def validate_login(auth: str, permission: int=0):
         c_auth_log.debug('User lacks permission for endpoint')
         return {
             "status": "fail",
-            "fail_no": "3",
+            "fail_no": 3,
             "message": "You do not have high enough permissions to view this endpoint."
         }, 403, {"Content-Type": "application/json"}
 

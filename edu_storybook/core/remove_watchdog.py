@@ -9,7 +9,7 @@ import time
 import sys
 import logging
 from multiprocessing import Process, Queue
-from .config import config
+from .config import Config
 
 # TODO: fix logging from this script.  The problem is that remove_watchdog() is
 #       run in a parallel process, meaning that it's logging is not correctly
@@ -76,10 +76,10 @@ def future_del_temp(filepath: str = '', files: list = []) -> None:
         remove_queue.put([
             {
                 "filepath": filepath,
-                "expiration": int(time.time()) + config['temp_file_expire']
+                "expiration": int(time.time()) + Config.temp_file_expire
             }
         ])
     elif len(filepath) == 0:
-        exp = int(time.time()) + config['temp_file_expire']
+        exp = int(time.time()) + Config.temp_file_expire
         remove_queue.put(
             map(lambda f: {"filepath": f, "expiration": exp}, files))

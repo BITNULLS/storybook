@@ -1,7 +1,14 @@
 """
 password.py
 
-Routes beginning with /api/password/
+Routes beginning with `/api/password/`.
+
+Routes:
+
+```
+/api/password/forgot
+/api/password/reset
+```
 """
 
 from flask import request
@@ -17,15 +24,15 @@ import bcrypt
 import logging
 
 from edu_storybook.core.email import send_email
-from edu_storybook.core.db import connection, conn_lock
+from edu_storybook.core.db import pool
 from edu_storybook.core.reg_exps import *
 from edu_storybook.core.helper import sanitize_redirects
-from edu_storybook.core.config import config
+from edu_storybook.core.config import Config
 
 a_password = Blueprint('a_password', __name__)
 
 a_password_log = logging.getLogger('api.password')
-if config['production'] == False:
+if Config.production == False:
     a_password_log.setLevel(logging.DEBUG)
 
 # input email & check if email exists
@@ -58,7 +65,9 @@ def password_forgot():
     rand_str = ''.join(random.SystemRandom().choice(
         string.ascii_uppercase + string.digits) for _ in range(512))
 
+    connection = pool.acquire()
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             # fix the SQL statement with user_session?
@@ -88,8 +97,7 @@ def password_forgot():
     now = datetime.datetime.now()
     req_date = (now.strftime("%Y/%m/%d"))
 
-    try:  # it does not insert with Oracle db? (but works in SQLDeveloper)
-        conn_lock.acquire()
+    try:
         cursor.execute(
             "INSERT INTO PASSWORD_RESET(USER_ID, RESET_KEY, REQUEST_DATE) VALUES('" + user_id + "','" + rand_str + "', TO_DATE('" + req_date + "', 'yyyy/mm/dd'))")
         connection.commit()
@@ -102,8 +110,6 @@ def password_forgot():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    finally:
-        conn_lock.release()
 
     key = 'edustorybook.tk/password/reset#key=' + rand_str
 
@@ -167,7 +173,9 @@ def password_reset():
     reset_key = (request.form['reset_key'])
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             "SELECT USER_ID FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
@@ -191,7 +199,6 @@ def password_reset():
         }, 400, {"Content-Type": "application/json"}
 
     try:
-        conn_lock.acquire()
         cursor.execute("UPDATE USER_PROFILE set PASSWORD ='" +
                        hashed.decode('utf8') + "' WHERE user_id ='" + result[0] + "'")
         connection.commit()
@@ -204,11 +211,8 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    finally:
-        conn_lock.release()
 
     try:
-        conn_lock.acquire()
         cursor.execute(
             "DELETE FROM PASSWORD_RESET WHERE RESET_KEY ='" + reset_key + "'")
         connection.commit()
@@ -221,8 +225,6 @@ def password_reset():
             "message": "Error when querying database.",
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
-    finally:
-        conn_lock.release()
 
     res = None
     if 'redirect' in request.form:

@@ -50,31 +50,23 @@
     <main class="pdoc">
             <section>
                     <h1 class="modulename">
-<a href="./../../edu_storybook.html">edu_storybook</a><wbr>.<a href="./../core.html">core</a><wbr>.remove_watchdog    </h1>
+edu_storybook<wbr>.<a href="./../core.html">core</a><wbr>.remove_watchdog    </h1>
 
-                        <div class="docstring"><p>remove_watchdog.py
-    Simple script for managing the removal of temporary files in a separate 
-    process.</p>
+                        <div class="docstring"><p>remove_watchdog.py</p>
 
-<p>Functions:
-    remove_watchdog(...)
-    future_del_temp(...) - The function you use to mark a file for deletion.</p>
+<p>Simple script for managing the removal of temporary files in a separate process.</p>
 </div>
 
                         <details>
             <summary>View Source</summary>
             <div class="pdoc-code codehilite"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">remove_watchdog.py</span>
-<span class="sd">    Simple script for managing the removal of temporary files in a separate </span>
-<span class="sd">    process.</span>
 
-<span class="sd">Functions:</span>
-<span class="sd">    remove_watchdog(...)</span>
-<span class="sd">    future_del_temp(...) - The function you use to mark a file for deletion.</span>
+<span class="sd">Simple script for managing the removal of temporary files in a separate process.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span> 
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Queue</span>
@@ -90,6 +82,7 @@
 <span class="sd">    the remove queue is a list of dicts, with each dict containing &quot;expiration&quot;</span>
 <span class="sd">    and &quot;filepath&quot;. It looks like</span>
 
+<span class="sd">    ```</span>
 <span class="sd">    [</span>
 <span class="sd">        {</span>
 <span class="sd">            &quot;expiration&quot;: 129941234,</span>
@@ -97,6 +90,7 @@
 <span class="sd">        },</span>
 <span class="sd">        ...</span>
 <span class="sd">    ]</span>
+<span class="sd">    ```</span>
 
 <span class="sd">    Where &quot;expiration&quot; is epoch time of file to be deleted.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -125,13 +119,13 @@
 <span class="sd">    Marks the temporary files that should be removed later by the Remove </span>
 <span class="sd">    Watchdog in the future.</span>
 
-<span class="sd">    NOTE: Only filepath or files args should be valued, not both (XOR).</span>
+<span class="sd">    **NOTE:** Only filepath or files args should be valued, not both (XOR).</span>
 
-<span class="sd">    :param filepath: The path to a file that should be removed.</span>
-<span class="sd">    :param files: A list of files that should be removed.</span>
-<span class="sd">    :type filepath: str</span>
-<span class="sd">    :type files: str</span>
-<span class="sd">    :returns: None.</span>
+<span class="sd">    Args:</span>
+<span class="sd">     - filepath: The path to a file that should be removed.</span>
+<span class="sd">     - files: A list of files that should be removed.</span>
+
+<span class="sd">    Returns: None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">filepath</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span>
                 <span class="mi">0</span><span class="p">),</span> <span class="s1">&#39;filepath and files args cannot both be empty&#39;</span>
@@ -171,6 +165,7 @@
 <span class="sd">    the remove queue is a list of dicts, with each dict containing &quot;expiration&quot;</span>
 <span class="sd">    and &quot;filepath&quot;. It looks like</span>
 
+<span class="sd">    ```</span>
 <span class="sd">    [</span>
 <span class="sd">        {</span>
 <span class="sd">            &quot;expiration&quot;: 129941234,</span>
@@ -178,6 +173,7 @@
 <span class="sd">        },</span>
 <span class="sd">        ...</span>
 <span class="sd">    ]</span>
+<span class="sd">    ```</span>
 
 <span class="sd">    Where &quot;expiration&quot; is epoch time of file to be deleted.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -203,13 +199,14 @@
 the remove queue is a list of dicts, with each dict containing "expiration"
 and "filepath". It looks like</p>
 
-<p>[
+<pre><code>[
     {
         "expiration": 129941234,
         "filepath": "temp/somefile.csv"
     },
     ...
-]</p>
+]
+</code></pre>
 
 <p>Where "expiration" is epoch time of file to be deleted.</p>
 </div>
@@ -231,13 +228,13 @@ and "filepath". It looks like</p>
 <span class="sd">    Marks the temporary files that should be removed later by the Remove </span>
 <span class="sd">    Watchdog in the future.</span>
 
-<span class="sd">    NOTE: Only filepath or files args should be valued, not both (XOR).</span>
+<span class="sd">    **NOTE:** Only filepath or files args should be valued, not both (XOR).</span>
 
-<span class="sd">    :param filepath: The path to a file that should be removed.</span>
-<span class="sd">    :param files: A list of files that should be removed.</span>
-<span class="sd">    :type filepath: str</span>
-<span class="sd">    :type files: str</span>
-<span class="sd">    :returns: None.</span>
+<span class="sd">    Args:</span>
+<span class="sd">     - filepath: The path to a file that should be removed.</span>
+<span class="sd">     - files: A list of files that should be removed.</span>
+
+<span class="sd">    Returns: None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">filepath</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span>
                 <span class="mi">0</span><span class="p">),</span> <span class="s1">&#39;filepath and files args cannot both be empty&#39;</span>
@@ -263,13 +260,16 @@ and "filepath". It looks like</p>
             <div class="docstring"><p>Marks the temporary files that should be removed later by the Remove 
 Watchdog in the future.</p>
 
-<p>NOTE: Only filepath or files args should be valued, not both (XOR).</p>
+<p><strong>NOTE:</strong> Only filepath or files args should be valued, not both (XOR).</p>
 
-<p>:param filepath: The path to a file that should be removed.
-:param files: A list of files that should be removed.
-:type filepath: str
-:type files: str
-:returns: None.</p>
+<p>Args:</p>
+
+<ul>
+<li>filepath: The path to a file that should be removed.</li>
+<li>files: A list of files that should be removed.</li>
+</ul>
+
+<p>Returns: None.</p>
 </div>
 
 

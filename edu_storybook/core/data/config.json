@@ -1,8 +1,10 @@
 {
     "production": false,
-    "_production": "true means live website, false means development mode.",
+    "_production": "True means live website, false means development mode",
     "domain": "https://www.edustorybooks.tk",
     "_domain": "The domain where this application will be hosted on. Must not have a trailing slash",
+    "database_retries": 5,
+    "_database_retries": "How many times to re-establish a connection with a database after it has been lost",
     "last_mod": "2022-04-20",
     "_last_mod": "YYYY-MM-DD of last modification made to project",
     "login_duration": 86400,
