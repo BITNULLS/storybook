@@ -5,87 +5,58 @@ TODO: Display all books, and allow the admin to assign books to studies
 suggestion from: @lisapat -->
 
 ~navbar
+
+
+<script>
+
+    function addStudyToBook(book_id) {
+        $('#bookId').val(book_id);
+        $('#addStudyToBook').modal('show')
+    }
+</script>
+
 <div class="row mt-5">
 
-  <!--Modal for Add to Study-->
-  <div class="modal fade" id="addToStudy" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="selectBookModalLabel">Add Book to Study</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form>
-            <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-              <label class="form-check-label" for="flexCheckDefault">
-                Study ID: 1234
-              </label>
+    <!--Modal for Add to Study-->
+    <div class="modal fade" id="addStudyToBook" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
+        aria-hidden="true">
+        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data" >
+            <input type="hidden" name="redirect" value="/admin/book_manager">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="selectBookModalLabel">Add Book to Study</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="bookId" name="book_id" value="book_id">
+                        <input type="hidden" name="direction" id="direction" value="stob">
+
+                        <!-- TODO: admin_add_book_to_study/  Add all the study ids and have the ones the book is involved with checked -->
+                        <div class="form-group">
+                            <label for="study_id">Study ID(s) for Book</label>
+                            <select multiple class="form-control" id="study_ids" name="study_id">
+                                ~addStudy
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary btn-atts bg-info" >Save</button>
+                        <!--TODO: make info transfer to backend-->
+                    </div>
+                </div>
             </div>
-           </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary btn-atts bg-info" data-dismiss="modal">Save</button>
-          <!--TODO: make info transfer to backend-->
-        </div>
-      </div>
+        </form>
     </div>
-  </div>
 
 
 
-  <div class="col-md-1 col-sm-1"></div>
+    <div class="col-md-1 col-sm-1"></div>
 
-  <div class="col-md-10 col-sm-10">
-    <h1 class="text-center mb-5">Book Manager</h1>
-    <!--Creating the actual "cards for books"-->
-    <div class="card">
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item">
-          <div class="row">
-            <div class="col-3 my-auto">
-              <img class="img-fluid" src="/static/images/Book.jpg" alt="Book Image">
-            </div>
-            <div class="col-6 my-auto">
-              <ul class="list-group">
-                <li>
-                  Title: EduStoryBook
-                </li>
-                <li>
-                  Description: This book ...
-                </li>
-                <li>
-                  Studies: 12482 1234
-                </li>
-              </ul>
-            </div>
-            <div class="col-3 text-center my-auto">
-              <a type="button" class="btn btn-atts bg-info btn-block" data-toggle="modal" data-target="#addToStudy">Add to Study</a>
-              <a href="/admin/edit_book" class="btn btn-atts bg-info btn-block" role="button" aria-pressed="true">Edit Book</a>
-            </div>
-          </div>
-        </li>
-      </ul>
+    <div class="col-md-10 col-sm-10">
+        <h1 class="text-center mb-5">Book Manager</h1>
+        ~book
+        <div class="col-md-1 col-sm-1"></div>
     </div>
-  </div>
-  <div class="col-md-1 col-sm-1"></div>
-</div>
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
