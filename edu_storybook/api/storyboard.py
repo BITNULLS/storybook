@@ -201,7 +201,8 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             question_type = question['QUESTION_TYPE']
             answers.append({
                 "answer": question['ANSWER'],
-                "answer_id": question['ANSWER_ID']
+                "answer_id": question['ANSWER_ID'],
+                "is_correct": question['CORRECT']
             })
             if question['CORRECT'] == 1:
                 correct_answer = question['ANSWER']
@@ -210,7 +211,8 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
         elif question['QUESTION_ID'] == curr_question_id:
             answers.append({
                 "answer": question['ANSWER'],
-                "answer_id": question['ANSWER_ID']
+                "answer_id": question['ANSWER_ID'],
+                "is_correct": question['CORRECT']
             })
             if question['CORRECT'] == 1:
                 correct_answer = question['ANSWER']
@@ -238,7 +240,8 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             question_type = question['QUESTION_TYPE']
             answers.append({
                 "answer": question['ANSWER'],
-                "answer_id": question['ANSWER_ID']
+                "answer_id": question['ANSWER_ID'],
+                "is_correct": question['CORRECT']
             })
             if question['CORRECT'] == 1:
                 correct_answer = question['ANSWER']
