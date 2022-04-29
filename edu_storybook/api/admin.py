@@ -8,6 +8,7 @@ Routes:
 ```
 /api/admin/book/download
 /api/admin/book/upload
+/api/admin/book/study
 /api/admin/book/grant
 /api/admin/page
 /api/admin/download/user
@@ -16,6 +17,7 @@ Routes:
 /api/admin/study/user
 /api/admin/school
 /api/admin/book/update
+/api/admin/study
 /api/admin/download/free_response
 ```
 """
@@ -301,7 +303,7 @@ def admin_book_upload():
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
-                               + str(book_id['BOOK_ID']) + ", "
+                               + request.form['BOOK_ID'] + ", "
                                + str(study_id) + ")")
             # commit to database
             connection.commit()
@@ -334,6 +336,122 @@ def admin_book_upload():
             "fail_no": 17,
             "message": "invalid file format or file"
         }, 400, {"Content-Type": "application/json"}
+
+
+@a_admin.route("/api/admin/book/study", methods=['POST'])
+def admin_book_study():
+    # validate that user has admin rights to upload books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        a_admin_log.debug(
+            'Unauthenticated user tried to access admin_book_upload'
+        )
+        return vl
+    try:
+        assert "direction" in request.form
+    except AssertionError:
+        a_admin_log.debug(
+            'An admin did not provide a book_id ' +\
+                'when creating book_study relation'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_id was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    if request.form['direction'] == 'stob':
+
+        # check to make sure you have a 'book_id'
+        try:
+            assert 'book_id' in request.form
+        except AssertionError:
+            a_admin_log.debug(
+                'An admin did not provide a book_id ' +\
+                    'when creating book_study relation'
+            )
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "book_id was not provided."
+            }, 400, {"Content-Type": "application/json"}
+
+        study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
+        cursor = connection.cursor()
+
+        try:
+            conn_lock.acquire()
+            # Iterate through all study ids and insert them one-by-one to a 'book_study' table
+            for study_id in study_ids:
+                cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
+                    + request.form['book_id'] + ", "
+                    + str(study_id) + ")")
+                # commit to database
+                connection.commit()
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 16,
+                "message": "Error when querying database. 1161",
+                "database_message": str(e)
+            }
+        finally:
+            conn_lock.release()
+    elif request.form['direction'] =='btos':
+        # check to make sure you have a 'book_id'
+        try:
+            assert 'study_id' in request.form
+        except AssertionError:
+            a_admin_log.debug(
+                'An admin did not provide a book_id ' +\
+                    'when creating book_study relation'
+            )
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "book_id was not provided."
+            }, 400, {"Content-Type": "application/json"}
+
+        book_ids = request.form.getlist('book_id') # Gives us the list of all study ids that are being selected on frontend
+        cursor = connection.cursor()
+
+        try:
+            conn_lock.acquire()
+            # Iterate through all study ids and insert them one-by-one to a 'book_study' table
+            for book_id in book_ids:
+                cursor.execute('INSERT into BOOK_STUDY (book_id, study_id) VALUES ('
+                    + str(book_id)+ ', '
+                    + request.form['study_id'] +')')
+                # commit to database
+                connection.commit()
+
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 67,
+                "message": "Error when querying database. 1161",
+                "database_message": str(e)
+            }
+        finally:
+            conn_lock.release()
+
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+    return res
 
 
 @a_admin.route("/api/admin/book/grant", methods=['POST'])
@@ -843,8 +961,8 @@ def admin_download_action_data():
 
 
 # take in input param ofset that will be the limit of 50 ofset of 50 and then be happy.
-@a_admin.route("/api/admin/get/user", methods=['GET'])
-def admin_get_users():
+@a_admin.route("/api/admin/get/user/<int:offset>", methods=['GET'])
+def admin_get_users(offset:int):
     """
     Exports user data to a JSON.
 
@@ -873,38 +991,14 @@ def admin_get_users():
 
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
-    # check to make sure you have a offset
-    try:
-        assert 'offset' in request.form
-    except AssertionError:
-        a_admin_log.debug('User requested list of users without an offset param')
-        return {
-            "status": "fail",
-            "fail_no": 1,
-            "message": "offset was not provided."
-        }, 400, {"Content-Type": "application/json"}
-
-    # sanitize inputs: make sure offset is int
-    try:
-        offset = int(request.form['offset'])
-    except ValueError:
-        a_admin_log.debug(
-            'User requested list of users with a non-int offset param'
-        )
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "offset failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
-
     # connect to database
     connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "SELECT USER_ID, EMAIL, STUDY_ID FROM USER_PROFILE ORDER BY CREATED_ON DESC OFFSET " +
-            request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+            "SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL FROM USER_PROFILE ORDER BY CREATED_ON DESC OFFSET " +
+            str(offset) + " ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
@@ -918,9 +1012,7 @@ def admin_get_users():
         }, 400, {"Content-Type": "application/json"}
 
     users = cursor.fetchall()
-
     return {
-        "status": "ok",
         "users": users
     }
 
@@ -958,7 +1050,9 @@ def admin_get_books(offset: int):
 
     try:
         cursor.execute(
-            "SELECT BOOK_ID, BOOK_NAME, DESCRIPTION, PAGE_COUNT FROM BOOK OFFSET "+
+            "SELECT BOOK.BOOK_ID, BOOK.BOOK_NAME, BOOK.DESCRIPTION, BOOK_STUDY.STUDY_ID FROM BOOK " +
+            "INNER JOIN BOOK_STUDY ON BOOK_STUDY.BOOK_ID = BOOK.BOOK_ID "+
+            "OFFSET "+
             str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
@@ -979,10 +1073,11 @@ def admin_get_books(offset: int):
     }
 
 
-@a_admin.route("/api/admin/study/user", methods=['POST', 'DELETE'])
+@a_admin.route("/api/admin/study/user", methods=['GET', 'POST', 'DELETE'])
 def admin_study_user():
     '''
     'POST' and 'DELETE' methods for admin adding and removing users from studies
+    'GET" method for admin to get users associated with a specific study
     '''
      # validate that user has rights
     auth = request.cookies.get('Authorization')
@@ -998,42 +1093,60 @@ def admin_study_user():
 
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
+    if request.method == "GET":
+        cursor = connection.cursor()
+
+        try:
+            study_id = int(request.args.get('study_id'))
+        except ValueError:
+            return {
+                "status": "fail",
+                "fail_no": 2,
+                "message": "study_id failed a sanitize check. The POSTed field should be an integer."
+            }, 400, {"Content-Type": "application/json"}
+
+        try:
+            cursor.execute("SELECT * from user_study "
+                    +  "full outer join user_profile on user_study.user_id = user_profile.user_id "
+                    + "where user_study.study_id = "+ str(study_id))
+            label_results_from(cursor)
+            users = cursor.fetchall()
+
+
+            return{
+                "users": users
+            }
+        except cx_Oracle.Error as e:
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when accessing database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
     #check for study_id and user_id
+
     try:
-        assert 'study_id' in request.form
+        #assert 'study_id' in request.form
         assert 'user_id' in request.form
     except AssertionError:
         return {
             "status": "fail",
             "fail_no": 1,
-            "message": "study_id or user_id was not provided."
-        }, 400, {"Content-Type": "application/json"}
-
-    # grab db connection
-    connection = pool.acquire()
-
-    # make sure study_id is an int
-    try:
-        study_id = int(request.form['study_id'])
-    except ValueError:
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "study_id failed a sanitize check. The POSTed field should be an integer."
+            "message": "user_id was not provided."
         }, 400, {"Content-Type": "application/json"}
 
     # do the right method
     if request.method =='POST':
+        study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
+
         cursor = connection.cursor()
 
         try:
-            #cursor.execute(
-             #   "INSERT INTO user_study(user_id, study_id) VALUES( '"
-              #      + request.form['user_id']+ "', '" +request.form[study_id]+"')")
-
-            print(request.form['study_id'], request.form['user_id'])
-            cursor.callproc("INSERT_USER_STUDY_PROC",\
-                [request.form['user_id'], int(request.form['study_id'])])
+            for study_id in study_ids:
+                cursor.execute(
+               "INSERT INTO user_study(user_id, study_id) VALUES('"
+                   + request.form['user_id']+ "', " +str(study_id)+")")
 
             # commit changes to db
             connection.commit()
@@ -1062,10 +1175,15 @@ def admin_study_user():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
 
-
-    return {
-        'status':  'ok'
-    }
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+    return res
 
 
 @a_admin.route("/api/admin/school", methods=['GET', 'POST', 'PUT', 'DELETE'])
@@ -1280,6 +1398,83 @@ def admin_update_books():
     return {
         "status": "ok"
     }
+
+
+
+@a_admin.route("/api/admin/study", methods=['POST'])
+def admin_create_study():
+    """
+    Allows admin to create a new study
+    Take in study_id, school_id, study_name, and study_invite_code
+    """
+
+    # validate that user has rights to access books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
+
+    # check to make sure you have a book name and book_description 
+    try:
+        assert 'study_id' in request.form
+        assert 'school_id' in request.form
+        assert 'study_name' in request.form
+        assert 'study_invite_code' in request.form
+    except AssertionError:
+        a_admin_log.debug('An admin did not provide one or more of the following (study_id, school_id, study_name, study_invite_code) when ' +\
+            'adding a new study')
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_name or book_description was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    try:
+        book_id = int(request.form['study_id'])
+        school_id = int(request.form['school_id'])
+        study_invite_code = int(request.form['study_invite_code'])
+    except ValueError:
+        a_admin_log.debug('An admin did not provide a numerical when ' +\
+            'adding a new study')
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "school_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # connect to database
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("INSERT INTO STUDY (study_id, school_id, study_name, study_invite_code) VALUES("
+            + request.form['study_id'] + "', '"
+            + request.form['school_id'] + "', '"
+            + request.form['study_name'] + "', "
+            + request.form['study_invite_code'] + ")")
+        connection.commit()
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    return {
+        "status": "ok"
+    }
+
 
 @a_admin.route("/api/admin/download/free_response", methods=['GET'])
 def admin_download_free_response():
