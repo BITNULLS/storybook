@@ -7,6 +7,7 @@ receiving quiz question responses from the user.
 
 import logging
 import json
+import jwt
 
 from flask import Blueprint
 from flask import request
@@ -17,6 +18,8 @@ from edu_storybook.core.config import config
 from edu_storybook.core.auth import validate_login
 from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.config import Config
 
 from edu_storybook.api.index import get_book_info
 from edu_storybook.api.storyboard import check_quiz_question
@@ -51,7 +54,9 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
             f'An unauthorized, logged out user tried to access the /storyboard/{book_id_in}/{page_number_in} page.'
         )
         abort(403)
-
+    
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
+    
     book_id = int(book_id_in)
     page_number = int(page_number_in)
 
@@ -72,13 +77,12 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
     else:
         next_link_visibility = "display: block"
     
-    quiz_question = check_quiz_question(book_id, page_number)
+    quiz_question = check_quiz_question(book_id, page_number, token['sub'])
     
     if(quiz_question != False):
         print(quiz_question)
         
-        # Assuming from DB that MC has question type 0 and Free Response has question type 1
-        if(quiz_question['question_type'] == 0):
+        if(quiz_question['question_type'] == 1):
             
             display_question = quiz_question['question']
             answer_choices = quiz_question['answers']
@@ -86,9 +90,10 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
             quiz_page = Templates._base.substitute(
                 title = 'Quiz Page',
                 description = 'Check Your Understanding So Far',
-                body = Templates.storyboard_quiz_mc.substitute(
-                    question = display_question,
-                    mc_items = answer_choices
+                body = Templates.storyboard_quiz_mc_item.substitute(
+                    url = "...",
+                    question_id = 1,
+                    answer_id = 1,
                 )
             )
         else:

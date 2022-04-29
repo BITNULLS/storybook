@@ -107,7 +107,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
 
     fileInput = get_book_image_path(book_id, page_number)
         
-    quiz_question = check_quiz_question(book_id, page_number)
+    quiz_question = check_quiz_question(book_id, page_number, token['sub'])
     
     if(quiz_question != False):
         return quiz_question
@@ -143,7 +143,7 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "message": "Could not get image"
         }, 400, {"Content-Type": "application/json"}
 
-def check_quiz_question(book_id: int, page_number: int):
+def check_quiz_question(book_id: int, page_number: int, user_id: str):
     '''
     This is the logic for checking if there's a quiz question for a book with given book_id and given current
     page number page_number
@@ -155,18 +155,35 @@ def check_quiz_question(book_id: int, page_number: int):
             for not accessing quiz questions from DB correctly
     '''
     
+    '''
+    Things to work on:
+      - update query in api.storyboard.check_quiz_question to exclude quiz questions that the user has already answered. which means...
+      - check_quiz_question(...) needs to take in a new parameter user_id so that it can check if the user has already answered a quiz question
+      - wherever check_quiz_question(...) is called (just in your gen_storyboard_page pass back the user_id from the token
+      - if there are multiple quiz questions for a single page, just return all of them. in gen_storyboard_page , just select the first quiz question in the list of quiz questions for that page. as the user answers them, they will disappear until none are left for a page
+      - big: if the quiz question is mc (multiple choice), use the quiz_mc_item template for every individual multiple choice answer
+      - for the quiz_mc_item template, the ~url key will be the current url (/storyboard/page/122/5) in the gen_storyboard_page
+      
+      (1) raj fixed that issue
+      (2) there may be multiple quiz questions per page, and we just keep showing one of them until the user answers all of them, and then there'll be none left
+      (3) quiz_mc_items appears for every quiz multiple choice question answer in quiz_mc
+      (4) ~url explained above
+    '''
+    
     # goes into database and gets the bucket folder.
     # goes into bucket and then says I want this image from this folder.
     connection = pool.acquire()
     cursor = connection.cursor()
     
     try:
-        # get quiz questions and answers and more information about those
+        # gets the unanswered quiz questions for a user (checks the user_response table for which questions are answered)
         cursor.execute(
             "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.QUESTION_TYPE, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
             "INNER JOIN BOOK ON QUESTION.BOOK_ID = BOOK.BOOK_ID " +
             "INNER JOIN ANSWER ON QUESTION.QUESTION_ID = ANSWER.QUESTION_ID " +
-            "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") " +
+            "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") AND NOT EXISTS ( " +
+            "SELECT * FROM USER_RESPONSE WHERE QUESTION_ID = QUESTION.QUESTION_ID AND USER_ID = '" + user_id + "' " +
+            ") " +
             "ORDER BY QUESTION_ID,CORRECT"
         )
         label_results_from(cursor)
@@ -180,9 +197,8 @@ def check_quiz_question(book_id: int, page_number: int):
         }, 400, {"Content-Type": "application/json"}
 
     quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
-    
+
     '''
-    Database records organized as List Of Tuples (this is how quizQuestions would show results)
 [    
     (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	Her dream of one day being a Chemist. , 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
     (1,	Which of the following is most likely to influence her self-efficacy for this test?, 0,	Marta is taking a science test about the ecosystems in her state., 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3,	128 )
@@ -198,15 +214,15 @@ def check_quiz_question(book_id: int, page_number: int):
     (87,	testing postman with " ~`~ ", 1, TESTANSWER 1, 0, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
     (87,	testing postman with " ~`~ ", 1, TEST~ANS~`~WER, 3,	1, storybook, Supporting Student Motivation in Online and Technology Contexts, 2, 3, 128 )
 ]
+
     '''
     answers = []
     curr_question_id = None
     full_question = None
     question_type = None
     correct_answer = None
+    quiz_question_list = []
     for question in quizQuestions:
-        
-        # This is the assumption that only one question appears per page (whether free response or MC)
         
         if curr_question_id == None:
             curr_question_id = question['QUESTION_ID']
@@ -217,6 +233,26 @@ def check_quiz_question(book_id: int, page_number: int):
                 correct_answer = question['ANSWER']
                 
         elif question['QUESTION_ID'] == curr_question_id:
+            answers.append(question['ANSWER'])
+            if question['CORRECT'] == 1:
+                correct_answer = question['ANSWER']
+        else:
+            quiz_question_list.append(
+                {
+                    "question_id": curr_question_id,
+                    "question": full_question,
+                    "question_type": question_type,
+                    "answers": answers,
+                    "correct_answer": correct_answer
+                }
+            )
+            
+            # Clear up the possible answers list for next question
+            answers.clear()
+            
+            curr_question_id = question['QUESTION_ID']
+            full_question = question['QUESTION']
+            question_type = question['QUESTION_TYPE']
             answers.append(question['ANSWER'])
             if question['CORRECT'] == 1:
                 correct_answer = question['ANSWER']
