@@ -74,11 +74,10 @@
 
         var answers = []
         var count = 0;
-
         $('#mc-answer-choice-holder').children().each(function (index, element) {
             var ans = {};
-            ans['correct'] = $('.input-group-prepend').children().children()[count].checked;
-            ans['content'] = $(element).children('input').val();
+            ans['correct'] = $('.input-group-prepend').children().children()[count].checked; //getting if the answer checked or not
+            ans['content'] = $(element).children('input').val(); //getting the text for the answer
             count = count+1;
             answers.push(ans);
         });
@@ -113,7 +112,6 @@
         let correct_ans_temp = "";
         let answers_in_temp_all = []
         for(var choice = 0; choice < answers.length; choice++) { //for everything in the answers array
-            
             if (answers[choice].correct == true) { //if the answer is the correct choice
                 correct_ans_temp = '^^^:' + answers[choice].content; //append the string to the content
                 answers_in_temp_all.push(correct_ans_temp); //put it in the new array 
@@ -122,16 +120,11 @@
                 correct_ans_temp = answers[choice].content;
                 answers_in_temp_all.push(correct_ans_temp);
             }
-           
         }
-
-        console.log(answers_in_temp_all);
-
-        let answers_in = answers_in_temp_all.map(o => String(o).join(" ~`~ "));
-    
-        console.log(answers_in_temp_all);
-        console.log(answers_in);
-
+        let answers_in = "" + answers_in_temp_all[0]; 
+        for(var asw = 0; asw < answers_in_temp_all.length; asw++) {
+            answers_in = answers_in.concat(" ~`~ " + answers_in_temp_all[asw]);
+        }
 
         let thisNewQ = {
                             "book_id_in": book_id_in,
@@ -142,6 +135,7 @@
                             "answers_in": answers_in, 
                             "question_type_in": 1 
                         }
+
         questionsCreated.push(thisNewQ);
 
     } 
