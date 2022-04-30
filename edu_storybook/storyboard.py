@@ -87,51 +87,52 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
     
     if(quiz_questions != False):
         
-        for question in quiz_questions:
-            if(question['question_type'] == 1):
+        question = quiz_questions[0]
+        
+        if(question['question_type'] == 1):
             
-                display_question = question['question']
-                display_question_id = question['question_id']
+            display_question = question['question']
+            display_question_id = question['question_id']
                 
-                # Logic to dynamically add buttons on-the-fly
-                for answer_choice in question['answers']:
-                    button_value = answer_choice['answer_id']
-                    answer_choice_name = answer_choice['answer']
-                    options_buttons = options_buttons + "<button name='answer_id' type='submit' value='" + str(button_value) + "' class='btn btn-info'> " + answer_choice_name + " </button> <br> <br>"
+            # Logic to dynamically add buttons on-the-fly
+            for answer_choice in question['answers']:
+                button_value = answer_choice['answer_id']
+                answer_choice_name = answer_choice['answer']
+                options_buttons = options_buttons + "<button name='answer_id' type='submit' value='" + str(button_value) + "' class='btn btn-info'> " + answer_choice_name + " </button> <br> <br>"
             
-                display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
-                    question_id = display_question_id,
-                    url = "/storyboard/" + str(book_id) + "/" + str(page_number),
-                    options = options_buttons
-                )
+            display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
+                question_id = display_question_id,
+                url = "/storyboard/" + str(book_id) + "/" + str(page_number),
+                options = options_buttons
+            )
                     
-                mc_page = Templates._base.substitute(
-                    title = 'Multiple Choice Quiz',
-                    description = 'Check Your Understanding So Far',
-                    body = Templates.storyboard_quiz_mc.substitute(
-                        question = display_question,
-                        mc_items = display_mc_items,
-                        prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)                
-                    )
+            mc_page = Templates._base.substitute(
+                title = 'Multiple Choice Quiz',
+                description = 'Check Your Understanding So Far',
+                body = Templates.storyboard_quiz_mc.substitute(
+                    question = display_question,
+                    mc_items = display_mc_items,
+                    prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)                
                 )
+            )
                 
-                return mc_page
+            return mc_page
             
-            else:
-                display_question = question['question']
-                display_question_id = question['question_id']
+        else:
+            display_question = question['question']
+            display_question_id = question['question_id']
             
-                fr_page = Templates._base.substitute(
-                    title = 'Free Response Quiz',
-                    description = 'Check Your Understanding So Far',
-                    body = Templates.storyboard_quiz_fr.substitute(
-                        url = "/storyboard/" + str(book_id)+ "/" + str(page_number),
-                        question = display_question,
-                        question_id = display_question_id,
-                        prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)
-                    )
+            fr_page = Templates._base.substitute(
+                title = 'Free Response Quiz',
+                description = 'Check Your Understanding So Far',
+                body = Templates.storyboard_quiz_fr.substitute(
+                    url = "/storyboard/" + str(book_id)+ "/" + str(page_number),
+                    question = display_question,
+                    question_id = display_question_id,
+                    prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)
                 )
-                return fr_page
+            )
+            return fr_page
 
             
         
