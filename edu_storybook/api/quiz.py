@@ -127,7 +127,7 @@ def quiz_submit_answer():
 
         try:
             cursor.execute(
-                "SELECT correct FROM answer WHERE answer_id= " + str(answer_id) +\
+                "SELECT correct, feedback FROM answer WHERE answer_id= " + str(answer_id) +\
                     " and question_id= " + str(question_id)
             )
             label_results_from(cursor)
@@ -147,21 +147,45 @@ def quiz_submit_answer():
         if result['CORRECT']:
             return {
             "status": "ok",
-            "correct": True
+            "correct": True,
+            "feedback": result['FEEDBACK']
             }
         elif ~result['CORRECT']:
             return {
             "status": "ok",
-            "correct": False
+            "correct": False,
+            "feedback": result['FEEDBACK']
             }
         return {
             "status": "fail",
             "fail_no": 11,
             "message": "No choice matches what was passed."
             }, 400, {"Content-Type": "application/json"}
+        
     elif request.form['type'] == 'fr': # free response handling
-        # TODO: finish when issue 404 is resolved
-        pass
+        free_response_answer = request.form['answer']
+        try:
+            cursor.execute(
+                "insert into user_free_response (user_id, question_id, response, submitted_on) values (" + "'" +
+                token['sub'] + "', " + str(question_id) +
+                ", " + "'" + free_response_answer + "', current_timestamp)"
+            )
+            connection.commit()
+        except cx_Oracle.Error as e:
+            a_quiz_log.warning('Error when accessing database')
+            a_quiz_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 9,
+                "message": "Error when updating database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+        return {
+            "status": "ok",
+            "free_response_answer" : "answered" 
+        }
+        
     else:
         return {
             "status": "fail",

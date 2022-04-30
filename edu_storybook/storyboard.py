@@ -7,6 +7,7 @@ receiving quiz question responses from the user.
 
 import logging
 import json
+from click import option
 import jwt
 
 from flask import Blueprint
@@ -82,6 +83,7 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
     
     # Returns the list of quiz question(s) for given book and page number for user to answer
     quiz_questions = check_quiz_question(book_id, page_number, token['sub'])
+    options_buttons = ""
     
     if(quiz_questions != False):
         
@@ -91,50 +93,25 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
                 display_question = question['question']
                 display_question_id = question['question_id']
                 
-                # Check if this is a standard MC question with 4 options
-                if(len(question['answers']) == 4):
-                    display_option_1 = question['answers'][0]['answer']
-                    display_option_2 = question['answers'][1]['answer']
-                    display_option_3 = question['answers'][2]['answer']
-                    display_option_4 = question['answers'][3]['answer']
-                
-                    display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
-                        option_1 = display_option_1,
-                        option_2 = display_option_2,
-                        option_3 = display_option_3,
-                        option_4 = display_option_4,
-                        question_id = display_question_id,
-                        url = "/storyboard/" + str(book_id) + "/" + str(page_number),
-                        answer_id_1 = question['answers'][0]['answer_id'],
-                        answer_id_2 = question['answers'][1]['answer_id'],
-                        answer_id_3 = question['answers'][2]['answer_id'],
-                        answer_id_4 = question['answers'][3]['answer_id'],
-                        fourOptionsVisibility = "display: block",
-                        twoOptionsVisibility = "display: none"
-                    )
-                
-                # This would mean that this is True/False question in MC with just 2 options
-                else:
-                    display_option_1 = question['answers'][0]['answer']
-                    display_option_2 = question['answers'][1]['answer']
-                
-                    display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
-                        option_1 = display_option_1,
-                        option_2 = display_option_2,
-                        question_id = display_question_id,
-                        url = "/storyboard/" + str(book_id) + "/" + str(page_number),
-                        answer_id_1 = question['answers'][1]['answer_id'],
-                        answer_id_2 = question['answers'][2]['answer_id'],
-                        fourOptionsVisibility = "display: none",
-                        twoOptionsVisibility = "display: block"
-                    )
+                # Logic to dynamically add buttons on-the-fly
+                for answer_choice in question['answers']:
+                    button_value = answer_choice['answer_id']
+                    answer_choice_name = answer_choice['answer']
+                    options_buttons = options_buttons + "<button name='answer_id' type='submit' value='" + str(button_value) + "' class='btn btn-info'> " + answer_choice_name + " </button> <br> <br>"
             
+                display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
+                    question_id = display_question_id,
+                    url = "/storyboard/" + str(book_id) + "/" + str(page_number),
+                    options = options_buttons
+                )
+                    
                 mc_page = Templates._base.substitute(
                     title = 'Multiple Choice Quiz',
                     description = 'Check Your Understanding So Far',
                     body = Templates.storyboard_quiz_mc.substitute(
                         question = display_question,
-                        mc_items = display_mc_items                
+                        mc_items = display_mc_items,
+                        prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)                
                     )
                 )
                 
@@ -150,7 +127,8 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
                     body = Templates.storyboard_quiz_fr.substitute(
                         url = "/storyboard/" + str(book_id)+ "/" + str(page_number),
                         question = display_question,
-                        question_id = display_question_id
+                        question_id = display_question_id,
+                        prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)
                     )
                 )
                 return fr_page

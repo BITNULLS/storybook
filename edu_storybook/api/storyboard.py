@@ -163,13 +163,15 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
     cursor = connection.cursor()
     
     try:
-        # gets the unanswered quiz questions for a user (checks the user_response table for which questions are answered)
+        # gets the unanswered quiz questions for a user (checks the user_response and user_free_response tables for which questions are answered)
         cursor.execute(
             "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.QUESTION_TYPE, ANSWER.ANSWER_ID, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
             "INNER JOIN BOOK ON QUESTION.BOOK_ID = BOOK.BOOK_ID " +
             "INNER JOIN ANSWER ON QUESTION.QUESTION_ID = ANSWER.QUESTION_ID " +
             "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") AND NOT EXISTS ( " +
             "SELECT * FROM USER_RESPONSE WHERE QUESTION_ID = QUESTION.QUESTION_ID AND USER_ID = '" + user_id + "' " +
+            "UNION " +
+            "SELECT * FROM USER_FREE_RESPONSE WHERE QUESTION_ID = QUESTION.QUESTION_ID AND USER_ID = '" + user_id + "' " +
             ") " +
             "ORDER BY QUESTION_ID,CORRECT"
         )
@@ -187,7 +189,6 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
     
     answers = []
     curr_question_id = None
-    curr_answer_id = None
     full_question = None
     question_type = None
     correct_answer = None
@@ -247,7 +248,7 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
                 correct_answer = question['ANSWER']
             
             
-    if(len(quiz_question_list) > 0):
+    if(len(quiz_question_list) > 0 or curr_question_id != None):
         
         # Make sure to append the last question from quizQuestions since the loop would stop without adding
         # that last question
