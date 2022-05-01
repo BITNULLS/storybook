@@ -150,22 +150,12 @@ def quiz_submit_answer():
                     "database_message": str(e)
                 }, 400, {"Content-Type": "application/json"}
             
-            book_id = int(request.form['book_id'])
-            page_num = int(request.form['page_num'])
-            page_redirection_url = None
-            quiz_questions = check_quiz_question(book_id, page_num, token['sub'])
-            
-            if(quiz_questions == False):
-                page_redirection_url = "/storyboard/" + str(book_id) + "/" + str(page_num + 1)
-            else:
-                page_redirection_url = request.form['redirect']
-            
             feedback_page = Templates._base.substitute(
                 title = "Feedback Page",
                 description = "This page is meant to provide feedback to users",
                 body = Templates.storyboard_quiz_feedback.substitute(
                     feedback = result['FEEDBACK'],
-                    page_redirection = page_redirection_url,
+                    page_redirection = request.form['redirect'],
                     tryAgainBtnVisibility = "display: none",
                     continueBtnVisibility = "display: block"   
                 )
@@ -202,17 +192,7 @@ def quiz_submit_answer():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
 
-        book_id = int(request.form['book_id'])
-        page_num = int(request.form['page_num'])
-        page_redirection_url = None
-        quiz_questions = check_quiz_question(book_id, page_num, token['sub'])
-            
-        if(quiz_questions == False):
-            page_redirection_url = "/storyboard/" + str(book_id) + "/" + str(page_num + 1)
-        else:
-            page_redirection_url = request.form['redirect']
-        
-        return redirect(page_redirection_url)
+        return redirect(request.form['redirect'])
         
     else:
         return {

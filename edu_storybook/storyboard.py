@@ -103,8 +103,6 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
             
             display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
                 question_id = display_question_id,
-                id_of_book = str(book_id),
-                page_num_val = str(page_number),
                 url = "/storyboard/" + str(book_id) + "/" + str(page_number),
                 options = options_buttons
             )
@@ -130,8 +128,6 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
                 description = 'Check Your Understanding So Far',
                 body = Templates.storyboard_quiz_fr.substitute(
                     url = "/storyboard/" + str(book_id)+ "/" + str(page_number),
-                    id_of_book = str(book_id),
-                    page_num_val = str(page_number),    
                     question = display_question,
                     question_id = display_question_id,
                     prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)
