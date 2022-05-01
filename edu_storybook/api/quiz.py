@@ -20,6 +20,7 @@ import logging
 from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.config import Config
+from edu_storybook.templates import Templates
 from edu_storybook.core.db import pool
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.reg_exps import *
@@ -108,23 +109,7 @@ def quiz_submit_answer():
     cursor = connection.cursor()
 
     if request.form['type'] == 'mc': # multiple choice handling
-        try:
-            cursor.execute(
-                "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" +
-                token['sub'] + "', " + str(question_id) +
-                ", " + str(answer_id) + ", current_timestamp)"
-            )
-            connection.commit()
-        except cx_Oracle.Error as e:
-            a_quiz_log.warning('Error when accessing database')
-            a_quiz_log.warning(e)
-            return {
-                "status": "fail",
-                "fail_no": 9,
-                "message": "Error when updating database.",
-                "database_message": str(e)
-            }, 400, {"Content-Type": "application/json"}
-
+        
         try:
             cursor.execute(
                 "SELECT correct, feedback FROM answer WHERE answer_id= " + str(answer_id) +\
@@ -137,31 +122,55 @@ def quiz_submit_answer():
             a_quiz_log.warning(e)
             return {
                 "status": "fail",
-                "fail_no": 10,
-                "message": "Error when updating database.",
+                "fail_no": 9,
+                "message": "Error when accessing database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
 
         result = cursor.fetchone()
 
         if result['CORRECT']:
-            return {
-            "status": "ok",
-            "correct": True,
-            "feedback": result['FEEDBACK']
-            }
+            try:
+                cursor.execute(
+                    "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" +
+                    token['sub'] + "', " + str(question_id) +
+                    ", " + str(answer_id) + ", current_timestamp)"
+                    )
+                connection.commit()
+            except cx_Oracle.Error as e:
+                a_quiz_log.warning('Error when updating database')
+                a_quiz_log.warning(e)
+                
+                return {
+                    "status": "fail",
+                    "fail_no": 10,
+                    "message": "Error when updating database.",
+                    "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
+            
+            feedback_page = Templates._base.substitute(
+                title = "Feedback Page",
+                description = "This page is meant to provide feedback to users",
+                body = Templates.storyboard_quiz_feedback.substitute(
+                    feedback = result['FEEDBACK'],
+                    page_redirection = request.form['redirect'],
+                    tryAgainBtnVisibility = "display: none",
+                    continueBtnVisibility = "display: block"   
+                )
+            )
         elif ~result['CORRECT']:
-            return {
-            "status": "ok",
-            "correct": False,
-            "feedback": result['FEEDBACK']
-            }
-        return {
-            "status": "fail",
-            "fail_no": 11,
-            "message": "No choice matches what was passed."
-            }, 400, {"Content-Type": "application/json"}
-        
+            feedback_page = Templates._base.substitute(
+                title = "Feedback Page",
+                description = "This page is meant to provide feedback to users",
+                body = Templates.storyboard_quiz_feedback.substitute(
+                    feedback = result['FEEDBACK'],
+                    page_redirection = request.form['redirect'],
+                    tryAgainBtnVisibility = "display: block",
+                    continueBtnVisibility = "display: none"   
+                )
+            )
+        return feedback_page
+    
     elif request.form['type'] == 'fr': # free response handling
         free_response_answer = request.form['answer']
         try:

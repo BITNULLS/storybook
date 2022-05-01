@@ -87,6 +87,7 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
     
     if(quiz_questions != False):
         
+        # Get the first question from the list of unanswered questions
         question = quiz_questions[0]
         
         if(question['question_type'] == 1):
@@ -133,9 +134,6 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
                 )
             )
             return fr_page
-
-            
-        
 
     # Generate Storyboard Viewer page
     storyboard_page = Templates._base.substitute(

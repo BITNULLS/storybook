@@ -1,0 +1,33 @@
+<div class="container mt-5">
+    <div class="row">
+        <!-- Modal -->
+        <div class="modal fade" id="quizFeedbackModal" tabindex="-1" role="dialog" aria-labelledby="quizFeedbackModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="quizFeedbackModalLabel">Feedback Zone</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+        
+                    <div class="modal-body">
+                        ~feedback
+                    </div>
+                
+                    <div class="modal-footer">
+                        <button style="~tryAgainBtnVisibility" class="btn btn-info"> <a href="~page_redirection" style="color: white"> Click To Try Again </a></button>
+                        <button style="~continueBtnVisibility" class="btn btn-info"> <a href="~page_redirection" style="color: white"> Click To Continue </a></button> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(()=>{
+        $("#quizFeedbackModal").modal("show");
+        $('#quizFeedbackModal').modal('handleUpdate')
+    })
+</script>

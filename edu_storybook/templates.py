@@ -74,7 +74,8 @@ TEMPLATES = {
         "quiz": {
             "fr": load_template("templates/storyboard/quiz_fr.html"),
             "mc_item": load_template("templates/storyboard/quiz_mc_item.html"),
-            "mc": load_template("templates/storyboard/quiz_mc.html")
+            "mc": load_template("templates/storyboard/quiz_mc.html"),
+            "feedback": load_template("templates/storyboard/quiz_feedback.html")
         },
         "viewer": load_template("templates/storyboard/viewer.html")
     },
@@ -182,6 +183,11 @@ class Templates:
     storyboard_quiz_mc: Template = TEMPLATES['storyboard']['quiz']['mc']
     '''
     Storyboard Quiz Multiple Choice (MC) template.
+    '''
+    
+    storyboard_quiz_feedback: Template = TEMPLATES['storyboard']['quiz']['feedback']
+    '''
+    Storyboard Quiz Multiple Choice (MC) feedback template.
     '''
 
     storyboard_viewer: Template = TEMPLATES['storyboard']['viewer']
