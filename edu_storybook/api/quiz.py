@@ -114,7 +114,7 @@ def quiz_submit_answer():
         
         try:
             cursor.execute(
-                "SELECT correct, feedback FROM answer WHERE answer_id= " + str(answer_id) +\
+                "SELECT correct, answer_feedback FROM answer WHERE answer_id= " + str(answer_id) +\
                     " and question_id= " + str(question_id)
             )
             label_results_from(cursor)
@@ -154,7 +154,7 @@ def quiz_submit_answer():
                 title = "Feedback Page",
                 description = "This page is meant to provide feedback to users",
                 body = Templates.storyboard_quiz_feedback.substitute(
-                    feedback = result['FEEDBACK'],
+                    feedback = result['ANSWER_FEEDBACK'],
                     page_redirection = request.form['redirect'],
                     tryAgainBtnVisibility = "display: none",
                     continueBtnVisibility = "display: block"   
@@ -165,7 +165,7 @@ def quiz_submit_answer():
                 title = "Feedback Page",
                 description = "This page is meant to provide feedback to users",
                 body = Templates.storyboard_quiz_feedback.substitute(
-                    feedback = result['FEEDBACK'],
+                    feedback = result['ANSWER_FEEDBACK'],
                     page_redirection = request.form['redirect'],
                     tryAgainBtnVisibility = "display: block",
                     continueBtnVisibility = "display: none"   
