@@ -3,12 +3,15 @@ story_selection.py
 
 This will display all of the books that a user can look at.
 """
-
+import jwt
 import logging
 
 from flask import request
 from flask import Blueprint
 from flask import abort
+from edu_storybook.api.admin import admin_get_books
+from edu_storybook.core.sensitive import jwt_key
+
 
 from edu_storybook.api.index import get_users_books
 from edu_storybook.core import auth
@@ -47,17 +50,30 @@ def gen_books():
     if vl != True:
         log.debug('A non-admin user tried to access the /books page.')
         abort(403)
+        
+    token = jwt.decode(auth.replace('Bearer ', ''), jwt_key, config['jwt_alg'])
 
     all_books = ""
-    for b in get_users_books()['books']:
-        all_books += Templates.story_selection_book.substitute(
-        book_title=b['BOOK_NAME'],
-        book_description=b['DESCRIPTION'],
-        book_id=b["BOOK_ID"],
-        book_cover='/api/storyboard/cover/' + str(b['BOOK_ID']),
-        last_page=b['LAST_PAGE'],  # if last_page is null then 0
-        book_url='/storyboard/' + str(b['BOOK_ID']) + '/' + str(b['LAST_PAGE'])
-    )
+    if token['permission'] > 0: # have admin
+        for b in admin_get_books(0)['books']:
+            all_books += Templates.story_selection_book.substitute(
+            book_title=b['BOOK_NAME'],
+            book_description=b['DESCRIPTION'],
+            book_id=b["BOOK_ID"],
+            book_cover='/api/storyboard/cover/' + str(b['BOOK_ID']),
+            last_page= 1, #b['LAST_PAGE'],  # if last_page is null then 0
+            book_url='/storyboard/' + str(b['BOOK_ID']) + '/1'
+        )
+    else:
+        for b in get_users_books()['books']:
+            all_books += Templates.story_selection_book.substitute(
+            book_title=b['BOOK_NAME'],
+            book_description=b['DESCRIPTION'],
+            book_id=b["BOOK_ID"],
+            book_cover='/api/storyboard/cover/' + str(b['BOOK_ID']),
+            last_page=b['LAST_PAGE'],  # if last_page is null then 0
+            book_url='/storyboard/' + str(b['BOOK_ID']) + '/' + str(b['LAST_PAGE'])
+        )
 
     story_selection_page = Templates._base.substitute(
         title='Book Selection',
