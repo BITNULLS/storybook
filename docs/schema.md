@@ -109,7 +109,6 @@ This table provides the information about a question being encountered from the 
 |  column name | description  | 
 |---|---|
 | QUESTION_ID | Number ID to uniquely identify question |
-| SCHOOL_ID | ID of school from [`SCHOOL`](#SCHOOL) that the question is related to |
 | BOOK_ID | ID of book from [`BOOK`](#BOOK) that the question is from |
 | QUESTION | Full text of question |
 | PAGE_PREV | Page number that is before the question |
