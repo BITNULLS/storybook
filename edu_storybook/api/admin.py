@@ -1052,7 +1052,7 @@ def admin_get_books(offset: int):
 
     try:
         cursor.execute(
-            "SELECT BOOK.BOOK_ID, BOOK.BOOK_NAME, BOOK.DESCRIPTION, BOOK_STUDY.STUDY_ID FROM BOOK " +
+            "SELECT BOOK.BOOK_ID, BOOK.BOOK_NAME, BOOK.DESCRIPTION, BOOK.PAGE_COUNT, BOOK_STUDY.STUDY_ID FROM BOOK " +
             "INNER JOIN BOOK_STUDY ON BOOK_STUDY.BOOK_ID = BOOK.BOOK_ID "+
             "OFFSET "+
             str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
