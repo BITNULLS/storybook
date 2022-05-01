@@ -99,7 +99,7 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
             for answer_choice in question['answers']:
                 button_value = answer_choice['answer_id']
                 answer_choice_name = answer_choice['answer']
-                options_buttons = options_buttons + "<button name='answer_id' type='submit' value='" + str(button_value) + "' class='btn btn-info'> " + answer_choice_name + " </button> <br> <br>"
+                options_buttons = options_buttons + "<button name='answer_id' style='min-width:100%' type='submit' value='" + str(button_value) + "' class='btn btn-info'> " + answer_choice_name + " </button> <br> <br>"
             
             display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
                 question_id = display_question_id,
