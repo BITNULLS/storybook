@@ -36,17 +36,13 @@ def gen_books():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-    else:
-        abort(403, description="You are not logged in.")
+   # else:
+   #     abort(403, description="You are not logged in.")
 
     vl = validate_login(
         auth,
         permission=0
     )
-
-    if vl != True:
-        log.debug('A non-admin user tried to access the /books page.')
-        abort(403)
 
     all_books = ""
     for b in get_users_books()['books']:
