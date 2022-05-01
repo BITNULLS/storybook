@@ -425,25 +425,25 @@ def admin_page_handler():
         # check to make sure you have a book_id
         try:
             assert 'book_id_in' in request.form
-            assert 'school_id_in' in request.form
             assert 'question_in' in request.form
             assert 'page_prev_in' in request.form
             assert 'page_next_in' in request.form
             assert 'answers_in' in request.form
             assert 'question_type_in' in request.form
+            assert 'answers_feedback_in' in request.form
+            assert 'answers_correct_in' in request.form
         except AssertionError:
             a_admin_log.debug('An admin did not provide all of the form ' +\
                 'fields when creating a question')
             return {
                 "status": "fail",
                 "fail_no": 1,
-                "message": "book_id_in, school_id_in, question_in, page_prev_in, page_next_in, answers_in, question_type_in not provided"
+                "message": "book_id_in, question_in, page_prev_in, page_next_in, answers_in, question_type_in, answers_feedback_in, answers_correct_in not provided"
             }, 400, {"Content-Type": "application/json"}
 
         # sanitize inputs: check ints
         try:
             book_id_in = int(request.form['book_id_in'])
-            school_id_in = int(request.form['school_id_in'])
             page_prev_in = int(request.form['page_prev_in'])
             page_next_in = int(request.form['page_next_in'])
             question_type_in = int(request.form['question_type_in'])
@@ -453,22 +453,24 @@ def admin_page_handler():
             return {
                 "status": "fail",
                 "fail_no": 2,
-                "message": "book_id_in, school_id_in, page_prev_in, page_next_in, or question_type_in failed a sanitize check. The posted fields should be integers."
+                "message": "book_id_in, page_prev_in, page_next_in, or question_type_in failed a sanitize check. The posted fields should be integers."
             }, 400, {"Content-Type": "application/json"}
 
         # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
         # regex is not very efficient method here for sql injection check
         cursor = connection.cursor()
 
+        print(request.form['answers_feedback_in'])
         try:
             cursor.callproc("insert_question_proc",\
                 [request.form['question_in'],\
-                    request.form['school_id_in'],\
                     request.form['book_id_in'],\
                     request.form['page_prev_in'],\
                     request.form['page_next_in'],\
-                    request.form['answers_in'], 
-                    request.form['question_type_in']])
+                    request.form['answers_in'],\
+                    request.form['question_type_in'],\
+                    request.form['answers_feedback_in'],\
+                    request.form['answers_correct_in']])
             # commit changes to db
             connection.commit()
         except cx_Oracle.Error as e:

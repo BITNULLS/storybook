@@ -78,6 +78,7 @@
             var ans = {};
             ans['correct'] = $('.input-group-prepend').children().children()[count].checked; //getting if the answer checked or not
             ans['content'] = $(element).children('input').val(); //getting the text for the answer
+            ans['feedback'] = $('.feedback-text-area')[count].value; //getting the feedback for the answer
             count = count+1;
             answers.push(ans);
         });
@@ -86,8 +87,13 @@
         
         let answer_choices = '<div id=' + randQuestionID + ' class="card-body">' //this is the card body
         for(var choice = 0; choice < answers.length; choice++) {
-            let choice2 = '<p>' + answers[choice].content + '</p>';
-            answer_choices += choice2;
+            let cont = '<p>' + answers[choice].content + '</p>';
+            let corr = 0;
+            if (answers[choice].correct == true) {
+                corr = 1;
+            }
+            let fb = '<p>' + answers[choice].feedback + '</p>';
+            answer_choices += cont; //TODO: also show corr and fb, rn it does not do that.
         }
         answer_choices += '</div>';
         answer_choices = $(answer_choices);
@@ -108,24 +114,35 @@
         let page_prev_in = parseInt(insertAfter); //page before question
         let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
 
-        //answers is an array with all the answers choices for the question
-        let correct_ans_temp = "";
-        let answers_in_temp_all = []
+        //arrays of answers, correctness, and their feedback
+        let answers_in_temp_all = []; //storing the answer options
+        let correct_ans_temp = []; //storing the correct answers
+        let feedback_ans_temp = []; //storing the feedback for each answer
+        
+
         for(var choice = 0; choice < answers.length; choice++) { //for everything in the answers array
+            
+            answers_in_temp_all.push(answers[choice].content); //put answer choice in array
+
             if (answers[choice].correct == true) { //if the answer is the correct choice
-                correct_ans_temp = '^^^:' + answers[choice].content; //append the string to the content
-                answers_in_temp_all.push(correct_ans_temp); //put it in the new array 
-            }
-            else {
-                correct_ans_temp = answers[choice].content;
-                answers_in_temp_all.push(correct_ans_temp);
-            }
-        }
-        let answers_in = "" + answers_in_temp_all[0]; 
-        for(var asw = 0; asw < answers_in_temp_all.length; asw++) {
-            answers_in = answers_in.concat(" ~`~ " + answers_in_temp_all[asw]);
+                correct_ans_temp.push('1'); //append the string to the content 
+            } else { correct_ans_temp.push('0'); }
+
+            feedback_ans_temp.push(answers[choice].feedback); //put the feedback in an array
         }
 
+        //putting all items in array into the correct format in a string
+        let answers_in = "" + answers_in_temp_all[0];
+        let answers_feedback_in = "" + feedback_ans_temp[0];
+        let answers_correct_in = "" + correct_ans_temp[0];
+
+        for(var asw = 1; asw < answers_in_temp_all.length; asw++) {
+            answers_in = answers_in.concat(" ~`~ " + answers_in_temp_all[asw]);
+            answers_feedback_in = answers_feedback_in.concat(" ~`~ " + feedback_ans_temp[asw]);
+            answers_correct_in = answers_correct_in.concat(" ~`~ " + correct_ans_temp[asw]);
+        }
+
+        //pass all of the info in
         let thisNewQ = {
                             "book_id_in": book_id_in,
                             "school_id_in": school_id_in,
@@ -133,9 +150,12 @@
                             "page_prev_in": page_prev_in,
                             "page_next_in": page_next_in, 
                             "answers_in": answers_in, 
-                            "question_type_in": 1 
+                            "question_type_in": 1,
+                            "answers_feedback_in": answers_feedback_in,
+                            "answers_correct_in": answers_correct_in
                         }
 
+        //store it in questionsCreated
         questionsCreated.push(thisNewQ);
 
     } 
@@ -162,7 +182,9 @@
         let question_in = question; 
         let page_prev_in = parseInt(insertAfter); //page before question
         let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
-        let answers_in = "";
+        let answers_in = ""; //TODO: get the optional answer that the admin typed for this question
+        let answers_feedback_in = "";
+        let answers_correct_in = "";
 
         let thisNewQ = {
                             "book_id_in": book_id_in,
@@ -171,7 +193,9 @@
                             "page_prev_in": page_prev_in,
                             "page_next_in": page_next_in, 
                             "answers_in": answers_in, 
-                            "question_type_in": 0 
+                            "question_type_in": 0, 
+                            "answers_feedback_in": answers_feedback_in,
+                            "answers_correct_in": aswers_correct_in
                         }
         questionsCreated.push(thisNewQ);
 
@@ -257,9 +281,18 @@
                                                         <input class="mr-1" type="checkbox" aria-label="Checkbox for following text input"> Correct</input>
                                                     </div>
                                                 </div>
-                                                <input type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon1">
+                                                <input type="text" class="form-control" placeholder="Answer Choice" aria-label="" aria-describedby="basic-addon1">
                                                 <div class="input-group-append">
                                                     <button class="btn btn-outline-secondary" type="button" onclick="$(this).parent().parent().remove()">Delete</button>
+                                                </div>
+                                                <div class="input-group-append">
+                                                    <div class="input-group-prepend">
+                                                        <div class="input-group-text">
+                                                            <text class="mr-1">Feedback</text>
+                                                            <textarea class="feedback-text-area" name="admin-feedback-for-answer-choice" placeholder=""></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
                                                 </div>
                                             </div>
                                         </template>
@@ -267,7 +300,7 @@
 
                                         <div id="mc-answer-choice-holder"></div>
 
-                                        <button type="submit" class="btn btn-atts btn-info" onclick="multChoiceNewQuizQ()">Add Question</button>
+                                        <button type="submit" class="btn btn-atts btn-info" style="min-width: 100%" onclick="multChoiceNewQuizQ()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
