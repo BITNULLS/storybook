@@ -98,7 +98,7 @@ def gen_admin_book_mananger():
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
             book_id = b["BOOK_ID"],
-            #book_pages = b['PAGE_COUNT'],
+            book_pages = b['PAGE_COUNT'],
             book_cover = '/api/storyboard/cover/' + str(b['BOOK_ID']),
             book_study = b['STUDY_ID']
         )
@@ -154,7 +154,7 @@ def gen_admin_edit_book():
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
             book_id = b["BOOK_ID"],
-            #book_pages = b["PAGE_COUNT"]
+            book_pages = b["PAGE_COUNT"]
         )
 
     edit_book_page = Templates._base.substitute(
@@ -275,7 +275,7 @@ def gen_admin_study_manager():
             book_title = b['BOOK_NAME'],
             book_description = b['DESCRIPTION'],
             book_id = b["BOOK_ID"],
-            #book_pages = b['PAGE_COUNT'],
+            book_pages = b['PAGE_COUNT']
             #book_study = b['STUDY_ID']
         )
     study_manager_page = Templates._base.substitute(
