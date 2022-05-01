@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for April 23, 2022
+-- Updated Schema for May 1, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -10,12 +10,12 @@
 --  DDL for Sequence ACTION_DETAIL_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "ACTION_DETAIL_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 68 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "ACTION_DETAIL_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 188 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence ANSWER_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "ANSWER_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 201 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "ANSWER_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 241 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence BOOK_SEQ
 --------------------------------------------------------
@@ -30,7 +30,7 @@
 --  DDL for Sequence QUESTION_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "QUESTION_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 101 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "QUESTION_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 121 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence SCHOOL_SEQ
 --------------------------------------------------------
@@ -81,7 +81,8 @@
    (	"ANSWER_ID" NUMBER, 
 	"QUESTION_ID" NUMBER, 
 	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
-	"CORRECT" NUMBER
+	"CORRECT" NUMBER,
+	"FEEDBACK" VARCHAR2(10000 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table BOOK
@@ -1107,7 +1108,8 @@ set define off;
     book_id_in   IN question.book_id%TYPE,
     page_prev_in IN question.page_prev%TYPE,
     page_next_in IN question.page_next%TYPE,
-    answers_in   IN VARCHAR2
+    answers_in   IN VARCHAR2, 
+    question_type_in IN question.question_type%TYPE
 ) AS
 BEGIN
     DECLARE
@@ -1125,14 +1127,16 @@ BEGIN
             book_id,
             question,
             page_prev,
-            page_next
+            page_next, 
+            question_type
         ) VALUES (
             question_id_in,
             school_id_in,
             book_id_in,
             question_in,
             page_prev_in,
-            page_next_in
+            page_next_in, 
+            question_type_in
         );
 
         BEGIN
@@ -1147,11 +1151,16 @@ BEGIN
             ) LOOP
                 BEGIN
                     INSERT INTO answer (
+                        answer_id,
                         question_id,
-                        answer
+                        answer, 
+                        correct
                     ) VALUES (
+                        ANSWER_SEQ.nextval,
                         question_id_in,
-                        i.l
+                        i.l,
+                        1
+                        
                     );
 
                 END;
@@ -1345,18 +1354,24 @@ BEGIN
         user_read_too_far_ex EXCEPTION;
         PRAGMA exception_init( user_read_too_far_ex, -20111 );
     BEGIN
-        SELECT 
-            last_page,
-            furthest_read
-        INTO
-            current_last_page,
-            current_furthest_read
-        FROM 
-            last_page 
-        WHERE
-            user_id = user_id_in
-            AND
-            book_id = book_id_in;
+        BEGIN
+            SELECT
+                last_page,
+                furthest_read
+            INTO
+                current_last_page,
+                current_furthest_read
+            FROM
+                last_page
+            WHERE
+                user_id = user_id_in
+                AND
+                book_id = book_id_in;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                current_last_page := NULL;
+                current_furthest_read := NULL;
+        END;
         IF current_last_page IS NULL THEN
             -- if the last page does not exist, insert it
             INSERT INTO last_page 
@@ -1379,7 +1394,7 @@ BEGIN
             IF bypass = 0 and book_page_in > current_furthest_read + 1 THEN
                 raise_application_error(
                     -20111, 
-                    'A user can only skip one page at a time from the ' + 
+                    'A user can only skip one page at a time from the ' || 
                     'furthest page in a book they have read.'
                 );
             ELSE
@@ -1535,7 +1550,6 @@ END check_detail_id_fcn;
   ALTER TABLE "ANSWER" ADD CONSTRAINT "ANSWER_PK" PRIMARY KEY ("ANSWER_ID")
   USING INDEX  ENABLE;
   ALTER TABLE "ANSWER" MODIFY ("QUESTION_ID" NOT NULL ENABLE);
-  ALTER TABLE "ANSWER" MODIFY ("ANSWER" NOT NULL ENABLE);
   ALTER TABLE "ANSWER" MODIFY ("ANSWER_ID" NOT NULL ENABLE);
 --------------------------------------------------------
 --  Constraints for Table BOOK
@@ -1559,8 +1573,6 @@ END check_detail_id_fcn;
 --  Constraints for Table LAST_PAGE
 --------------------------------------------------------
 
-  ALTER TABLE "LAST_PAGE" ADD CONSTRAINT "LAST_PAGE_PK" PRIMARY KEY ("USER_ID")
-  USING INDEX  ENABLE;
   ALTER TABLE "LAST_PAGE" MODIFY ("BOOK_ID" NOT NULL ENABLE);
   ALTER TABLE "LAST_PAGE" MODIFY ("LAST_PAGE" NOT NULL ENABLE);
   ALTER TABLE "LAST_PAGE" MODIFY ("USER_ID" NOT NULL ENABLE);
