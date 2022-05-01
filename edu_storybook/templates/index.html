@@ -1,7 +1,22 @@
 <!-- Home Page-->
-
 ~navbar
-<div class="HomePage" onmouseenter="enter_mouse_page()" onmouseleave="exit_mouse_page()">
+<script>
+
+$(document).ready(function() {
+    const queryString = window.location.search;
+    console.log(queryString);
+
+  //  if (queryString == '')
+
+   /* const urlParams = new URLSearchParams(queryString);
+    const product = urlParams.get('product')
+    console.log(product); */
+
+ })
+
+</script>
+
+<div class="HomePage">
     <h1 class="text-center mb-5" style="text-align:center">Welcome to EduStorybook </h1>
     <div id="homePage" class="center-block carousel slide carousel-fade mx-auto" data-ride="carousel" style="align-items: center;" >
       <ol class="carousel-indicators">
