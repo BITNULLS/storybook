@@ -2,6 +2,8 @@
     <div class="card-body">
         <form action="/api/quiz/submit" method="POST">
 
+            <input type="hidden" name="book_id" value="~id_of_book">
+            <input type="hidden" name="page_num" value="~page_num_val">
             <input type="hidden" name="redirect" value="~url">
             <input type="hidden" name="question_id" value="~question_id">
             <input type="hidden" name="type" value="mc">

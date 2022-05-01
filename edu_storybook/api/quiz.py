@@ -12,6 +12,7 @@ Routes:
 
 from flask import request
 from flask import Blueprint
+from flask import redirect
 
 import jwt
 import cx_Oracle
@@ -21,6 +22,7 @@ from edu_storybook.core.helper import label_results_from
 from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.config import Config
 from edu_storybook.templates import Templates
+from edu_storybook.api.storyboard import check_quiz_question
 from edu_storybook.core.db import pool
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.reg_exps import *
@@ -148,12 +150,22 @@ def quiz_submit_answer():
                     "database_message": str(e)
                 }, 400, {"Content-Type": "application/json"}
             
+            book_id = int(request.form['book_id'])
+            page_num = int(request.form['page_num'])
+            page_redirection_url = None
+            quiz_questions = check_quiz_question(book_id, page_num, token['sub'])
+            
+            if(quiz_questions == False):
+                page_redirection_url = "/storyboard/" + str(book_id) + "/" + str(page_num + 1)
+            else:
+                page_redirection_url = request.form['redirect']
+            
             feedback_page = Templates._base.substitute(
                 title = "Feedback Page",
                 description = "This page is meant to provide feedback to users",
                 body = Templates.storyboard_quiz_feedback.substitute(
                     feedback = result['FEEDBACK'],
-                    page_redirection = request.form['redirect'],
+                    page_redirection = page_redirection_url,
                     tryAgainBtnVisibility = "display: none",
                     continueBtnVisibility = "display: block"   
                 )
@@ -190,10 +202,17 @@ def quiz_submit_answer():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
 
-        return {
-            "status": "ok",
-            "free_response_answer" : "answered" 
-        }
+        book_id = int(request.form['book_id'])
+        page_num = int(request.form['page_num'])
+        page_redirection_url = None
+        quiz_questions = check_quiz_question(book_id, page_num, token['sub'])
+            
+        if(quiz_questions == False):
+            page_redirection_url = "/storyboard/" + str(book_id) + "/" + str(page_num + 1)
+        else:
+            page_redirection_url = request.form['redirect']
+        
+        return redirect(page_redirection_url)
         
     else:
         return {
