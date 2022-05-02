@@ -1,7 +1,23 @@
 <!-- Home Page-->
-
 ¶navbar
-<div class="HomePage" onmouseenter="enter_mouse_page()" onmouseleave="exit_mouse_page()">
+
+<script>
+
+$(document).ready(function() {
+
+    var logout_elem = $("#logout-notif");
+
+    if (window.location.hash == "#log_out_success" && logout_elem.is(":hidden"))
+        logout_elem.removeClass('d-none');
+});
+
+</script>
+
+<div class="alert alert-info d-none" id="logout-notif" role="alert">
+    You have signed out!
+</div>
+
+<div class="HomePage">
     <h1 class="text-center mb-5" style="text-align:center">Welcome to EduStorybook </h1>
     <div id="homePage" class="center-block carousel slide carousel-fade mx-auto" data-ride="carousel" style="align-items: center;" >
       <ol class="carousel-indicators">
