@@ -8,7 +8,7 @@ on:
 env:
   JSON: ${{ secrets.STORYBOOK_FILES_JSON }}
   PEM: ${{ secrets.STORYBOOK_FILES_PEM }}
-  SSH: ${{ secrets.SSK_KEY }}
+  SSH: ${{ secrets.SSH_KEY }}
 
 jobs:
   build:
