@@ -5,10 +5,6 @@ on:
     branches:
       - main
 
-env:
-  JSON: ${{ secrets.STORYBOOK_FILES_JSON }}
-  PEM: ${{ secrets.STORYBOOK_FILES_PEM }}
-
 jobs:
   build:
     name: Update Repo on VM
@@ -24,7 +20,7 @@ jobs:
         script: |
           if [ ! -d "/home/ubuntu/storybook" ]; then git clone https://${{ secrets.VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git; else cd storybook; git restore *; git pull; cd ..; fi
           cd storybook/edu_storybook/core/data
-          echo $env:JSON > StorybookFiles.json
-          echo $env:PEM > StorybookFiles.pem
+          echo ${{ secrets.STORYBOOK_FILES_JSON }} > StorybookFiles.json
+          echo ${{ secrets.STORYBOOK_FILES_PEM }} > StorybookFiles.pem
           cd
           exit
