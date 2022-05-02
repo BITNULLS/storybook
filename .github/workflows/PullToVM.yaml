@@ -5,11 +5,23 @@ on:
     branches:
       - main
 
+env:
+  JSON: ${{ secrets.STORYBOOK_FILES_JSON }}
+  PEM: ${{ secrets.STORYBOOK_FILES_PEM }}
+  SSH: ${{ secrets.SSK_KEY }}
+
 jobs:
   build:
     name: Update Repo on VM
     runs-on: ubuntu-latest
     steps:
+    - name: Set Up Sensitive Files
+      runs: |
+        echo $env:JSON > StorybookFiles.json
+        echo $env:PEM > StorybookFiles.pem
+        echo $env:SSH > ssh.key
+        scp -i ssh.key StorybookFiles.json ubuntu@129.158.41.86:/home/ubuntu/storybook/edu_storybook/core/data
+        scp -i ssh.key StorybookFiles.pem ubuntu@129.158.41.86:/home/ubuntu/storybook/edu_storybook/core/data
     - name: SSH Into VM
       uses: appleboy/ssh-action@master
       with:

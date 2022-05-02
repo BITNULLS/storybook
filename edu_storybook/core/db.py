@@ -56,7 +56,7 @@ pool.reconfigure(min=10, max=10, increment=0)
 
 c_db_log.debug('Reconfigured database pool')
 
-pool.wait_timeout = 1000
+pool.wait_timeout = 5000
 
 c_db_log.info('Connected to database')
 
