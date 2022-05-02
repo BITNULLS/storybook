@@ -1,4 +1,4 @@
-~navbar
+¶navbar
 
 <!--Creating Space at the top of the page-->
 <div class="row mt-5">
@@ -13,14 +13,22 @@
 
 <!--JS to make modal pop up upon opening window-->
 <script>
+
+    let book_id_temp;
+    let school_id_temp;
+
     //show the modal that allows user to select a book to edit 
     $(document).ready(function(){
         $("#selectBookModal").modal('show'); 
     });
 
     //modal for the admin to select which book to edit 
-    function displaySelectedBook(book_id, page_count) {
+    function displaySelectedBook(book_id, page_count, school_id) {
+        book_id_temp = book_id;
+        school_id_temp = school_id;
+
         $('#selectBookModal').modal('hide');
+        var importantPages = 3;
         for(var page = 1; page < page_count; page++) {
             var pageOption = $('<option value="' + page + '">' + page + '</option>');
             $('#insert-question').append(pageOption);
@@ -33,14 +41,21 @@
                 '/api/storyboard/page/' + book_id + '/' + page
             );
             singlePage.setAttribute("id", "page-" + page);
+            singlePage.setAttribute("loading", "lazy");
+            if(importantPages > 0)
+                singlePage.setAttribute("fetchpriority", "high");
+            else
+                singlePage.setAttribute("fetchpriority", "low");
+            importantPages--;
+
             $('#book-images-list').append(pageIndicator);
             $('#book-images-list').append(singlePage);
         }
     }
 
-    //dictionary with 3 attributes, question, pg before and answers, and correct answer
-    var answerCreated = []
-    var answerDeleted = []
+    //list of dictionaries to be sent to backend 
+    var questionsCreated = []
+    var questionsDeleted = []
 
     //adds spot to put in a new answer choice by the admin for a question
     function addChoiceA() {
@@ -58,11 +73,12 @@
         let questionPreview = $('<div id="' + randQuestionID + '">' + question + '</div>'); //styling of the question
 
         var answers = []
-
+        var count = 0;
         $('#mc-answer-choice-holder').children().each(function (index, element) {
             var ans = {};
-            ans['correct'] = $(element).children('.input-group.input-group-prepend.input').val();
-            ans['content'] = $(element).children('input').val();
+            ans['correct'] = $('.input-group-prepend').children().children()[count].checked; //getting if the answer checked or not
+            ans['content'] = $(element).children('input').val(); //getting the text for the answer
+            count = count+1;
             answers.push(ans);
         });
 
@@ -81,22 +97,47 @@
         deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
         
         let card_class = document.createElement("div");
-        card_class.attr($('#page-' + insertAfter).after(main_question.append(deleteButton).append(answer_choices)));
+        $('#page-' + insertAfter).after(main_question.append(deleteButton).append(answer_choices));
         
+        //adding the question that was created to the array 
+        //first getting all the information - check endpoint admin/page
         
-        /**
-        {
-            "question": "What is red",
-            "page_prev": 5,
-            "answers": [
-                {
-                    "content": "An apple",
-                    "correct": true
-                },
-                ...
-            ]
+        let book_id_in = book_id_temp;
+        let school_id_in = school_id_temp;
+        let question_in = question; 
+        let page_prev_in = parseInt(insertAfter); //page before question
+        let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
+
+        //answers is an array with all the answers choices for the question
+        let correct_ans_temp = "";
+        let answers_in_temp_all = []
+        for(var choice = 0; choice < answers.length; choice++) { //for everything in the answers array
+            if (answers[choice].correct == true) { //if the answer is the correct choice
+                correct_ans_temp = '^^^:' + answers[choice].content; //append the string to the content
+                answers_in_temp_all.push(correct_ans_temp); //put it in the new array 
+            }
+            else {
+                correct_ans_temp = answers[choice].content;
+                answers_in_temp_all.push(correct_ans_temp);
+            }
         }
-        */
+        let answers_in = "" + answers_in_temp_all[0]; 
+        for(var asw = 0; asw < answers_in_temp_all.length; asw++) {
+            answers_in = answers_in.concat(" ~`~ " + answers_in_temp_all[asw]);
+        }
+
+        let thisNewQ = {
+                            "book_id_in": book_id_in,
+                            "school_id_in": school_id_in,
+                            "question_in": question_in,
+                            "page_prev_in": page_prev_in,
+                            "page_next_in": page_next_in, 
+                            "answers_in": answers_in, 
+                            "question_type_in": 1 
+                        }
+
+        questionsCreated.push(thisNewQ);
+
     } 
 
     //invoked when admin clicks Add Question button for short answer
@@ -111,12 +152,48 @@
         deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
 
         let card_class = document.createElement("div");
-        card_class.attr($('#page-' + insertAfter).after(questionPreview.append(deleteButton)));
+        $('#page-' + insertAfter).after(questionPreview.append(deleteButton));
+
+        //adding the question that was created to the array 
+        //first getting all the information - check endpoint admin/page
+        
+        let book_id_in = book_id_temp;
+        let school_id_in = school_id_temp;
+        let question_in = question; 
+        let page_prev_in = parseInt(insertAfter); //page before question
+        let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
+        let answers_in = "";
+
+        let thisNewQ = {
+                            "book_id_in": book_id_in,
+                            "school_id_in": school_id_in,
+                            "question_in": question_in,
+                            "page_prev_in": page_prev_in,
+                            "page_next_in": page_next_in, 
+                            "answers_in": answers_in, 
+                            "question_type_in": 0 
+                        }
+        questionsCreated.push(thisNewQ);
+
     }
 
-    //when admin clicks Save & Publish, all the questions and answers should go to the backend
+    //when admin clicks Save & Publish
     function submitQuestions() {
-        //actually save the questions to the backend
+        //for everything in the questionsCreated array, send it to the backend
+
+        questionsCreated.forEach(function(e) {
+            $.ajax({
+                url: '/api/admin/page',
+                type: 'POST',
+                data: e, 
+            success: function(response) {
+                console.log("success");
+            },
+            failure: function(xhr) {
+                alert("Cannot send data from questions to backend");
+            }
+            })
+        })
     }
 
 </script>
@@ -132,7 +209,7 @@
         </button>
       </div>
       <div class="modal-body">
-        ~book
+        ¶book
       </div>
     </div>
   </div>
@@ -186,6 +263,7 @@
                                                 </div>
                                             </div>
                                         </template>
+                                        
 
                                         <div id="mc-answer-choice-holder"></div>
 

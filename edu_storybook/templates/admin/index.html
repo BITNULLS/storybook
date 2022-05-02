@@ -30,16 +30,16 @@
             <!--Study ID of New Study-->
             <label for="message-text" class="col-form-label">Study ID:</label>
             <div class="input-group mb-3">
-               <input type="text" class="form-control" id="study_id" placeholder="######" aria-describedby="basic-addon2">
+               <input type="text" class="form-control" id="study_id" value="study_id" placeholder="######" aria-describedby="basic-addon2">
                <div class="input-group-append">
                   <button type="button" class="btn btn-random bg-info" id="new_id" onclick="generateNewID()">Randomize</button> 
                </div>
             </div>
 
             <!--Description of New Study-->
-            <label for="message-text" class="col-form-label">Description:</label>
+            <label for="message-text" class="col-form-label">Study Name:</label>
             <div class="form-group">
-            <textarea class="form-control" id="study_description" placeholder="Lorem ipsum dolor sit amet. Est dolorum labore quo saepe officiis in soluta laborum."></textarea>
+            <textarea class="form-control" id="study_description" value="study_description" placeholder="Lorem ipsum dolor sit amet. Est dolorum labore quo saepe officiis in soluta laborum."></textarea>
             </div>
 
             <!--School of New Study-->
@@ -52,6 +52,15 @@
                   <option value="2">University of Maryland</option>
                   <option value="3">University of Texas</option>
                </select>
+            </div>
+
+            <!--Study Code of New Study-->
+            <label for="message-text" class="col-form-label">Study Invite Code:</label>
+            <div class="input-group mb-3">
+               <input type="text" class="form-control" id="study_id" value="study_id" placeholder="######" aria-describedby="basic-addon2">
+               <div class="input-group-append">
+                  <button type="button" class="btn btn-random bg-info" id="new_id" onclick="generateNewID()">Randomize</button> 
+               </div>
             </div>
 
             <!--Input Field for a New School for a New Study-->
@@ -75,7 +84,7 @@
    </div>
  </div>
 
-~navbar
+¶navbar
 
 <!--Creating Space at the top of the page-->
 <div class="row mt-5">
