@@ -24,7 +24,7 @@ from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
 from edu_storybook.navbar import make_navbar
 
-from edu_storybook.api.admin import admin_get_books, admin_get_users
+from edu_storybook.api.admin import admin_get_books, admin_get_users, admin_school
 
 from flask import request
 from flask import Blueprint
@@ -57,12 +57,18 @@ def gen_admin_index():
     if vl != True:
         log.debug('A non-admin user tried to access the /admin/ page.')
         abort(403)
-
+    all_schools = ""
+    for b in admin_school()['schools']:
+        all_schools += Templates.admin_school_list.substitute(
+            school_name = b['SCHOOL_NAME'],
+            school_id = b['SCHOOL_ID']
+        )
     the_index_page = Templates._base.substitute(
         title = "Admin Homepage",
         description = "A motivational storybook that helps students learn.",
         body = Templates.admin_index.substitute(
-            navbar = make_navbar( auth )
+            navbar = make_navbar( auth ), 
+            school_options=all_schools
         )
     )
     return the_index_page

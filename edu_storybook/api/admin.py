@@ -1216,7 +1216,7 @@ def admin_school():
 
         try:
             cursor.execute(
-                "SELECT SCHOOL_NAME FROM SCHOOL ORDER BY SCHOOL_ID"
+                "SELECT SCHOOL_NAME, SCHOOL_ID FROM SCHOOL ORDER BY SCHOOL_ID"
             )
             label_results_from(cursor)
 

@@ -16,7 +16,9 @@
 <!--Modal for Create New Study-->
 <div class="modal fade" id="createNewStudyModal" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <form action="/api/admin/study" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="redirect" value="/admin/">
+        <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="selectBookModalLabel">Create a New Study</h5>
@@ -26,7 +28,6 @@
             </div>
 
             <div class="modal-body">
-                <form>
 
                     <!--Study ID of New Study-->
                     <label for="message-text" class="col-form-label">Study ID:</label>
@@ -47,21 +48,18 @@
                     </div>
 
                     <!--School of New Study-->
-                    <label for="message-text" class="col-form-label">School:</label>
+                    <label for="message-text" class="col-form-label">Select a School:</label>
                     <div class="input-group mb-3">
-                        <select class="form-select" onclick="showNewSchoolOption()" id="school-for-study-select">
-                            <option value="" disabled selected>Select a School</option>
-                            <option value="newSchool">Other</option>
-                            <option value="1">University of Delaware</option>
-                            <option value="2">University of Maryland</option>
-                            <option value="3">University of Texas</option>
+                        <select class="form-control" id="school_id" name="school_id">
+                            ¶school_options
+                            <!--do we need an option for new school?-->
                         </select>
                     </div>
 
                     <!--Study Code of New Study-->
                     <label for="message-text" class="col-form-label">Study Invite Code:</label>
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="study_id" value="study_id" placeholder="######"
+                        <input type="text" class="form-control" id="study_invite_code" value="study_invite_code" placeholder="######"
                             aria-describedby="basic-addon2">
                         <div class="input-group-append">
                             <button type="button" class="btn btn-random bg-info" id="new_id"
@@ -76,19 +74,18 @@
                             <input type="text" class="form-control" href="#" id="school-input-from-user"
                                 aria-describedby="basic-addon2">
                         </div>
-                    </div>
-
-                </form>
+                    </div> 
             </div>
 
             <!--Button to send data to backend-->
             <div class="modal-footer">
-                <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Create</button>
+                <button type="submit" class="btn btn-atts bg-info" data-dismiss="modal">Create</button>
                 <!--TODO: make info transfer to backend-->
             </div>
 
         </div>
     </div>
+    </form>
 </div>
 
 ¶navbar
