@@ -7,7 +7,6 @@ receiving quiz question responses from the user.
 
 import logging
 import json
-from click import option
 import jwt
 
 from flask import Blueprint
