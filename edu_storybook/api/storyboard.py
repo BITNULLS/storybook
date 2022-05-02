@@ -106,48 +106,14 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
     cursor = connection.cursor()
 
     fileInput = get_book_image_path(book_id, page_number)
-
-    try:
-        # get quiz questions and answers and more information about those
-        cursor.execute(
-            "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
-            "INNER JOIN BOOK ON QUESTION.BOOK_ID = BOOK.BOOK_ID " +
-            "INNER JOIN ANSWER ON QUESTION.QUESTION_ID = ANSWER.QUESTION_ID " +
-            "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") " +
-            "ORDER BY QUESTION_ID,CORRECT"
-        )
-        label_results_from(cursor)
-    except cx_Oracle.Error as e:
-        a_storyboard_log.warning('Error when acessing database')
-        a_storyboard_log.warning(e)
-        return {
-            "status": "fail",
-            "fail_no": 5,
-            "message": "Error accessing quiz questions and its answers"
-        }, 400, {"Content-Type": "application/json"}
-
-    quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
-
-    # check if current page has any quiz question (this assumes only a single question would be there in a page)
-    # Future concern: What if there are back-to-back questions on a single page?
-    # append options of that question onto a list
-    options = []
-    quiz_question_info = None
-    for question in quizQuestions:
-        if page_number in range(question['PAGE_PREV'], question['PAGE_NEXT']):
-            quiz_question_info = question
-            options.append(question['ANSWER'])
-
-    # This detects whether we have a quiz question on page or not
-    if(quiz_question_info is not None):
-        return {
-            "status": "ok",
-            "question_id" : quiz_question_info['QUESTION_ID'],
-            "question" : quiz_question_info['QUESTION'],
-            "options" : options,
-            "correct_answer": quiz_question_info['ANSWER']
-        }
-
+        
+    quiz_questions = check_quiz_question(book_id, page_number, token['sub'])
+    
+    if(quiz_questions != False):
+        # If there's a quiz question(s) for user to answer, then return the data for the first quiz question
+        # for user to answer
+        return quiz_questions[0]
+    
     cursor = connection.cursor()
     try:
         cursor.callproc("track_last_page",\
@@ -179,7 +145,128 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "message": "Could not get image"
         }, 400, {"Content-Type": "application/json"}
 
+def check_quiz_question(book_id: int, page_number: int, user_id: str):
+    '''
+    This is the logic for checking if there's a quiz question(s) for a book with given book_id and given current
+    page number page_number
+    
+    Parameters: book_id (int) - ID of the book
+                page_number(int) - Current page number of a book
+    
+    Return: list of quiz question(s) OR boolean value False if there's no quiz question OR Oracle Error
+            for not accessing quiz questions from DB correctly
+    '''
+    
+    # goes into database and gets the bucket folder.
+    # goes into bucket and then says I want this image from this folder.
+    connection = pool.acquire()
+    cursor = connection.cursor()
+    
+    try:
+        # gets the unanswered quiz questions for a user (checks the user_response and user_free_response tables for which questions are answered)
+        cursor.execute(
+            "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.QUESTION_TYPE, ANSWER.ANSWER_ID, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
+            "INNER JOIN BOOK ON QUESTION.BOOK_ID = BOOK.BOOK_ID " +
+            "INNER JOIN ANSWER ON QUESTION.QUESTION_ID = ANSWER.QUESTION_ID " +
+            "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") AND NOT EXISTS ( " +
+            "SELECT * FROM USER_RESPONSE WHERE QUESTION_ID = QUESTION.QUESTION_ID AND USER_ID = '" + user_id + "' " +
+            "UNION " +
+            "SELECT * FROM USER_FREE_RESPONSE WHERE QUESTION_ID = QUESTION.QUESTION_ID AND USER_ID = '" + user_id + "' " +
+            ") " +
+            "ORDER BY QUESTION_ID,CORRECT"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_storyboard_log.warning('Error when acessing database')
+        a_storyboard_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Error accessing quiz questions and its answers"
+        }, 400, {"Content-Type": "application/json"}
 
+    quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
+    
+    answers = []
+    curr_question_id = None
+    full_question = None
+    question_type = None
+    correct_answer = None
+    quiz_question_list = []
+    
+    for question in quizQuestions:
+    
+        if curr_question_id == None:
+            curr_question_id = question['QUESTION_ID']
+            full_question = question['QUESTION']
+            question_type = question['QUESTION_TYPE']
+            answers.append({
+                "answer": question['ANSWER'],
+                "answer_id": question['ANSWER_ID'],
+                "is_correct": question['CORRECT']
+            })
+            if question['CORRECT'] == 1:
+                correct_answer = question['ANSWER']
+        
+        # This would mean that the question is a MC that has different options coming along        
+        elif question['QUESTION_ID'] == curr_question_id:
+            answers.append({
+                "answer": question['ANSWER'],
+                "answer_id": question['ANSWER_ID'],
+                "is_correct": question['CORRECT']
+            })
+            if question['CORRECT'] == 1:
+                correct_answer = question['ANSWER']
+        
+        # This means that new question came along
+        # Save the output of previous question into quiz_question_list and free the variables to use for
+        # upcoming question
+        else:
+            quiz_question_list.append(
+                {
+                    "question_id": curr_question_id,
+                    "question": full_question,
+                    "question_type": question_type,
+                    "answers": answers,
+                    "correct_answer": correct_answer
+                }
+            )
+            
+            # Reinitializing possible answers list and correct answer for next question
+            answers = []
+            correct_answer = None
+            
+            curr_question_id = question['QUESTION_ID']
+            full_question = question['QUESTION']
+            question_type = question['QUESTION_TYPE']
+            answers.append({
+                "answer": question['ANSWER'],
+                "answer_id": question['ANSWER_ID'],
+                "is_correct": question['CORRECT']
+            })
+            if question['CORRECT'] == 1:
+                correct_answer = question['ANSWER']
+            
+            
+    if(len(quiz_question_list) > 0 or curr_question_id != None):
+        
+        # Make sure to append the last question from quizQuestions since the loop would stop without adding
+        # that last question
+        
+        quiz_question_list.append(
+            {
+                "question_id": curr_question_id,
+                "question": full_question,
+                "question_type": question_type,
+                "answers": answers,
+                "correct_answer": correct_answer
+            }
+        )
+        return quiz_question_list
+    
+    else:
+        return False
+    
 @a_storyboard.route("/api/storyboard/pagecount/<int:book_id_in>", methods=['GET'])
 def storyboard_get_pagecount(book_id_in: int):
     '''

@@ -7,6 +7,7 @@ receiving quiz question responses from the user.
 
 import logging
 import json
+import jwt
 
 from flask import Blueprint
 from flask import request
@@ -17,9 +18,11 @@ from edu_storybook.core.config import config
 from edu_storybook.core.auth import validate_login
 from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
+from edu_storybook.core.sensitive import jwt_key
+from edu_storybook.core.config import Config
 
-from edu_storybook.api.storyboard import storyboard_get_pagecount
 from edu_storybook.api.index import get_book_info
+from edu_storybook.api.storyboard import check_quiz_question
 
 from edu_storybook.navbar import make_navbar
 
@@ -51,7 +54,12 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
             f'An unauthorized, logged out user tried to access the /storyboard/{book_id_in}/{page_number_in} page.'
         )
         abort(403)
-
+        
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
+    
     book_id = int(book_id_in)
     page_number = int(page_number_in)
 
@@ -71,6 +79,60 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
         next_link_visibility = "display: none"
     else:
         next_link_visibility = "display: block"
+    
+    # Returns the list of quiz question(s) for given book and page number for user to answer
+    quiz_questions = check_quiz_question(book_id, page_number, token['sub'])
+    options_buttons = ""
+    
+    if(quiz_questions != False):
+        
+        # Get the first question from the list of unanswered questions
+        question = quiz_questions[0]
+        
+        if(question['question_type'] == 1):
+            
+            display_question = question['question']
+            display_question_id = question['question_id']
+                
+            # Logic to dynamically add buttons on-the-fly
+            for answer_choice in question['answers']:
+                button_value = answer_choice['answer_id']
+                answer_choice_name = answer_choice['answer']
+                options_buttons = options_buttons + "<button name='answer_id' style='min-width:100%' type='submit' value='" + str(button_value) + "' class='btn btn-info'> " + answer_choice_name + " </button> <br> <br>"
+            
+            display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
+                question_id = display_question_id,
+                url = "/storyboard/" + str(book_id) + "/" + str(page_number),
+                options = options_buttons
+            )
+                    
+            mc_page = Templates._base.substitute(
+                title = 'Multiple Choice Quiz',
+                description = 'Check Your Understanding So Far',
+                body = Templates.storyboard_quiz_mc.substitute(
+                    question = display_question,
+                    mc_items = display_mc_items,
+                    prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)                
+                )
+            )
+                
+            return mc_page
+            
+        else:
+            display_question = question['question']
+            display_question_id = question['question_id']
+            
+            fr_page = Templates._base.substitute(
+                title = 'Free Response Quiz',
+                description = 'Check Your Understanding So Far',
+                body = Templates.storyboard_quiz_fr.substitute(
+                    url = "/storyboard/" + str(book_id)+ "/" + str(page_number),
+                    question = display_question,
+                    question_id = display_question_id,
+                    prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)
+                )
+            )
+            return fr_page
 
     # Generate Storyboard Viewer page
     storyboard_page = Templates._base.substitute(

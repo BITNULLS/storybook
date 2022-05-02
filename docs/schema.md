@@ -69,6 +69,8 @@ This table provides the information about the ideal answer of a question
 | QUESTION_ID | ID to a question in [`QUESTION`](#QUESTION) that the answer is related to |
 | ANSWER | Full text of answer |
 | CORRECT | Identifies if an answer to a particular QUESTION_ID is correct. 1 if correct. 0 if they are not correct |
+| FEEDBACK | Feedback for an answer. More specifically, this applies to multiple choice options where each
+option is an answer and each option has feedback attached to it |
 
 <br>
 
@@ -107,7 +109,6 @@ This table provides the information about a question being encountered from the 
 |  column name | description  | 
 |---|---|
 | QUESTION_ID | Number ID to uniquely identify question |
-| SCHOOL_ID | ID of school from [`SCHOOL`](#SCHOOL) that the question is related to |
 | BOOK_ID | ID of book from [`BOOK`](#BOOK) that the question is from |
 | QUESTION | Full text of question |
 | PAGE_PREV | Page number that is before the question |
