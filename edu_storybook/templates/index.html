@@ -1,20 +1,21 @@
 <!-- Home Page-->
 ~navbar
+
 <script>
 
 $(document).ready(function() {
-    const queryString = window.location.search;
-    console.log(queryString);
 
-  //  if (queryString == '')
+    var logout_elem = document.getElementById("logout-notif");
 
-   /* const urlParams = new URLSearchParams(queryString);
-    const product = urlParams.get('product')
-    console.log(product); */
-
- })
+    if (window.location.hash == "#log_out_success" && logout_elem.style.display === 'none')
+    logout_elem.style.display = "block";
+});
 
 </script>
+
+<div class="alert alert-info" id="logout-notif" style="display:none;" role="alert">
+    You have signed out!
+</div>
 
 <div class="HomePage">
     <h1 class="text-center mb-5" style="text-align:center">Welcome to EduStorybook </h1>
