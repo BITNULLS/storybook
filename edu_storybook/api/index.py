@@ -27,9 +27,6 @@ import bcrypt
 import time
 import logging
 import json
-
-from numpy import result_type
-
 from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
@@ -478,7 +475,6 @@ def register():
         })
 
     iat = int(time.time())
-    print(result)
     user_id = result['USER_ID']
     session_id = str(uuid.uuid4())  # generate a unique token for a user    
     token = jwt.encode({

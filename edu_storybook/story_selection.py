@@ -36,8 +36,8 @@ def gen_books():
     auth = None
     if 'Authorization' in request.cookies:
         auth = request.cookies['Authorization']
-   # else:
-   #     abort(403, description="You are not logged in.")
+    else:
+        abort(403, description="You are not logged in.")
 
     vl = validate_login(
         auth,
