@@ -2,13 +2,13 @@
 
 <!--Creating Space at the top of the page-->
 <div class="row mt-5">
-  <div class="col-12 col-md-4 col-sm-3"></div>
-  <div class="col"></div>
-</div> 
+    <div class="col-12 col-md-4 col-sm-3"></div>
+    <div class="col"></div>
+</div>
 
 <!--Title of page-->
 <div class="Edit_Book">
-  <h1 class="text-center mb-5">Edit Book</h1>
+    <h1 class="text-center mb-5">Edit Book</h1>
 </div>
 
 <!--JS to make modal pop up upon opening window-->
@@ -18,8 +18,8 @@
     let school_id_temp;
 
     //show the modal that allows user to select a book to edit 
-    $(document).ready(function(){
-        $("#selectBookModal").modal('show'); 
+    $(document).ready(function () {
+        $("#selectBookModal").modal('show');
     });
 
     //modal for the admin to select which book to edit 
@@ -29,7 +29,7 @@
 
         $('#selectBookModal').modal('hide');
         var importantPages = 3;
-        for(var page = 1; page < page_count; page++) {
+        for (var page = 1; page < page_count; page++) {
             var pageOption = $('<option value="' + page + '">' + page + '</option>');
             $('#insert-question').append(pageOption);
             var pageIndicator = $('<h4>Page ' + page + '</h4>');
@@ -37,12 +37,12 @@
             var singlePage = document.createElement('img');
             singlePage.setAttribute("class", "img-fluid");
             singlePage.setAttribute(
-                'src', 
+                'src',
                 '/api/storyboard/page/' + book_id + '/' + page
             );
             singlePage.setAttribute("id", "page-" + page);
             singlePage.setAttribute("loading", "lazy");
-            if(importantPages > 0)
+            if (importantPages > 0)
                 singlePage.setAttribute("fetchpriority", "high");
             else
                 singlePage.setAttribute("fetchpriority", "low");
@@ -59,7 +59,7 @@
 
     //adds spot to put in a new answer choice by the admin for a question
     function addChoiceA() {
-        $('#mc-answer-choice-holder').append( 
+        $('#mc-answer-choice-holder').append(
             $('#template-new-mc-answer-choice').html()
         );
     }
@@ -79,12 +79,12 @@
             ans['correct'] = $('.input-group-prepend').children().children()[count].checked; //getting if the answer checked or not
             ans['content'] = $(element).children('input').val(); //getting the text for the answer
             ans['feedback'] = $('.feedback-text-area')[count].value; //getting the feedback for the answer
-            count = count+1;
+            count = count + 1;
             answers.push(ans);
         });
 
         let main_question = questionPreview; //this is the header
-        
+
         let answer_choices = '<div id=' + randQuestionID + ' class="card-body">' //this is the card body
         for(var choice = 0; choice < answers.length; choice++) {
             let cont = '<p>' + answers[choice].content + '</p>';
@@ -101,17 +101,17 @@
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
         deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
-        
+
         let card_class = document.createElement("div");
         let insertBefore = parseInt(insertAfter) + parseInt(1);
         $('#page-' + insertBefore).before(main_question.append(deleteButton).append(answer_choices));
         
         //adding the question that was created to the array 
         //first getting all the information - check endpoint admin/page
-        
+
         let book_id_in = book_id_temp;
         let school_id_in = school_id_temp;
-        let question_in = question; 
+        let question_in = question;
         let page_prev_in = parseInt(insertAfter); //page before question
         let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
 
@@ -159,7 +159,7 @@
         //store it in questionsCreated
         questionsCreated.push(thisNewQ);
 
-    } 
+    }
 
     //invoked when admin clicks Add Question button for short answer
     function shortAnswerNewQuizQ() {
@@ -177,10 +177,10 @@
 
         //adding the question that was created to the array 
         //first getting all the information - check endpoint admin/page
-        
+
         let book_id_in = book_id_temp;
         let school_id_in = school_id_temp;
-        let question_in = question; 
+        let question_in = question;
         let page_prev_in = parseInt(insertAfter); //page before question
         let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
         let answers_in = ""; //TODO: get the optional answer that the admin typed for this question
@@ -206,7 +206,7 @@
     function submitQuestions() {
         //for everything in the questionsCreated array, send it to the backend
 
-        questionsCreated.forEach(function(e) {
+        questionsCreated.forEach(function (e) {
             $.ajax({
                 url: '/api/admin/page',
                 type: 'POST',
@@ -226,20 +226,21 @@
 </script>
 
 <!--Modal for selecting a book-->
-<div class="modal fade" id="selectBookModal" tabindex="-1" role="dialog" aria-labelledby="selectBookModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="selectBookModalLabel">Select a Book to Edit</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        ¶book
-      </div>
+<div class="modal fade" id="selectBookModal" tabindex="-1" role="dialog" aria-labelledby="selectBookModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectBookModalLabel">Select a Book to Edit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                ¶book
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <!--Overall container for pages and quiz questions-->
@@ -272,21 +273,26 @@
                                         </div>
                                         <div class="form-group" id="multiple-choice-form">
                                             <label for="input_MC_question">Enter Your Question</label>
-                                            <input type="text" class="form-control" id="input_MC_question" placeholder="???">
+                                            <input type="text" class="form-control" id="input_MC_question"
+                                                placeholder="???">
                                             <small class="form-text text-muted">Required</small>
                                         </div>
 
-                                        <button id="add-choiceA-button" type="button" class="btn btn-atts btn-info" onclick="addChoiceA()">Add Answer Choice</button>
+                                        <button id="add-choiceA-button" type="button" class="btn btn-atts btn-info"
+                                            onclick="addChoiceA()">Add Answer Choice</button>
                                         <template id="template-new-mc-answer-choice">
                                             <div class="input-group mb-1" id="new-mc-answer-choice">
                                                 <div class="input-group-prepend">
                                                     <div class="input-group-text">
-                                                        <input class="mr-1" type="checkbox" aria-label="Checkbox for following text input"> Correct</input>
+                                                        <input class="mr-1" type="checkbox"
+                                                            aria-label="Checkbox for following text input">
+                                                        Correct</input>
                                                     </div>
                                                 </div>
                                                 <input type="text" class="form-control" placeholder="Answer Choice" aria-label="" aria-describedby="basic-addon1">
                                                 <div class="input-group-append">
-                                                    <button class="btn btn-outline-secondary" type="button" onclick="$(this).parent().parent().remove()">Delete</button>
+                                                    <button class="btn btn-outline-secondary" type="button"
+                                                        onclick="$(this).parent().parent().remove()">Delete</button>
                                                 </div>
                                                 <div class="input-group-append">
                                                     <div class="input-group-prepend">
@@ -299,7 +305,7 @@
                                                 </div>
                                             </div>
                                         </template>
-                                        
+
 
                                         <div id="mc-answer-choice-holder"></div>
 
@@ -316,15 +322,18 @@
                                         </div>
                                         <div class="form-group" id="short-answer-form">
                                             <label for="input_SA_question">Enter Your Question</label>
-                                            <input type="text" class="form-control" id="input_SA_question" placeholder="???">
+                                            <input type="text" class="form-control" id="input_SA_question"
+                                                placeholder="???">
                                             <small class="form-text text-muted">Required</small>
                                         </div>
                                         <div class="form-group">
                                             <label for="input_SA_answer">Answer</label>
-                                            <textarea type="text" class="form-control" id="input_SA_answer" placeholder="Please type your response here"></textarea>
+                                            <textarea type="text" class="form-control" id="input_SA_answer"
+                                                placeholder="Please type your response here"></textarea>
                                             <small class="form-text text-muted">Optional</small>
                                         </div>
-                                        <button type="submit" class="btn btn-atts btn-info" onclick="shortAnswerNewQuizQ()">Add Question</button>
+                                        <button type="submit" class="btn btn-atts btn-info"
+                                            onclick="shortAnswerNewQuizQ()">Add Question</button>
                                     </div>
                                 </div>
                             </div>
@@ -335,12 +344,13 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
 
 <!--Save and Publish buttons-->
 <div class="row mt-3 justify-content--center">
-  <div class="col text-center col_atts">
-    <a type="button" class="btn btn-atts bg-info" data-toggle="modal" data-target="#selectBookModal">Change Book</a>
-    <a type="button" class="btn btn-atts bg-info" role="button" aria-pressed="true" onclick="submitQuestions()">Save & Publish</a>
-  </div>  
-</div>  
+    <div class="col text-center col_atts">
+        <a type="button" class="btn btn-atts bg-info" data-toggle="modal" data-target="#selectBookModal">Change Book</a>
+        <a type="button" class="btn btn-atts bg-info" role="button" aria-pressed="true" onclick="submitQuestions()">Save
+            & Publish</a>
+    </div>
+</div>

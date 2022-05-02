@@ -27,7 +27,6 @@ import bcrypt
 import time
 import logging
 import json
-
 from edu_storybook.core.auth import validate_login, issue_auth_token
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
@@ -445,6 +444,23 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
+    
+    try:
+        cursor.execute(
+            "select * from USER_PROFILE where email='" + email + "'"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 7,
+            "message": "Error when querying database.",
+            "database_message": str(e)
+        }
+
+    result = cursor.fetchone()
 
     send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com',
                 'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' +
@@ -457,6 +473,41 @@ def register():
         res = make_response({
             "status": "ok"
         })
+
+    iat = int(time.time())
+    user_id = result['USER_ID']
+    session_id = str(uuid.uuid4())  # generate a unique token for a user    
+    token = jwt.encode({
+        "iat": iat,
+        "session": session_id,
+        "sub": user_id,
+        "permission": result['ADMIN']
+    }, jwt_key, algorithm=Config.jwt_alg)
+    res.set_cookie(
+        "Authorization",
+        "Bearer " + token,
+        max_age=Config.login_duration,
+        # domain=domain_name#, # TODO: uncomment in production
+        # secure=True,
+        # httponly=True
+    )
+
+    try:
+        cursor.execute(
+            "update USER_PROFILE set LAST_LOGIN=CURRENT_TIMESTAMP where user_id='" +
+            str(user_id) + "'"
+        )
+        connection.commit()
+    except cx_Oracle.Error as e:
+        a_index_log.warning('Error when accessing database')
+        a_index_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 8,
+            "message": "Error when updating database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
     return res
 
 
