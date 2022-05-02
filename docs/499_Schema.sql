@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for May 1, 2022
+-- Updated Schema for May 2, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -1102,17 +1102,21 @@ END get_user_profile_data_proc;
 set define off;
 
   CREATE OR REPLACE EDITIONABLE PROCEDURE "INSERT_QUESTION_PROC" (
-    question_in  IN question.question%TYPE,
-    school_id_in IN question.school_id%TYPE,
-    book_id_in   IN question.book_id%TYPE,
-    page_prev_in IN question.page_prev%TYPE,
-    page_next_in IN question.page_next%TYPE,
-    answers_in   IN VARCHAR2, 
-    question_type_in IN question.question_type%TYPE
+    question_in         IN question.question%TYPE,
+    book_id_in          IN question.book_id%TYPE,
+    page_prev_in        IN question.page_prev%TYPE,
+    page_next_in        IN question.page_next%TYPE,
+    answers_in          IN VARCHAR2,
+    question_type_in    IN question.question_type%TYPE,
+    answers_feedback_in IN VARCHAR2,
+    answers_correct_in  IN VARCHAR2
 ) AS
 BEGIN
     DECLARE
-        question_id_in question.question_id%TYPE;
+        question_id_in              question.question_id%TYPE;
+        answers_in_checker          NUMBER;
+        answers_feedback_in_checker NUMBER;
+        answers_correct_in_checker  NUMBER;
     BEGIN
         SELECT
             question_seq.NEXTVAL
@@ -1122,48 +1126,72 @@ BEGIN
 
         INSERT INTO question (
             question_id,
-            school_id,
             book_id,
             question,
             page_prev,
-            page_next, 
+            page_next,
             question_type
         ) VALUES (
             question_id_in,
-            school_id_in,
             book_id_in,
             question_in,
             page_prev_in,
-            page_next_in, 
+            page_next_in,
             question_type_in
         );
 
+        SELECT
+            instr(answers_in, ' ~`~ ', 1, 1),
+            instr(answers_feedback_in, ' ~`~ ', 1, 1),
+            instr(answers_correct_in, ' ~`~ ', 1, 1)
+        INTO
+            answers_in_checker,
+            answers_feedback_in_checker,
+            answers_correct_in_checker
+        FROM
+            dual;
+
+        IF answers_in_checker = 0 OR answers_feedback_in_checker = 0 OR answers_correct_in_checker = 0 THEN
+            raise_application_error(-20000, 'ANSWERS, or ANSWER_FEEDBACK or ANSWER_CORRECT ignored ~`~ token!!');
+        END IF;
+
         BEGIN
-            FOR i IN (
-                SELECT
-                    TRIM(regexp_substr(answers_in, '(.*?)( ~`~ |$)', 1, level, NULL,
-                                       1)) l
-                FROM
-                    dual
-                CONNECT BY
-                    level <= regexp_count(answers_in, ' ~`~ ') + 1
-            ) LOOP
-                BEGIN
+            DECLARE
+                TYPE t_string IS
+                    VARRAY(3) OF VARCHAR2(100);
+                t_answers t_string;
+                num_answers NUMBER;
+            BEGIN
+                SELECT COUNT(TRIM(regexp_substr(answers_in, '(.*?)( ~`~ |$)', 1, level, NULL,
+                                           1)))
+                    INTO num_answers
+                    
+                    FROM
+                        dual
+                    CONNECT BY
+                        level <= regexp_count(answers_in, ' ~`~ ') + 1;
+                FOR i IN 1..num_answers
+                LOOP
+                    t_answers := t_string(get_string_fn(answers_in, i, 1, '~`~'), get_string_fn(answers_correct_in, i, 1, '~`~'), get_string_fn(
+                    answers_feedback_in, i, 1, '~`~'));
+
                     INSERT INTO answer (
                         answer_id,
                         question_id,
-                        answer, 
-                        correct
+                        answer,
+                        correct,
+                        answer_feedback
                     ) VALUES (
-                        ANSWER_SEQ.nextval,
+                        answer_seq.NEXTVAL,
                         question_id_in,
-                        i.l,
-                        1
-                        
+                        t_answers(1),
+                        t_answers(2),
+                        t_answers(3)
                     );
 
-                END;
-            END LOOP;
+                END LOOP;
+
+            END;
         END;
 
     END;
