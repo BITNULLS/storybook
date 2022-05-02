@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set Up Sensitive Files
-      runs: |
+      run: |
         echo $env:JSON > StorybookFiles.json
         echo $env:PEM > StorybookFiles.pem
         echo $env:SSH > ssh.key
