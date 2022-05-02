@@ -103,7 +103,8 @@
         deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
         
         let card_class = document.createElement("div");
-        $('#page-' + insertAfter).after(main_question.append(deleteButton).append(answer_choices));
+        let insertBefore = parseInt(insertAfter) + parseInt(1);
+        $('#page-' + insertBefore).before(main_question.append(deleteButton).append(answer_choices));
         
         //adding the question that was created to the array 
         //first getting all the information - check endpoint admin/page
