@@ -100,12 +100,17 @@
 
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
+        //deleteButton.attr("onclick", questionsDeleted + ".push(" + randQuestionID + ")");
+        //console.log(randQuestionID);
+        //console.log(question);
+        deleteButton.attr("onclick", "" + questionsDeleted + ".push('" + randQuestionID + "')");
+        console.log(questionsDeleted);
+
         deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
 
         let card_class = document.createElement("div");
-        let insertBefore = parseInt(insertAfter) + parseInt(1);
-        $('#page-' + insertBefore).before(main_question.append(deleteButton).append(answer_choices));
-        
+        $('#page-' + insertAfter).after(main_question.append(deleteButton).append(answer_choices));
+
         //adding the question that was created to the array 
         //first getting all the information - check endpoint admin/page
 
@@ -171,6 +176,7 @@
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
         deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
+        deleteButton.attr("onclick", "$('#" + randQuestionID + "').push(" + questionsDeleted + ")");
 
         let card_class = document.createElement("div");
         $('#page-' + insertAfter).after(questionPreview.append(deleteButton));
