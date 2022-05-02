@@ -1,46 +1,42 @@
-~navbar 
+¶navbar
 
 <div class="row mt-5">
-  <div class="col-12 col-md-4 col-sm-3"></div>
-  <div class="col">
-    <h1 class="text-center mb-5">Upload Book</h1>
+    <div class="col-12 col-md-4 col-sm-3"></div>
+    <div class="col">
+        <h1 class="text-center mb-5">Upload Book</h1>
 
-    <div class="card pl-1 pr-1">
-      <div class="card-body">
+        <div class="card pl-1 pr-1">
+            <div class="card-body">
 
-        <form action="/api/admin/book/upload" method="POST" enctype="multipart/form-data">
-          <input type="hidden" name="redirect" value="/admin/">
-          <div class="form-group">
-            <input class="form-control-file" id="book_file" type="file" accept="pdf/*" name="file" />
-          </div>
-          <div class="form-group">
-            <input class="form-control" id="title" type="text" name="title" placeholder="Title of Book" />
-          </div>
-          <div class="form-group">
-            <label for="study_id">Study ID(s) for Book</label>
-            <select multiple class="form-control" id="study_id" name="study_id">
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-              <option>5</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <textarea class="form-control" id="description" type="text" name="description"
-            placeholder="Description of Book" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label htmlFor="file" class="col text-center">
-              <input id="file-upload-btn" class="btn btn-atts" type="submit" value="Upload Book" style{minWidth: 180,
-                margin: 10} />
-            </label>
-          </div>
-        </form>
-        
-      </div>
+                <form action="/api/admin/book/upload" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="redirect" value="/admin/">
+                    <div class="form-group">
+                        <input class="form-control-file" id="book_file" type="file" accept="pdf/*" name="file" />
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" id="title" type="text" name="title" placeholder="Title of Book" />
+                    </div>
+                    <div class="form-group">
+                        <label for="study_id">Study ID(s) for Book</label>
+                        <select multiple class="form-control" id="study_id" name="study_id">
+                            ¶add_study
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" id="description" type="text" name="description"
+                            placeholder="Description of Book" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label htmlFor="file" class="col text-center">
+                            <input id="file-upload-btn" class="btn btn-atts" type="submit" value="Upload Book"
+                                style{minWidth: 180, margin: 10} />
+                        </label>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
     </div>
-
-  </div>
-  <div class="col col-12 col-md-4 col-sm-3"></div>
+    <div class="col col-12 col-md-4 col-sm-3"></div>
 </div>

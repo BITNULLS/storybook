@@ -1,30 +1,39 @@
-~navbar
+¶navbar
+<form id="book_id_form" onload="afterWebPageLoad()">
+    <input type="hidden" name="book_id_name" id="book_id" value="¶id_of_book">
+    <input type="hidden" name="page_id_name" id="curr_page" value="¶id_of_page">
+    <input type="hidden" name="page_next_name" id="next_page" value="¶next_page_num">
+    <input type="hidden" name="page_back_name" id="prev_page" value="¶prev_page_num">
+</form>
+
 <br>
-<div>   
-  <p style="text-align:center; font-size: 30px; font-weight: bold"> ~book_name </p>
-  <br>
-  <br>
- 
-  <div id="homePage" class="carousel slide carousel-fade mx-auto" data-ride="inactive">
-    <ol class="carousel-indicators">
-      <li data-target="#homePage" data-slide-to="0" class="active"></li>
-    </ol>
-    <div class="carousel-inner" role="listbox">
-      <div class="carousel-item active" data-interval="inactive">
-        <img style="display:block; margin-left:auto; margin-right: auto; width:60%" class="img-fluid" src="~current_page" id="testerPage"
-        alt="First Slide"/>
-      </div>   
+<div>
+    <p style="text-align:center; font-size: 30px; font-weight: bold"> ¶book_name </p>
+    <br>
+    <br>
+
+    <div id="homePage" class="carousel slide carousel-fade mx-auto" data-ride="inactive">
+        <ol class="carousel-indicators">
+            <li data-target="#homePage" data-slide-to="0" class="active"></li>
+        </ol>
+        <div class="carousel-inner" role="listbox">
+            <div class="carousel-item active" data-interval="inactive">
+                <img style="display:block; margin-left:auto; margin-right: auto; width:60%" class="img-fluid"
+                    src="¶current_page" id="testerPage" alt="First Slide" onclick="click_page()"/>
+            </div>
+        </div>
+
+        <a class="carousel-control-prev text-dark" style="display:block" href="/storyboard/¶id_of_book/¶prev_page_num"
+            data-mdb-target="#carouselDarkVariant" role="button" data-slide="prev" onclick="turn_page_backward()">
+            &lt; Previous <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next text-dark" style="display:block" href="/storyboard/¶id_of_book/¶next_page_num"
+            data-mdb-target="#carouselDarkVariant" role="button" data-slide="next" onclick="turn_page_forward()"> Next >
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
+
     </div>
-
-  <a class="carousel-control-prev text-dark" style="~show_prev_link" href="/storyboard/~id/~prev_page_num" data-mdb-target="#carouselDarkVariant" role="button" data-slide="prev"> < Previous
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="sr-only">Previous</span>
-    </a>
-    <a class="carousel-control-next text-dark" style="~show_next_link" href="/storyboard/~id/~next_page_num" data-mdb-target="#carouselDarkVariant" role="button" data-slide="next"> Next >
-      <span class="carousel-control-next-icon" aria-hidden="true"  ></span>
-      <span class="sr-only">Next</span>
-  </a>
-
-  </div>
 
 </div>

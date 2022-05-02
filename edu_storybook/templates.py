@@ -26,7 +26,7 @@ class EduTemplate(Template):
     Update regular `string.Template` to use a new delimiter, `~`, and make the
     `idpattern` more narrow (`a-z`, `_`, and `0-9`).
     '''
-    delimiter = '~'
+    delimiter = '¶'
     idpattern = r'[a-z][_a-z0-9]*'
 
 
@@ -55,7 +55,13 @@ TEMPLATES = {
         "index": load_template("templates/admin/index.html"),
         "study_manager": load_template("templates/admin/study_manager.html"),
         "upload_book": load_template("templates/admin/upload_book.html"), 
-        "book": load_template("templates/admin/book.html")
+        "book": load_template("templates/admin/book.html"), 
+        "book_card": load_template("templates/admin/book_card.html"),
+        "study_list": load_template("templates/admin/study_list.html"), 
+        "add_study": load_template("templates/admin/add_to_study.html"), 
+        "user_list": load_template("templates/admin/user_list.html"),
+        "add_book": load_template("templates/admin/add_to_book.html"),
+        "add_user": load_template("templates/admin/add_to_user.html")
     },
     "navbar": {
         "logged_admin": load_template("templates/navbar/logged_admin.html"),
@@ -107,6 +113,11 @@ class Templates:
     Admin Book Index template.
     '''
 
+    admin_book_card: Template = TEMPLATES['admin']['book_card']
+    '''
+    Admin Book Card template.
+    '''
+
     admin_book_manager: Template = TEMPLATES['admin']['book_manager']
     '''
     Admin Book Manager template.
@@ -126,6 +137,16 @@ class Templates:
     '''
     Admin Study Manager template.
     '''
+
+    admin_study_list: Template = TEMPLATES['admin']['study_list']
+
+    admin_add_study: Template = TEMPLATES['admin']['add_study']
+
+    admin_add_book: Template = TEMPLATES['admin']['add_book']
+
+    admin_add_user: Template = TEMPLATES['admin']['add_user']
+
+    admin_user_list: Template = TEMPLATES['admin']['user_list']
 
     admin_upload_book: Template = TEMPLATES['admin']['upload_book']
     '''

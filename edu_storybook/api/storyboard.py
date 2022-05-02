@@ -396,6 +396,7 @@ def storyboard_save_user_action():
 
     connection = pool.acquire()
     cursor = connection.cursor()
+
     try:
         cursor.execute(
             "DECLARE " +
@@ -423,6 +424,7 @@ def storyboard_save_user_action():
             "END;"
         )
         connection.commit()
+
     except cx_Oracle.Error as e:
         a_storyboard_log.warning('Error when accessing database')
         a_storyboard_log.warning(e)

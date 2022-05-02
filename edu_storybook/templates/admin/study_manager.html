@@ -4,7 +4,7 @@ there will be a popup that allows the administrator to create studies
 (with study_names and study_invite_codes)
 -->
 
-~navbar
+¶navbar
 <div class="row mt-5 justify-content-center">
 
     <script>
@@ -12,124 +12,115 @@ there will be a popup that allows the administrator to create studies
             let randomID = Math.floor((Math.random() * 1000000) + 1);
             document.getElementById('study_id').value = randomID;
         }
+
+        function addBookToStudy(study_id) {
+            $('#studyId').val(study_id);
+            $('#addBookToStudy').modal('show')
+        }
+
+        function showUsers(study_id) {
+            $.ajax({
+                url: "/api/admin/study/user",
+                type: "GET",
+                data: {
+                    "study_id": study_id
+                },
+                success: function(response) {
+                    var users = response['users'];
+                    console.log(response)
+
+                    $('#showUsersTable').empty();
+
+                    users.forEach(function(element, index) {
+                        var user_row = $(`<tr><td>${element["EMAIL"]}</td><td>${element["FIRST_NAME"]}</td><td>${element["LAST_NAME"]}</td></tr>`);
+                        $('#showUsersTable').append(user_row);
+                    });
+
+                    $('#showUsers').modal('show');
+
+                },
+                failure: function(xhr){
+                    alert("ERROR!!!!!!")
+                }
+            })
+
+        }
+
+        function addStudyToUser(user_id){
+            $('#userId').val(user_id);
+            $('#addStudyToUser').modal('show');
+        }
     </script>
-    <!--Modal for Create New Study-->
-    <div class="modal fade" id="createNewStudyModal" tabindex="-1" role="dialog"
-        aria-labelledby="createNewStudyModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="selectBookModalLabel">Create a New Study</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <label for="message-text" class="col-form-label">Study ID:</label>
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" id="study_id" placeholder="123456"
-                                aria-label="123456" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <!--TODO: Actually generate a random code and place in the input area-->
-                                <button type="button" class="btn btn-random bg-info" id="new_id"
-                                    onclick="generateNewID()">Randomize</button>
-                            </div>
-                        </div>
-                        <label for="message-text" class="col-form-label">Description:</label>
-                        <div class="form-group">
-                            <textarea class="form-control" id="study_description"
-                                placeholder="Lorem ipsum dolor sit amet. Est dolorum labore quo saepe officiis in soluta laborum."></textarea>
-                        </div>
-                        <label for="message-text" class="col-form-label">School:</label>
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" href="#" id="school_id"
-                                placeholder="University of Delaware" aria-label="University of Delaware"
-                                aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button type="button" class="btn btn-random bg-info dropdown-toggle"
-                                    id="school_id" data-toggle="dropdown" aria-haspopup="true"
-                                    aria-expanded="false"></button>
-                                <div class="dropdown-menu dropdown-menu-left" role="menu">
-                                    <!--TODO: Replace hard coded list for list of schools-->
-                                    <!--Placeholder for the list of school to show up in the dropdown-->
-                                    <a class="dropdown-item" data-value="1"><a href="#">One</a></a>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Create</button>
-                    <!--TODO: make info transfer to backend-->
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!--Modal for Adding a Book to this Study -->
     <div class="modal fade" id="addBookToStudy" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="selectBookModalLabel">Add Book to Study</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                            <label class="form-check-label" for="flexCheckDefault">
-                                Study ID: 1234
-                            </label>
+        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="redirect" value="/admin/study_manager">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="selectBookModalLabel">Add Book to Study</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="direction" id="direction" value="btos">
+                        <input type="hidden" id="studyId" name="study_id" value="study_id">
+                        <!-- TODO: admin_add_book_to_study/  Add all the study ids and have the ones the book is involved with checked -->
+                        <div class="form-group">
+                            <label for="study_id">Book ID(s) for Study</label>
+                            <select multiple class="form-control" id="book_ids" name="book_id">
+                                ¶add_book
+                            </select>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Save</button>
-                    <!--TODO: make info transfer to backend-->
+
+                    </div>
+                    <div class="modal-footer">
+                        <a href="/admin/study_manager">
+                        <button type="submit" class="btn btn-atts bg-info" >Save</button>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Adding/Editing User to be in Studies -->
     <div class="modal fade" id="addStudyToUser" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="selectBookModalLabel">Edit User's Study</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                            <label class="form-check-label" for="flexCheckDefault">
-                                Study ID: 1234
-                            </label>
+        <form action="/api/admin/study/user" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="redirect" value="/admin/study_manager">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="selectBookModalLabel">Edit User's Study</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="userId" name="user_id" value="user_id">
+                        <div class="form-group">
+                            <label for="study_id">Study ID(s) for User</label>
+                            <select multiple class="form-control" id="study_ids" name="study_id">
+                                ¶add_study
+                            </select>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Save</button>
-                    <!--TODO: make info transfer to backend-->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-atts bg-info">Save</button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
     </div>
 
     <!--Modal for Editing Users to Studies -->
-    <div class="modal fade" id="addUsersToStudy" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
+    <div class="modal fade" id="showUsers" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
+        <form action="/api/admin/study/user" method="GET">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -139,29 +130,23 @@ there will be a popup that allows the administrator to create studies
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <input type="hidden" id="studyId" name="study_id" value="study_id">
                         <!-- TODO: Add all the study ids and have the ones the book is involved with checked -->
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th scope="col">User ID</th>
+                                    <th scope="col">User Email</th>
                                     <th scope="col">First Name</th>
                                     <th scope="col">Last Name</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <th scope="row">123</th>
-                                    <td>Mark</td>
-                                    <td>Otto</td>
-                                </tr>
+                            <tbody id="showUsersTable">
                             </tbody>
                         </table>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Done</button>
-                    <!--TODO: make info transfer to backend-->
                 </div>
             </div>
         </div>
@@ -193,34 +178,7 @@ there will be a popup that allows the administrator to create studies
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">123</th>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addBookToStudy">Books</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addUsersToStudy">Users</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-danger">Delete</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">223</th>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addBookToStudy">Books</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addUsersToStudy">Users</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-danger">Delete</a>
-                                </td>
-                            </tr>
+                            ¶study_list
                         </tbody>
                     </table>
                 </div>
@@ -230,7 +188,7 @@ there will be a popup that allows the administrator to create studies
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th scope="col">User ID</th>
+                                <th scope="col">User Email</th>
                                 <th scope="col">First Name</th>
                                 <th scope="col">Last Name</th>
                                 <th scope="col">Studies</th>
@@ -238,22 +196,7 @@ there will be a popup that allows the administrator to create studies
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">123</th>
-                                <td>
-                                    John
-                                </td>
-                                <td>
-                                    Doe
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-info" data-toggle="modal"
-                                        data-target="#addStudyToUser">Studies</a>
-                                </td>
-                                <td>
-                                    <a type="button" class="btn btn-atts bg-danger">Delete</a>
-                                </td>
-                            </tr>
+                            ¶add_user
                         </tbody>
                     </table>
                 </div>

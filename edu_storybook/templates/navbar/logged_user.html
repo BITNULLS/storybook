@@ -1,22 +1,25 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="/">EduStorybook</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+    <a class="navbar-brand" href="/" id="edustorybook-user-link" onclick="close_book()"> EduStorybook</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
-          <a href="/books" class="nav-link">Story Selection</a>
-        </li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li class="nav-item active">
-            <form action="/api/logout" method="POST">
-                <input type="hidden" name="redirect" value="/">
-                <button type="submit" class="btn btn-info btn-navbar-size nav-link">Logout</div>
-            </form>
-        </li>
-      </ul>
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a href="/books" class="nav-link" id="story-selection-link" onclick="close_book()">Story Selection</a>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li class="nav-item active">
+                <form action="/api/logout" method="POST">
+                    <input type="hidden" name="redirect" value="/">
+                    <button type="submit" class="btn btn-info btn-navbar-size nav-link" id="logout-button"
+                        onclick="close_book()">Logout
+    </div>
+    </form>
+    </li>
+    </ul>
     </div>
 </nav>
