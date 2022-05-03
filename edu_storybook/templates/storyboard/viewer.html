@@ -22,15 +22,11 @@ $(document).ready(() => {
         close_book();
 
         $.ajax( {
-        type: "POST",
-        url: "/api/logout",
-        success: function(result) {
-            console.log("Success");
-            window.location.href = "/#log_out_success"
-        },
-        error: function(result) {
-            console.log("Error");
-        },
+            type: "POST",
+            url: "/api/logout",
+            success: function(result) {
+                window.location.href = "/#log_out_success"
+            },
         datatype: String
     });
 });
