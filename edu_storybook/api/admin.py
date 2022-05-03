@@ -1328,15 +1328,9 @@ def admin_school():
             }, 400, {"Content-Type": "application/json"}
     '''
 
-    res = None
-    if 'redirect' in request.form:
-        user_redirect_url = sanitize_redirects(request.form['redirect'])
-        res = make_response(redirect(user_redirect_url))
-    else:
-        res = make_response({
-            "status": "ok"
-        })
-    return res
+    return{
+        "status":"ok"
+    }
 
 
 @a_admin.route("/api/admin/book/update", methods=['POST'])

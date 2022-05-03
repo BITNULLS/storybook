@@ -12,12 +12,13 @@
             $('#new-school-for-study').toggleClass("d-none");
     }
 
-    function createNewSchool(school_name){
+    function createNewSchool(){
+        console.log(document.getElementById('school-input-from-user').value)
         $.ajax({
                 url: "/api/admin/school",
                 type: "POST",
                 data: {
-                    "school_name": $('#school-input-from-user').val
+                    "school_name": document.getElementById('school-input-from-user').value
                 },
                 success: function(response) {
                     console.log(response)
@@ -91,7 +92,7 @@
                         <div class="form-group">
                             <input type="text" class="form-control" href="#" id="school-input-from-user"
                                 aria-describedby="basic-addon2">
-                            <button onclick="createNewSchool()">Create School</button>
+                            <button type="button" class="btn btn-random bg-info" id="new_id" onclick="createNewSchool()">Create School</button>
                         </div>
                     </div>
 
