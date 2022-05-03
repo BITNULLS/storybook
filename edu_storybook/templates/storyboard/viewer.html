@@ -6,6 +6,38 @@
     <input type="hidden" name="page_back_name" id="prev_page" value="¶prev_page_num">
 </form>
 
+<script>
+
+$(document).ready(() => {
+
+    $('#edustorybook-user-link').click(() => {
+       close_book();
+    });
+
+    $('#story-selection-link').click(() => {
+        close_book();
+    });
+
+    $('#logout-button-id').click(() => {
+        close_book();
+
+        $.ajax( {
+        type: "POST",
+        url: "/api/logout",
+        success: function(result) {
+            console.log("Success");
+            window.location.href = "/#log_out_success"
+        },
+        error: function(result) {
+            console.log("Error");
+        },
+        datatype: String
+    });
+});
+
+});
+</script>
+
 <br>
 <div>
     <p style="text-align:center; font-size: 30px; font-weight: bold"> ¶book_name </p>
