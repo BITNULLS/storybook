@@ -18,18 +18,23 @@ $(document).ready(() => {
         close_book();
     });
 
-    $('#logout-button-id').click(() => {
+  /*  $('#logout-button-id').click(() => {
         close_book();
 
-        $.ajax( {
+       $.ajax( {
             type: "POST",
             url: "/api/logout",
+
             success: function(result) {
-                window.location.href = "/#log_out_success"
+                console.log("Success");
+             //   window.location.href = "/#log_out_success"
             },
-        datatype: String
+            error: function(result) {
+                console.log("Error");
+            },
+            datatype: String
     });
-});
+}); */
 
 });
 </script>
