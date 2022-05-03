@@ -835,7 +835,7 @@ def admin_download_user_data():
     ]
 
     # create filename with unique guid to prevent duplicates
-    filename = "temp/csv_export_" + str(uuid.uuid4()) + ".csv"
+    filename = temp_folder + "/csv_export_" + str(uuid.uuid4()) + ".csv"
 
     # write data to new csv file in data/csv_exports
     with open(filename, 'w', newline="") as csvfile:
