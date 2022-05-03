@@ -37,10 +37,10 @@ function trackEvent(actionStart, actionStop, actionID, description) {
             action_stop:actionStop
         },
         success: function(result) {
-            console.log("Success");
+        //    console.log("Success");
         },
         error: function(result) {
-            console.log("Error");
+        //    console.log("Error");
         },
         datatype: String
     });
