@@ -52,11 +52,11 @@ pool = cx_Oracle.SessionPool(
 
 c_db_log.debug('Established database pool')
 
-pool.reconfigure(min=3, max=3, increment=0)
+pool.reconfigure(min=2, max=3, increment=0)
 
 c_db_log.debug('Reconfigured database pool')
 
-pool.wait_timeout = 5000
+pool.wait_timeout = 10000
 
 c_db_log.info('Connected to database')
 

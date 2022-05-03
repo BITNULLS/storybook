@@ -63,12 +63,30 @@
         );
     }
 
+    function deleteAddedQuestion(randQuestionID) {
+        
+        for (let i = 0; i < questionsCreated.length; i++) {
+            if (questionsCreated[i]['rand_question_id_internal'] == randQuestionID) {
+                questionsCreated.splice(i, 1);
+                i--;
+            }    
+        }
+
+    }
+
+    function deletedExistingQuestion(questionID) {
+        // delete a quiz
+
+        // grab the book_id and the other elements needed to delete a question
+        // from the page, and then add that to the questionDeleted array
+    }
+
     //invoked when admin clicks Add Question button for multiple choice
     function multChoiceNewQuizQ() {
 
         let insertAfter = $('#insert-question').val(); //this is the page the admin selected to insert the question
         let question = $('#input_MC_question').val(); //this is the question being asked 
-        let randQuestionID = 'sap-' + Math.round(Math.random() * 1000000000);
+        let randQuestionID = Math.round(Math.random() * 1000000000);
         let questionPreview = $('<div id="' + randQuestionID + '">' + question + '</div>'); //styling of the question
 
         var answers = []
@@ -99,17 +117,16 @@
 
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
-
-        //TODO: make this work
-        //deleteButton.attr("onclick", "" + questionsDeleted + ".push('" + randQuestionID + "')");
-        //console.log(questionsDeleted);
-
-        deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
+        deleteButton.attr(
+            "onclick", 
+            "deleteAddedQuestion(" + randQuestionID + ");" +
+            "$('#" + randQuestionID + "').remove()"
+        );
 
         let card_class = document.createElement("div");
         let insertBefore = parseInt(insertAfter) + parseInt(1);
         $('#page-' + insertBefore).before(main_question.append(deleteButton).append(answer_choices));
-        
+
         //adding the question that was created to the array 
         //first getting all the information - check endpoint admin/page
 
@@ -149,6 +166,7 @@
 
         //pass all of the info in
         let thisNewQ = {
+                            "rand_question_id_internal": randQuestionID,
                             "book_id_in": book_id_in,
                             "school_id_in": school_id_in,
                             "question_in": question_in,
@@ -169,16 +187,20 @@
     function shortAnswerNewQuizQ() {
         let insertAfter = $('#insert-question').val();
         let question = $('#input_SA_question').val();
-        let randQuestionID = 'sap-' + Math.round(Math.random() * 1000000000);
+        let randQuestionID = Math.round(Math.random() * 1000000000);
         let questionPreview = $('<div class=mb-3 id="' + randQuestionID + '">' + question + '</div>');
 
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
-        deleteButton.attr("onclick", "$('#" + randQuestionID + "').remove()");
-        deleteButton.attr("onclick", "$('#" + randQuestionID + "').push(" + questionsDeleted + ")");
+        deleteButton.attr(
+            "onclick", 
+            "deleteAddedQuestion(" + randQuestionID + ");" +
+            "$('#" + randQuestionID + "').remove()"
+        );
 
         let card_class = document.createElement("div");
-        $('#page-' + insertAfter).after(questionPreview.append(deleteButton));
+        let insertBefore = parseInt(insertAfter) + parseInt(1);
+        $('#page-' + insertBefore).before(main_question.append(deleteButton).append(answer_choices));
 
         //adding the question that was created to the array 
         //first getting all the information - check endpoint admin/page
@@ -193,6 +215,7 @@
         let answers_correct_in = "";
 
         let thisNewQ = {
+                            "rand_question_id_internal": randQuestionID,
                             "book_id_in": book_id_in,
                             "school_id_in": school_id_in,
                             "question_in": question_in,
@@ -224,7 +247,7 @@
                 alert("Cannot send data from questions to backend");
             }
             })
-        })
+        });
 
     }
 
