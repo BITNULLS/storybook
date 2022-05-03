@@ -246,7 +246,8 @@ def gen_admin_study_manager():
         studies += Templates.admin_study_list.substitute(
             study_id = s['STUDY_ID'],
             study_name = s['STUDY_NAME'],
-            school_name = s['SCHOOL_NAME']
+            school_name = s['SCHOOL_NAME'], 
+            study_invite_code = s['STUDY_INVITE_CODE']
         )
         addStudy += Templates.admin_add_study.substitute(
             study_id = s['STUDY_ID'],

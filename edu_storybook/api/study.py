@@ -90,7 +90,7 @@ def get_studies(offset):
 
     try:
         cursor.execute(
-            "SELECT STUDY.STUDY_ID, STUDY.STUDY_NAME, SCHOOL.SCHOOL_NAME " +
+            "SELECT STUDY.STUDY_ID, STUDY.STUDY_NAME, SCHOOL.SCHOOL_NAME, STUDY.STUDY_INVITE_CODE " +
             "FROM STUDY INNER JOIN SCHOOL ON study.school_id = school.school_id ORDER BY study_id OFFSET "+ 
             str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
         )
