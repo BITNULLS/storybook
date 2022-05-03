@@ -1095,8 +1095,11 @@ def admin_study_user():
 
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
 
+    connection = pool.acquire()
+    cursor = connection.cursor()
+
     if request.method == "GET":
-        cursor = connection.cursor()
+        
 
         try:
             study_id = int(request.args.get('study_id'))
@@ -1142,8 +1145,6 @@ def admin_study_user():
     if request.method =='POST':
         study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
 
-        cursor = connection.cursor()
-
         try:
             for study_id in study_ids:
                 cursor.execute(
@@ -1162,7 +1163,6 @@ def admin_study_user():
 
 
     elif request.method == 'DELETE':
-        cursor = connection.cursor()
 
         try:
             cursor.callproc("delete_user_study_proc",\
