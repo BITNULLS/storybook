@@ -17,3 +17,4 @@ re_timestamp = re.compile(
     r"(\d{4})-(\d{1,2})-(\d{1,2}) (\d{2}):(\d{2}):(\d{2})")
 re_redirect_link = re.compile(r"^/([\w.]*/?)*")
 re_jwt = re.compile(r"[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]+")
+re_hex64 = re.compile(r"[a-zA-Z0-9\s]{1,64}")

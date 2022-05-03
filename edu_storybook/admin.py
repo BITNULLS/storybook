@@ -57,6 +57,7 @@ def gen_admin_index():
     if vl != True:
         log.debug('A non-admin user tried to access the /admin/ page.')
         abort(403)
+
     all_schools = ""
     for b in admin_school()['schools']:
         all_schools += Templates.admin_school_list.substitute(
