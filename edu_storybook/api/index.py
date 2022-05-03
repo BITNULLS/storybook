@@ -352,6 +352,8 @@ def logout():
             "status": "ok"
         })
 
+    request.cookies.pop('Authorization', '', expires=0)
+
     return res
 
 @a_index.route("/api/register", methods=['POST'])
