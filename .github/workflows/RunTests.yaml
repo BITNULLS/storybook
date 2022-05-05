@@ -12,36 +12,31 @@ env:
 jobs:
   build:
     name: Install Oracle and Run Tests
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Download Make and Wget
-      run: |
-        choco install make
-        choco install wget
     - name: Download Oracle Instant Client
       run: |
-        pwd
-        wget https://download.oracle.com/otn_software/nt/instantclient/213000/instantclient-basic-windows.x64-21.3.0.0.0.zip -q
-        Expand-Archive -LiteralPath instantclient-basic-windows.x64-21.3.0.0.0.zip -DestinationPath .
-        cd instantclient_21_3
-        pwd
-        $Env:oracle_dir = (pwd).path
+        wget https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip
+        sudo apt install unzip
+        unzip *.zip
+        cd instantclient_21_6
+        echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd ..
-    - name: Create oracle_dir.txt
-      run: |
-        echo D:\a\storybook\storybook\instantclient_21_3 > edu_storybook/core/data/oracle_dir.txt
-    - name: Create StorybookFiles Files
-      run: |
-        echo $env:JSON > edu_storybook/core/data/StorybookFiles.json
-        echo $env:PEM > edu_storybook/core/data/StorybookFiles.pem
+    - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.9'
+        python-version: '3.10'
     - name: Install Requirements
       run: |
         pip3 install -r requirements.txt
+    - name: Create oracle_dir.txt
+      run: |
+        echo $INSTANT_DIR >> /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
+    - name: Create StorybookFiles Files
+      run: |
+        echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
+        echo "$PEM" >> edu_storybook/core/data/StorybookFiles.pem
     - name: Run Tests
       run: |
         make test
