@@ -21,6 +21,8 @@ jobs:
         unzip *.zip
         cd instantclient_21_6
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
+        echo "ORACLE_HOME=$(pwd)" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$ORACLE_HOME" >> $GITHUB_ENV
         cd ..
     - uses: actions/checkout@v3
     - name: Set up Python
