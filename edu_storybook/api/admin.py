@@ -1216,7 +1216,7 @@ def admin_school():
 
         try:
             cursor.execute(
-                "SELECT SCHOOL_NAME FROM SCHOOL ORDER BY SCHOOL_ID"
+                "SELECT SCHOOL_NAME, SCHOOL_ID FROM SCHOOL ORDER BY SCHOOL_ID"
             )
             label_results_from(cursor)
 
@@ -1423,27 +1423,31 @@ def admin_create_study():
     if 'Bearer ' in auth:
         auth = auth.replace('Bearer ', '', 1)
 
-    token = jwt.decode(auth, jwt_key, algorithms=config['jwt_alg'])
-
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
     # check to make sure you have a book name and book_description 
     try:
-        assert 'study_id' in request.form
         assert 'school_id' in request.form
         assert 'study_name' in request.form
         assert 'study_invite_code' in request.form
     except AssertionError:
-        a_admin_log.debug('An admin did not provide one or more of the following (study_id, school_id, study_name, study_invite_code) when ' +\
+        a_admin_log.debug('An admin did not provide one or more of the following (school_id, study_name, study_invite_code) when ' +\
             'adding a new study')
         return {
             "status": "fail",
             "fail_no": 1,
-            "message": "book_name or book_description was not provided."
+            "message": "school_id, study_name, or study_invite_code was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    if re_hex64.match(request.form['study_invite_code']) is None:
+        a_admin_log.warning('User provided an invalid study invite code')
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "The study_invite_code failed a sanitize check. The POSTed fields should be alphanumeric only."
         }, 400, {"Content-Type": "application/json"}
 
     try:
-        book_id = int(request.form['study_id'])
         school_id = int(request.form['school_id'])
-        study_invite_code = int(request.form['study_invite_code'])
     except ValueError:
         a_admin_log.debug('An admin did not provide a numerical when ' +\
             'adding a new study')
@@ -1454,14 +1458,11 @@ def admin_create_study():
         }, 400, {"Content-Type": "application/json"}
 
     # connect to database
+    connection = pool.acquire()
     cursor = connection.cursor()
-
     try:
-        cursor.execute("INSERT INTO STUDY (study_id, school_id, study_name, study_invite_code) VALUES("
-            + request.form['study_id'] + "', '"
-            + request.form['school_id'] + "', '"
-            + request.form['study_name'] + "', "
-            + request.form['study_invite_code'] + ")")
+        cursor.callproc("insert_study_proc",\
+            [(request.form['school_id']), request.form['study_name'], request.form['study_invite_code']])
         connection.commit()
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
@@ -1473,9 +1474,15 @@ def admin_create_study():
             "database_message": str(e)
         }, 400, {"Content-Type": "application/json"}
 
-    return {
-        "status": "ok"
-    }
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+    return res
 
 
 @a_admin.route("/api/admin/download/free_response", methods=['GET'])

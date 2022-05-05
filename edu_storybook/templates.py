@@ -61,7 +61,8 @@ TEMPLATES = {
         "add_study": load_template("templates/admin/add_to_study.html"), 
         "user_list": load_template("templates/admin/user_list.html"),
         "add_book": load_template("templates/admin/add_to_book.html"),
-        "add_user": load_template("templates/admin/add_to_user.html")
+        "add_user": load_template("templates/admin/add_to_user.html"),
+        "school_options": load_template("templates/admin/school_id_option.html")
     },
     "navbar": {
         "logged_admin": load_template("templates/navbar/logged_admin.html"),
@@ -147,6 +148,8 @@ class Templates:
     admin_add_user: Template = TEMPLATES['admin']['add_user']
 
     admin_user_list: Template = TEMPLATES['admin']['user_list']
+
+    admin_school_list: Template = TEMPLATES['admin']['school_options']
 
     admin_upload_book: Template = TEMPLATES['admin']['upload_book']
     '''
