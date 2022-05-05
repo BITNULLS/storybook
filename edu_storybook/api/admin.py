@@ -1439,7 +1439,7 @@ def admin_create_study():
         }, 400, {"Content-Type": "application/json"}
 
     if re_hex64.match(request.form['study_invite_code']) is None:
-        a_admin_log.warning('User provided an invalid action data')
+        a_admin_log.warning('User provided an invalid study invite code')
         return {
             "status": "fail",
             "fail_no": 3,
