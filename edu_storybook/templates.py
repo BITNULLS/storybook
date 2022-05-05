@@ -71,7 +71,6 @@ TEMPLATES = {
     "password": {
         "forgot": load_template("templates/password/forgot.html"),
         "reset": load_template("templates/password/reset.html"),
-        "school_option": load_template("templates/school_list.html")
     },
     "story_selection": {
         "book": load_template("templates/story_selection/book.html"),
