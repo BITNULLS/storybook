@@ -16,10 +16,11 @@ jobs:
     steps:
     - name: Download Oracle Instant Client
       run: |
-        wget https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip
+        wget -q https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip
         sudo apt install unzip
-        unzip *.zip
+        unzip -q *.zip
         cd instantclient_21_6
+        ls
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         echo "ORACLE_HOME=$(pwd)" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=$ORACLE_HOME" >> $GITHUB_ENV
