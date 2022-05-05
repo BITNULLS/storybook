@@ -55,22 +55,75 @@
 
         //then add in the questions that have already been created
         console.log("putting all the page indicators and pages in the preview");
-        //addExistingQuestions();
-
-    }
-
-    function AddExistingQuestions() {
-        //save all the questions in the database into an array with the information needed 
-        //or repopulate questionsCreated with the existing questions? 
-
-        //for each questions pulled from the backend 
-        //  create a question preview in the correct spot of the book 
+        addExistingQuestions(book_id);
 
     }
 
     //list of dictionaries to be sent to backend 
-    var questionsCreated = []
-    var questionsDeleted = []
+    var questionsCreated = [] //new questions added during open session (send to backend)
+    var existingQuestions = []; //questions from database
+    var deleteExistingQuestions = []; //questions from database that need to be deleted (send to backend)
+
+    function addExistingQuestions(book_id_in) {
+        //save all the questions in the database into an array with the information needed 
+        //admin/page/ --> "GET" --> but this gets the pages AND the questions, but we already called the pages
+        console.log("inside addExistingQuestions function");
+
+        var questions = [];
+
+        $.ajax({
+            url: "/api/admin/page",
+            method: "GET",
+            data: {
+                book_id: book_id_in
+            },
+            success: function(data) {
+                questions = data['questions'];
+                console.log(questions);
+                //for each questions pulled from the backend 
+                    //  create a question preview in the correct spot of the book 
+                    //  on delete click, add to deleteExistingQuestions array
+                console.log("printing each question");
+                questions.forEach(function(e) {
+                    console.log(e);
+                })
+
+                
+                
+                for (let i = 0; i < questions.length; i++) {
+
+                    console.log(questions[i]["QUESTION"]);
+                    console.log(questions[i]["QUESTION_ID"]);
+                    console.log(questions[i]["ANSWER"]);
+                    console.log(questions[i]["ANSWER_FEEDBACK"]);
+                    console.log(questions[i]["CORRECT"]);
+                    /*
+                    console.log(questions[i]["book_id_in"]);
+                    console.log(questions[i]["question_in"]);
+                    console.log(questions[i]["page_prev_in"]);
+                    console.log(questions[i]["page_next_in"]);
+                    console.log(questions[i]["question_type_in"]);
+                    console.log(questions[i]["answers_feedback_in"]);
+                    console.log(questions[i]["answers_correct_in"]);
+                    */
+                }
+
+
+
+            },
+            failure: function(xhr) {
+                alert("Unable to GET questions from backend");
+            }
+        });
+
+    }
+
+    function deletedExistingQuestion(questionID) {
+        // delete a quiz
+
+        // grab the book_id and the other elements needed to delete a question
+        // from the page, and then add that to the questionDeleted array
+    }
 
     //adds spot to put in a new answer choice by the admin for a question
     function addChoiceA() {
@@ -88,13 +141,6 @@
             }    
         }
 
-    }
-
-    function deletedExistingQuestion(questionID) {
-        // delete a quiz
-
-        // grab the book_id and the other elements needed to delete a question
-        // from the page, and then add that to the questionDeleted array
     }
 
     //invoked when admin clicks Add Question button for multiple choice
@@ -263,10 +309,27 @@
                 console.log("success");
             },
             failure: function(xhr) {
-                alert("Cannot send data from questions to backend");
+                alert("Cannot send data from questions to insert to backend");
             }
             })
         });
+
+        /*
+        deleteExistingQuestions.forEach(function (e) {
+            $.ajax({
+                url: '/api/admin/page',
+                type: 'DELETE',
+                data: e, 
+            success: function(response) {
+                alert("Successfully deleted questions");
+                console.log("success");
+            },
+            failure: function(xhr) {
+                alert("Cannot send data from questions to delete backend");
+            }
+            })
+        });
+        */
 
     }
 
