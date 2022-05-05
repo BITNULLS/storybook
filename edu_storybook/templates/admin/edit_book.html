@@ -65,11 +65,6 @@
     var deleteExistingQuestions = []; //questions from database that need to be deleted (send to backend)
 
     function addExistingQuestions(book_id_in) {
-        //save all the questions in the database into an array with the information needed 
-        //admin/page/ --> "GET" --> but this gets the pages AND the questions, but we already called the pages
-        console.log("inside addExistingQuestions function");
-
-        var questions = [];
 
         $.ajax({
             url: "/api/admin/page",
@@ -78,34 +73,21 @@
                 book_id: book_id_in
             },
             success: function(data) {
-                questions = data['questions'];
-                console.log(questions);
+                existingQuestions = data['questions'];
                 //for each questions pulled from the backend 
                     //  create a question preview in the correct spot of the book 
                     //  on delete click, add to deleteExistingQuestions array
-                console.log("printing each question");
-                questions.forEach(function(e) {
-                    console.log(e);
-                })
-
                 
-                
-                for (let i = 0; i < questions.length; i++) {
+                for (let i = 0; i < existingQuestions.length; i++) {
 
-                    console.log(questions[i]["QUESTION"]);
-                    console.log(questions[i]["QUESTION_ID"]);
-                    console.log(questions[i]["ANSWER"]);
-                    console.log(questions[i]["ANSWER_FEEDBACK"]);
-                    console.log(questions[i]["CORRECT"]);
-                    /*
-                    console.log(questions[i]["book_id_in"]);
-                    console.log(questions[i]["question_in"]);
-                    console.log(questions[i]["page_prev_in"]);
-                    console.log(questions[i]["page_next_in"]);
-                    console.log(questions[i]["question_type_in"]);
-                    console.log(questions[i]["answers_feedback_in"]);
-                    console.log(questions[i]["answers_correct_in"]);
-                    */
+                    console.log(existingQuestions[i]["QUESTION"]);
+                    console.log(existingQuestions[i]["QUESTION_ID"]);
+                    console.log(existingQuestions[i]["ANSWER"]);
+                    console.log(existingQuestions[i]["ANSWER_FEEDBACK"]);
+                    console.log(existingQuestions[i]["CORRECT"]);
+                    console.log(existingQuestions[i]["PAGE_PREV"]);
+                    console.log(existingQuestions[i]["PAGE_NEXT"]);
+                   
                 }
 
 
