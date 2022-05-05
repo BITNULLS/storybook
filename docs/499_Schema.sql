@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for May 2, 2022
+-- Updated Schema for May 3, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -10,12 +10,12 @@
 --  DDL for Sequence ACTION_DETAIL_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "ACTION_DETAIL_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 188 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "ACTION_DETAIL_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 248 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence ANSWER_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "ANSWER_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 241 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "ANSWER_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 281 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence BOOK_SEQ
 --------------------------------------------------------
@@ -30,17 +30,17 @@
 --  DDL for Sequence QUESTION_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "QUESTION_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 121 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "QUESTION_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 161 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence SCHOOL_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "SCHOOL_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 41 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "SCHOOL_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 61 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence STUDY_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 81 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "STUDY_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 101 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 
 --------------------------------------------------------
 --  TABLES
@@ -62,7 +62,7 @@
 
   CREATE TABLE "ACTION_DETAIL" 
    (	"DETAIL_ID" NUMBER, 
-	"DETAIL_DESCRIPTION" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP", 
+	"DETAIL_DESCRIPTION" VARCHAR2(150 BYTE) COLLATE "USING_NLS_COMP", 
 	"ACTION_KEY_ID" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
@@ -81,8 +81,8 @@
    (	"ANSWER_ID" NUMBER, 
 	"QUESTION_ID" NUMBER, 
 	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
-	"CORRECT" NUMBER,
-	"FEEDBACK" VARCHAR2(10000 BYTE) COLLATE "USING_NLS_COMP"
+	"CORRECT" NUMBER, 
+	"ANSWER_FEEDBACK" VARCHAR2(10000 BYTE) COLLATE "USING_NLS_COMP"
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
 --------------------------------------------------------
 --  DDL for Table BOOK
@@ -1080,18 +1080,21 @@ set define off;
 ) AS
 BEGIN
     OPEN result FOR SELECT
-                                user_profile.email,
-                                action.action_start,
-                                action.action_stop,
-                                book.book_name,
-                                action_key.action_name,
-                                action_detail.detail_description
-                            FROM
-                                     user_profile
-                                INNER JOIN action ON user_profile.user_id = action.user_id
-                                INNER JOIN book ON action.book_id = book.book_id
-                                INNER JOIN action_detail ON action_detail.detail_id = action.detail_id
-                                INNER JOIN action_key ON action_detail.action_key_id = action_key.action_key_id;
+                        user_profile.email,
+                        action.action_start,
+                        action.action_stop,
+                        book.book_name,
+                        action_key.action_name,
+                        action_detail.detail_description
+                    FROM
+                             user_profile
+                        INNER JOIN action ON user_profile.user_id = action.user_id
+                        INNER JOIN book ON action.book_id = book.book_id
+                        INNER JOIN action_detail ON action_detail.detail_id = action.detail_id
+                        INNER JOIN action_key ON action_detail.action_key_id = action_key.action_key_id
+                    ORDER BY
+                        action_start,
+                        action_stop;
 
 END get_user_profile_data_proc;
 
@@ -1240,6 +1243,55 @@ BEGIN
         END;
 
 END INSERT_SCHOOL_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure INSERT_STUDY_PROC
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "INSERT_STUDY_PROC" (
+    school_id_in         IN NUMBER,
+    study_name_in        IN VARCHAR2,
+    study_invite_code_in IN VARCHAR2
+) AS
+BEGIN
+    BEGIN
+        DECLARE
+            study_id_in NUMBER;
+            check_code study.study_invite_code%TYPE;
+        BEGIN
+            SELECT
+                study_seq.NEXTVAL
+            INTO study_id_in
+            FROM
+                dual;
+            SELECT
+                study_invite_code
+                    INTO check_code
+                    FROM
+                        study
+                    WHERE
+                        study_invite_code = study_invite_code_in; -- this is coming from front end
+            EXCEPTION
+                WHEN no_data_found THEN
+                    check_code := NULL; 
+        IF check_code IS NULL THEN
+            INSERT INTO study (
+                study_id,
+                school_id,
+                study_name,
+                study_invite_code
+            ) VALUES (
+                study_id_in,
+                school_id_in,
+                study_name_in,
+                study_invite_code_in
+            );
+        end if;
+    end;
+    end;
+END insert_study_proc;
 
 /
 --------------------------------------------------------
@@ -1537,6 +1589,36 @@ BEGIN
 
     END;
 END check_detail_id_fcn;
+
+/
+--------------------------------------------------------
+--  DDL for Function GET_STRING_FN
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE FUNCTION "GET_STRING_FN" (
+    source_string  IN VARCHAR2,
+    field_position IN NUMBER,
+    unterminated   IN NUMBER,
+    delimiter      IN VARCHAR2
+) RETURN VARCHAR2 IS
+
+    iptrend         PLS_INTEGER := 0;
+    iptrstart       PLS_INTEGER := 0;
+    vcsourcestrcopy VARCHAR2(4000) := source_string;
+BEGIN
+    IF unterminated = 1 THEN
+        vcsourcestrcopy := vcsourcestrcopy || delimiter;
+    END IF;
+    IF field_position > 1 THEN
+        iptrstart := instr(vcsourcestrcopy, delimiter, 1, field_position - 1) + length(delimiter);
+
+    ELSE
+        iptrstart := 1;
+    END IF;
+
+    iptrend := instr(vcsourcestrcopy, delimiter, 1, field_position);
+    RETURN substr(vcsourcestrcopy, iptrstart,(iptrend - iptrstart));
+END get_string_fn;
 
 /
 

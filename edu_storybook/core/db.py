@@ -60,4 +60,3 @@ pool.wait_timeout = 10000
 
 c_db_log.info('Connected to database')
 
-conn_lock = Lock()

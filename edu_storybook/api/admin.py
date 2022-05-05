@@ -384,7 +384,7 @@ def admin_book_study():
         cursor = connection.cursor()
 
         try:
-            conn_lock.acquire()
+            
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
@@ -401,8 +401,7 @@ def admin_book_study():
                 "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
-        finally:
-            conn_lock.release()
+            
     elif request.form['direction'] =='btos':
         # check to make sure you have a 'book_id'
         try:
@@ -419,10 +418,11 @@ def admin_book_study():
             }, 400, {"Content-Type": "application/json"}
 
         book_ids = request.form.getlist('book_id') # Gives us the list of all study ids that are being selected on frontend
+        connection = pool.acquire()
         cursor = connection.cursor()
 
         try:
-            conn_lock.acquire()
+            
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for book_id in book_ids:
                 cursor.execute('INSERT into BOOK_STUDY (book_id, study_id) VALUES ('
@@ -440,8 +440,6 @@ def admin_book_study():
                 "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
-        finally:
-            conn_lock.release()
 
     res = None
     if 'redirect' in request.form:
