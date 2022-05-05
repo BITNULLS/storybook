@@ -49,7 +49,6 @@ from edu_storybook.core.bucket import upload_bucket_file, download_bucket_file
 from edu_storybook.core.helper import allowed_file, label_results_from, sanitize_redirects
 from edu_storybook.core.email import send_email
 from edu_storybook.core.config import Config, temp_folder
-from edu_storybook.core.config import config
 from edu_storybook.core.db import pool
 from edu_storybook.core.sensitive import jwt_key
 from edu_storybook.core.remove_watchdog import future_del_temp
