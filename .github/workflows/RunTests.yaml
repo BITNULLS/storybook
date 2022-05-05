@@ -14,17 +14,6 @@ jobs:
     name: Install Oracle and Run Tests
     runs-on: ubuntu-latest
     steps:
-    - name: Download Oracle Instant Client
-      run: |
-        wget -q https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip
-        sudo apt install unzip
-        unzip -q *.zip
-        cd instantclient_21_6
-        ls
-        echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
-        echo "ORACLE_HOME=$(pwd)" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=$ORACLE_HOME" >> $GITHUB_ENV
-        cd ..
     - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v3
@@ -35,7 +24,13 @@ jobs:
         pip3 install -r requirements.txt
     - name: Create oracle_dir.txt
       run: |
-        echo $INSTANT_DIR >> /home/runner/work/storybook/storybook/edu_storybook/core/data/oracle_dir.txt
+        wget -q https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip
+        sudo apt install unzip
+        unzip -q *.zip
+        cd instantclient_21_6
+        echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
+        cd ..
+        echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
