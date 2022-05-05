@@ -52,7 +52,7 @@ pool = cx_Oracle.SessionPool(
 
 c_db_log.debug('Established database pool')
 
-pool.reconfigure(min=2, max=3, increment=0)
+pool.reconfigure(min=1, max=5, increment=0)
 
 c_db_log.debug('Reconfigured database pool')
 

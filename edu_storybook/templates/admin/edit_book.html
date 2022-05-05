@@ -24,6 +24,8 @@
 
     //modal for the admin to select which book to edit 
     function displaySelectedBook(book_id, page_count, school_id) {
+
+        //place the pages indicators and the pages in first
         book_id_temp = book_id;
         school_id_temp = school_id;
 
@@ -50,6 +52,20 @@
             $('#book-images-list').append(pageIndicator);
             $('#book-images-list').append(singlePage);
         }
+
+        //then add in the questions that have already been created
+        console.log("putting all the page indicators and pages in the preview");
+        //addExistingQuestions();
+
+    }
+
+    function AddExistingQuestions() {
+        //save all the questions in the database into an array with the information needed 
+        //or repopulate questionsCreated with the existing questions? 
+
+        //for each questions pulled from the backend 
+        //  create a question preview in the correct spot of the book 
+
     }
 
     //list of dictionaries to be sent to backend 
@@ -232,6 +248,9 @@
 
     //when admin clicks Save & Publish
     function submitQuestions() {
+
+        //first check for validity of all the inputs 
+
         //for everything in the questionsCreated array, send it to the backend
 
         questionsCreated.forEach(function (e) {
