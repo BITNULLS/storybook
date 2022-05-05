@@ -70,7 +70,7 @@ TEMPLATES = {
     },
     "password": {
         "forgot": load_template("templates/password/forgot.html"),
-        "reset": load_template("templates/password/reset.html"),
+        "reset": load_template("templates/password/reset.html")
     },
     "story_selection": {
         "book": load_template("templates/story_selection/book.html"),
