@@ -1,15 +1,26 @@
 <script>
     //function generates random 6 digit study id
     function generateNewID() {
-        let randomID = Math.floor((Math.random() * 1000000) + 1);
-        $('#study_id').val(randomID);
+        var text = "";
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        for (var i = 0; i < 5; i++)
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+        //let randomID = Math.floor((Math.random() * 1000000) + 1);
+        $('#study_invite_code').val(text);
+        console.log(
+            $('#study_invite_code').contents
+        )
+
     }
     //function toggles the ability to see the input field for a new school
     //when "other" is selected
     function showNewSchoolOption() {
-        let option = $('#school-for-study-select').val();
+        let option = $('#school_id').val();
         if (option == "newSchool")
             $('#new-school-for-study').toggleClass("d-none");
+        console.log($('#school_id').val())
     }
 
     function createNewSchool(){
@@ -21,7 +32,10 @@
                     "school_name": document.getElementById('school-input-from-user').value
                 },
                 success: function(response) {
-                    console.log(response)
+                    var hi = response['school_id'][0]
+                    var newSchoolWhoDis = $('<option value="' + hi + '"> '+ document.getElementById('school-input-from-user').value +'</option>')
+                    $('#school_id').append(newSchoolWhoDis)
+                    console.log(hi)
                 },
                 failure: function(xhr){
                     alert("ERROR!!!!!!")
@@ -33,7 +47,9 @@
 <!--Modal for Create New Study-->
 <div class="modal fade" id="createNewStudyModal" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <form action="/api/admin/study" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="redirect" value="/admin/">
+        <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="selectBookModalLabel">Create a New Study</h5>
@@ -43,47 +59,29 @@
             </div>
 
             <div class="modal-body">
-                <form>
 
-                    <!--Study ID of New Study-->
-                    <label for="message-text" class="col-form-label">Study ID:</label>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="study_id" value="study_id" placeholder="######"
-                            aria-describedby="basic-addon2">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-random bg-info" id="new_id"
-                                onclick="generateNewID()">Randomize</button>
-                        </div>
-                    </div>
-
-                    <!--Description of New Study-->
+                    <!--Name of New Study-->
                     <label for="message-text" class="col-form-label">Study Name:</label>
                     <div class="form-group">
-                        <textarea class="form-control" id="study_description" value="study_description"
-                            placeholder="Lorem ipsum dolor sit amet. Est dolorum labore quo saepe officiis in soluta laborum."></textarea>
+                        <input type="text" id="study_name" name="study_name"placeholder= "Study name here">
                     </div>
 
                     <!--School of New Study-->
-                    <label for="message-text" class="col-form-label">School:</label>
+                    <label for="message-text" class="col-form-label">Select a School:</label>
                     <div class="input-group mb-3">
-                        <select class="form-select" onclick="showNewSchoolOption()" id="school-for-study-select">
+                        <select class="form-control" id="school_id" onclick="showNewSchoolOption()" name="school_id" placeholder="Select a School">
                             <option value="" disabled selected>Select a School</option>
                             <option value="newSchool">Other</option>
-                            <option value="1">University of Delaware</option>
-                            <option value="2">University of Maryland</option>
-                            <option value="3">University of Texas</option>
+                            ¶school_options
+                            <!--do we need an option for new school?-->
                         </select>
                     </div>
 
                     <!--Study Code of New Study-->
                     <label for="message-text" class="col-form-label">Study Invite Code:</label>
                     <div class="input-group mb-3">
-                        <input type="text" class="form-control" id="study_id" value="study_id" placeholder="######"
+                        <input type="text" class="form-control" name="study_invite_code" id="study_invite_code" placeholder="######" value="study_invite_code"
                             aria-describedby="basic-addon2">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-random bg-info" id="new_id"
-                                onclick="generateNewID()">Randomize</button>
-                        </div>
                     </div>
 
                     <!--Input Field for a New School for a New Study-->
@@ -94,19 +92,18 @@
                                 aria-describedby="basic-addon2">
                             <button type="button" class="btn btn-random bg-info" id="new_id" onclick="createNewSchool()">Create School</button>
                         </div>
-                    </div>
-
-                </form>
+                    </div> 
             </div>
 
             <!--Button to send data to backend-->
             <div class="modal-footer">
-                <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Create</button>
+                <button type="submit" class="btn btn-atts bg-info">Create</button>
                 <!--TODO: make info transfer to backend-->
             </div>
 
         </div>
     </div>
+    </form>
 </div>
 
 
@@ -172,9 +169,9 @@
             <h3 class="text-center mt-5">Studies</h3>
             <a href="/admin/study_manager" class="btn btn-atts bg-info" role="button" aria-pressed="true">Study
                 Manager</a>
-            <a type="button" class="btn btn-atts bg-info" data-toggle="modal" data-target="#createNewStudyModal">Create
-                New Study</a>
-            <a type="button" class="btn btn-atts bg-info" data-toggle="modal" data-target="#createNewSchoolModal">Create
+            <button class="btn btn-atts bg-info" data-toggle="modal" data-target="#createNewStudyModal" onclick="generateNewID()">Create
+                New Study</button>
+            <button class="btn btn-atts bg-info" data-toggle="modal" data-target="#createNewSchoolModal">Create
                 New School</a>
         </div>
         <div class="col text-center col_atts">

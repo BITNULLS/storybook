@@ -6,6 +6,22 @@
     <input type="hidden" name="page_back_name" id="prev_page" value="¶prev_page_num">
 </form>
 
+<script>
+
+$(document).ready(() => {
+
+    $('#edustorybook-user-link').click(() => {
+       close_book();
+    });
+
+    $('#story-selection-link').click(() => {
+        close_book();
+    });
+
+});
+
+</script>
+
 <br>
 <div>
     <p style="text-align:center; font-size: 30px; font-weight: bold"> ¶book_name </p>
