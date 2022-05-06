@@ -98,7 +98,10 @@ TEMPLATES = {
     "_base": load_template("templates/_base.html"),
     "index": load_template("templates/index.html"),
     "login": load_template("templates/login.html"),
-    "register": load_template("templates/register.html")
+    "register": {
+        "reg": load_template("templates/register.html"),
+        "school_option": load_template("templates/school_list.html")
+    }
 }
 
 class Templates:
@@ -218,7 +221,7 @@ class Templates:
     '''
     Storyboard Viewer template.
     '''
-
+    
     _base: Template = TEMPLATES['_base']
     '''
     The base template that every other template should be baked into.
@@ -234,7 +237,10 @@ class Templates:
     Login template.
     '''
 
-    register: Template = TEMPLATES['register']
+    register: Template = TEMPLATES['register']['reg']
     '''
     Register template.
     '''
+
+    school_card: Template = TEMPLATES['register']['school_option']
+
