@@ -1,11 +1,47 @@
 <div class="card">
     <div class="card-body">
-        <form action="/api/quiz/submit" method="POST">
-            <input type="hidden" name="redirect" value="¶url">
-            <input type="hidden" name="question_id" value="¶question_id">
-            <input type="hidden" name="type" value="mc">
+        <input type="hidden" name="redirect" value="¶url">
+        <input type="hidden" name="question_id" value="¶question_id">
+        <input type="hidden" name="type" value="mc">
 
-            ¶options
-        </form>
+        ¶options
     </div>
 </div>
+
+<script>
+    $(document).ready(() => {
+
+        $.fn.options_handler = function( answer_id_in ){ 
+            var redirect_in = $("input[name = redirect]").val();
+            var question_id_in = $("input[name = question_id]").val();
+            var type_in = $("input[name = type]").val();
+
+            $.ajax({
+                type: "POST",
+                url: "/api/quiz/submit",
+                data: {
+                    redirect: redirect_in,
+                    question_id: question_id_in,
+                    type: type_in,
+                    answer_id: answer_id_in,
+                 },
+                 success: function (data) {
+                     $('h5.modal-title').html('Feedback Zone');
+                     $('div.modal-body').html(data['feedback']);
+
+                     if(data['correct'] == 1){
+                         $('div.modal-footer').html("<button class='btn btn-info'> <a href='" + redirect_in + "' style='color: white'> Click To Continue </a></button>");                    
+                     }
+                     else{
+                        $('div.modal-footer').html("<button class='btn btn-info'> <a href='" + redirect_in + "' style='color: white'> Click To Try Again </a></button>");
+                     }
+                 },
+  
+                 // Error handling 
+                 error: function (error) {
+                    console.log(`Error ${error}`);
+                 }
+            })
+        }
+    });
+</script>

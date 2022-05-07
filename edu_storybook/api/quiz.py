@@ -149,30 +149,12 @@ def quiz_submit_answer():
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
             
-
-        if result['CORRECT']:
-            feedback_page = Templates._base.substitute(
-                title = "Feedback Page",
-                description = "This page is meant to provide feedback to users",
-                body = Templates.storyboard_quiz_feedback.substitute(
-                    feedback = result['ANSWER_FEEDBACK'],
-                    page_redirection = request.form['redirect'],
-                    tryAgainBtnVisibility = "display: none",
-                    continueBtnVisibility = "display: block"   
-                )
-            )
-        elif ~result['CORRECT']:
-            feedback_page = Templates._base.substitute(
-                title = "Feedback Page",
-                description = "This page is meant to provide feedback to users",
-                body = Templates.storyboard_quiz_feedback.substitute(
-                    feedback = result['ANSWER_FEEDBACK'],
-                    page_redirection = request.form['redirect'],
-                    tryAgainBtnVisibility = "display: block",
-                    continueBtnVisibility = "display: none"   
-                )
-            )
-        return feedback_page
+        return {
+            "status": "ok",
+            "correct": result['CORRECT'],
+            "feedback": result['ANSWER_FEEDBACK'],
+        }
+        
     
     elif request.form['type'] == 'fr': # free response handling
         free_response_answer = request.form['answer']
