@@ -130,26 +130,27 @@ def quiz_submit_answer():
             }, 400, {"Content-Type": "application/json"}
 
         result = cursor.fetchone()
-
-        if result['CORRECT']:
-            try:
-                cursor.execute(
-                    "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" +
+        
+        try:
+            cursor.execute(
+                "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" +
                     token['sub'] + "', " + str(question_id) +
                     ", " + str(answer_id) + ", current_timestamp)"
-                    )
-                connection.commit()
-            except cx_Oracle.Error as e:
-                a_quiz_log.warning('Error when updating database')
-                a_quiz_log.warning(e)
+                )
+            connection.commit()
+        except cx_Oracle.Error as e:
+            a_quiz_log.warning('Error when updating database')
+            a_quiz_log.warning(e)
                 
-                return {
-                    "status": "fail",
-                    "fail_no": 10,
-                    "message": "Error when updating database.",
-                    "database_message": str(e)
-                }, 400, {"Content-Type": "application/json"}
+            return {
+                "status": "fail",
+                "fail_no": 10,
+                "message": "Error when updating database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
             
+
+        if result['CORRECT']:
             feedback_page = Templates._base.substitute(
                 title = "Feedback Page",
                 description = "This page is meant to provide feedback to users",
