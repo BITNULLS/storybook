@@ -83,7 +83,6 @@ This table provides the information about the book
 | BOOK_ID | Unique number ID to uniquely identify the book |
 | BOOK_NAME | Full name of book |
 | CREATED_ON | Date that the book was added to site |
-| URL | Filepath to the book in the file bucket |
 | DESCRIPTION | Text description of the book |
 | PAGE_COUNT | Number of pages in the book |
 | FOLDER | Folder that gets created in the cloud bucket for the book |
