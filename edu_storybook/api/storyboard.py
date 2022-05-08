@@ -152,6 +152,7 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
     
     Parameters: book_id (int) - ID of the book
                 page_number(int) - Current page number of a book
+                user_id(str) - User ID
     
     Return: list of quiz question(s) OR boolean value False if there's no quiz question OR Oracle Error
             for not accessing quiz questions from DB correctly
@@ -164,18 +165,11 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
     
     try:
         # gets the unanswered quiz questions for a user (checks the user_response and user_free_response tables for which questions are answered)
-        cursor.execute(
-            "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.QUESTION_TYPE, ANSWER.ANSWER_ID, ANSWER.ANSWER, ANSWER.CORRECT, BOOK.BOOK_NAME, BOOK.DESCRIPTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, BOOK.PAGE_COUNT FROM QUESTION " +
-            "INNER JOIN BOOK ON QUESTION.BOOK_ID = BOOK.BOOK_ID " +
-            "INNER JOIN ANSWER ON QUESTION.QUESTION_ID = ANSWER.QUESTION_ID " +
-            "WHERE (BOOK.BOOK_ID = " + str(book_id) + ") AND (QUESTION.PAGE_NEXT = " + str(page_number) + ") AND NOT EXISTS ( " +
-            "SELECT * FROM USER_RESPONSE WHERE QUESTION_ID = QUESTION.QUESTION_ID AND USER_ID = '" + user_id + "' " +
-            "UNION " +
-            "SELECT * FROM USER_FREE_RESPONSE WHERE QUESTION_ID = QUESTION.QUESTION_ID AND USER_ID = '" + user_id + "' " +
-            ") " +
-            "ORDER BY QUESTION_ID,CORRECT"
-        )
-        label_results_from(cursor)
+        result = cursor.var(cx_Oracle.CURSOR)
+        cursor.callproc("GET_QUIZ_QUESTIONS", \
+            [book_id, page_number, user_id, result])
+        
+        # label_results_from(result)
     except cx_Oracle.Error as e:
         a_storyboard_log.warning('Error when acessing database')
         a_storyboard_log.warning(e)
@@ -184,8 +178,8 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             "fail_no": 5,
             "message": "Error accessing quiz questions and its answers"
         }, 400, {"Content-Type": "application/json"}
-
-    quizQuestions = cursor.fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
+        
+    quizQuestions = result.getvalue().fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
     
     answers = []
     curr_question_id = None
@@ -195,28 +189,36 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
     quiz_question_list = []
     
     for question in quizQuestions:
-    
+        '''
+        For each question in a tuple format, following is the mapping of index to column name:
+        0: Retrieves QUESTION_ID
+        1: Retrieves QUESTION
+        2: Retrieves QUESTION_TYPE
+        3: Retrives ANSWER_ID
+        4: Retrieves ANSWER
+        5: Retrieves CORRECT
+        '''
         if curr_question_id == None:
-            curr_question_id = question['QUESTION_ID']
-            full_question = question['QUESTION']
-            question_type = question['QUESTION_TYPE']
+            curr_question_id = question[0]
+            full_question = question[1]
+            question_type = question[2]
             answers.append({
-                "answer": question['ANSWER'],
-                "answer_id": question['ANSWER_ID'],
-                "is_correct": question['CORRECT']
+                "answer": question[4],
+                "answer_id": question[3],
+                "is_correct": question[5]
             })
-            if question['CORRECT'] == 1:
-                correct_answer = question['ANSWER']
+            if question[5] == 1:
+                correct_answer = question[4]
         
         # This would mean that the question is a MC that has different options coming along        
-        elif question['QUESTION_ID'] == curr_question_id:
+        elif question[0] == curr_question_id:
             answers.append({
-                "answer": question['ANSWER'],
-                "answer_id": question['ANSWER_ID'],
-                "is_correct": question['CORRECT']
+                "answer": question[4],
+                "answer_id": question[3],
+                "is_correct": question[5]
             })
-            if question['CORRECT'] == 1:
-                correct_answer = question['ANSWER']
+            if question[5] == 1:
+                correct_answer = question[4]
         
         # This means that new question came along
         # Save the output of previous question into quiz_question_list and free the variables to use for
@@ -236,16 +238,16 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             answers = []
             correct_answer = None
             
-            curr_question_id = question['QUESTION_ID']
-            full_question = question['QUESTION']
-            question_type = question['QUESTION_TYPE']
+            curr_question_id = question[0]
+            full_question = question[1]
+            question_type = question[2]
             answers.append({
-                "answer": question['ANSWER'],
-                "answer_id": question['ANSWER_ID'],
-                "is_correct": question['CORRECT']
+                "answer": question[4],
+                "answer_id": question[3],
+                "is_correct": question[5]
             })
-            if question['CORRECT'] == 1:
-                correct_answer = question['ANSWER']
+            if question[5] == 1:
+                correct_answer = question[4]
             
             
     if(len(quiz_question_list) > 0 or curr_question_id != None):

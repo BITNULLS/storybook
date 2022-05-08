@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for May 3, 2022
+-- Updated Schema for May 7, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -10,12 +10,12 @@
 --  DDL for Sequence ACTION_DETAIL_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "ACTION_DETAIL_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 248 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "ACTION_DETAIL_SEQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 308 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence ANSWER_SEQ
 --------------------------------------------------------
 
-   CREATE SEQUENCE  "ANSWER_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 281 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
+   CREATE SEQUENCE  "ANSWER_SEQ"  MINVALUE 1 MAXVALUE 10000 INCREMENT BY 1 START WITH 321 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  GLOBAL ;
 --------------------------------------------------------
 --  DDL for Sequence BOOK_SEQ
 --------------------------------------------------------
@@ -92,7 +92,6 @@
    (	"BOOK_ID" NUMBER, 
 	"BOOK_NAME" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
 	"CREATED_ON" DATE, 
-	"URL" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
 	"DESCRIPTION" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
 	"PAGE_COUNT" NUMBER, 
 	"FOLDER" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP"
@@ -260,21 +259,6 @@
 	"ANSWER" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP",
   "CORRECT" NUMBER
    )  DEFAULT COLLATION "USING_NLS_COMP" ;
---------------------------------------------------------
---  DDL for Table BOOK
---------------------------------------------------------
-
-  CREATE TABLE "BOOK" 
-   (	"BOOK_ID" NUMBER, 
-	"BOOK_NAME" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
-	"CREATED_ON" DATE, 
-	"URL" VARCHAR2(20 BYTE) COLLATE "USING_NLS_COMP", 
-	"DESCRIPTION" VARCHAR2(1000 BYTE) COLLATE "USING_NLS_COMP", 
-	"STUDY_ID" NUMBER, 
-	"PAGE_COUNT" NUMBER, 
-	"FOLDER" VARCHAR2(100 BYTE) COLLATE "USING_NLS_COMP"
-   )  DEFAULT COLLATION "USING_NLS_COMP" ;
-
 
 --------------------------------------------------------
 --  INDEXES
@@ -616,6 +600,18 @@ BEGIN
 END;
 /
 ALTER TRIGGER "USER_PROFILE_CREATED_ON" ENABLE;
+--------------------------------------------------------
+--  DDL for Trigger USER_RESPONSE_TRG
+--------------------------------------------------------
+
+  CREATE OR REPLACE EDITIONABLE TRIGGER "USER_RESPONSE_TRG" 
+BEFORE INSERT ON USER_RESPONSE 
+FOR EACH ROW 
+BEGIN
+  :NEW.ANSWERED_ON := SYSDATE;
+END;
+/
+ALTER TRIGGER "USER_RESPONSE_TRG" ENABLE;
 --------------------------------------------------------
 --  DDL for Trigger DETAIL_ID_TRG
 --------------------------------------------------------
@@ -1042,6 +1038,64 @@ set define off;
 BEGIN
   UPDATE SCHOOL SET SCHOOL_NAME = SCHOOL_NAME_IN WHERE SCHOOL_ID= SCHOOL_ID_IN;
 END EDIT_SCHOOL_PROC;
+
+/
+--------------------------------------------------------
+--  DDL for Procedure GET_QUIZ_QUESTIONS
+--------------------------------------------------------
+set define off;
+
+  CREATE OR REPLACE EDITIONABLE PROCEDURE "GET_QUIZ_QUESTIONS" (
+    book_id_in   IN NUMBER,
+    page_next_in IN NUMBER,
+    user_id_in   IN VARCHAR2,
+    result       OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN result FOR SELECT
+                        question.question_id,
+                        question.question,
+                        question.question_type,
+                        answer.answer_id,
+                        answer.answer,
+                        answer.correct,
+                        book.book_name,
+                        book.description,
+                        question.page_prev,
+                        question.page_next,
+                        book.page_count
+                    FROM
+                             question
+                        INNER JOIN book ON question.book_id = book.book_id
+                        INNER JOIN answer ON question.question_id = answer.question_id
+                    WHERE
+                            book.book_id = book_id_in
+                        AND question.page_next = page_next_in
+                        AND NOT EXISTS ( -- checks if a multiple choice question is correctly answered (using inner join with answer table)
+                            SELECT
+                                *
+                            FROM
+                                     user_response
+                                INNER JOIN answer ON user_response.answer_id = answer.answer_id
+                            WHERE
+                                    user_response.question_id = question.question_id
+                                AND user_response.user_id = user_id_in
+                                AND answer.correct = 1
+                        )
+                        AND NOT EXISTS ( -- checks if a question is already answered if its free response question
+                            SELECT
+                                *
+                            FROM
+                                user_free_response
+                            WHERE
+                                    question_id = question.question_id
+                                AND user_id = user_id_in
+                        )
+                    ORDER BY
+                        question_id,
+                        correct;
+
+END get_quiz_questions;
 
 /
 --------------------------------------------------------
