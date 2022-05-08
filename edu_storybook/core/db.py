@@ -27,7 +27,7 @@ assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives']
     'folders']['oracle_dir'] + ' is empty, it needs the filepath to the Oracle Instant Client'
 
 try:
-    cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir)
+    cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir.strip())
 except cx_Oracle.ProgrammingError:
     c_db_log.warning("Ignoring cx_Oracle's stupid initialization error")
 
