@@ -8,8 +8,9 @@
 .storyPage img {
     height: 400em;
     width: 400em;
-    
 }
+
+.dropdown-menu a:hover {background-color: #dddd;}
 
 img {
     width: 400px;
