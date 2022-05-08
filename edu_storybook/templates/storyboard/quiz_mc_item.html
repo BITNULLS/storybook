@@ -30,10 +30,10 @@
                      $('div.modal-body').html(data['feedback']);
 
                      if(data['correct'] == 1){
-                         $('div.modal-footer').html("<button class='btn btn-info'> <a href='" + redirect_in + "' style='color: white'> Click To Continue </a></button>");                    
+                         $('div.modal-footer').html("<a class='btn btn-primary' href='" + redirect_in + "' role='button'> Click To Continue </a>");                    
                      }
                      else{
-                        $('div.modal-footer').html("<button class='btn btn-info'> <a href='" + redirect_in + "' style='color: white'> Click To Try Again </a></button>");
+                        $('div.modal-footer').html("<a class='btn btn-primary' href='" + redirect_in + "' role='button'> Click To Try Again </a>");
                      }
                  },
   
