@@ -120,7 +120,7 @@ def admin_download_book():
 @a_admin.route("/api/admin/book/upload", methods=['POST'])
 def admin_book_upload():
     """
-    Endpint to allow an administrator to upload a book.
+    Endpoint to allow an administrator to upload a book.
 
     Expects:
      - `book_name`: The name of the book.
@@ -156,7 +156,7 @@ def admin_book_upload():
         assert 'book_description' in request.form
     except AssertionError:
         a_admin_log.debug(
-            'An admin did not provided either book_name or book_description ' +\
+            'An admin did not provide either book_name or book_description ' +\
                 'when uploading a book'
         )
         return {
@@ -1582,3 +1582,126 @@ def admin_download_free_response():
             "message": "Error when sending csv file.",
             "flask_message": str(e)
         }
+
+@a_admin.route("/api/admin/book/delete", methods=['POST'])
+def admin_book_delete():
+    """
+    Endpoint to allow an administrator to delete a book.
+
+    Expects:
+     - `book_name`: The name of the book.
+
+    Fails:
+     - `10`: No file uploaded.
+
+    Returns: If everything worked, and no redirect was specified, then
+    `{"status": "ok"}`. If everything worked, and a redirect was specified, then
+    the user will be redirected. If there was a problem, then
+    `{"status": "fail", ...}`.
+    """
+    # validate that user has admin rights to upload books
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        a_admin_log.debug(
+            'Unauthenticated user tried to access admin_book_upload'
+        )
+        return vl
+
+    # check to make sure you have a 'book_name'
+    try:
+        assert 'book_name' in request.form
+    except AssertionError:
+        a_admin_log.debug(
+            'An admin did not provide book_name'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 1,
+            "message": "book_name was not provided."
+        }, 400, {"Content-Type": "application/json"}
+
+    # get parameters for adding to book table
+    book_name = (request.form.get('title')).strip() # Gives us the value of 'book name' field from frontend
+
+    # connect to database
+    connection = pool.acquire()
+    cursor = connection.cursor()
+
+    # 2) insert book into 'book' table
+    try:
+        cursor.execute("INSERT into BOOK (book_name, description, folder, page_count) VALUES ('"
+                       + book_name + "', '"
+                       + book_description + "', '"
+                       + filename + "', "
+                       + str(len(book_pngs)) + ")")
+        # commit to database
+        connection.commit()
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing the database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 13,
+            "message": "Error when querying database. 1159",
+            "database_message": str(e)
+        }
+
+    # 3) Get book_id from 'book' table (given book name and its description) to insert entries in 'book_study' later
+    try:
+        cursor.execute("SELECT BOOK_ID FROM BOOK " +
+                       "WHERE BOOK_NAME='" + book_name + "' AND DESCRIPTION='" + book_description + "'")
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing the database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 14,
+            "message": "Error when querying database. 1160",
+            "database_message": str(e)
+        }
+
+    book_id = cursor.fetchone()
+    if book_id is None:
+        a_admin_log.debug('Book ID not found from the parameter values ' +\
+            'upon querying database')
+        return {
+            "status": "fail",
+            "fail_no": 15,
+            "message": "book id not found upon querying database"
+        }, 400, {"Content-Type": "application/json"}
+
+    # 4) insert studies assigned to a book in 'book_study' table
+    try:
+        # Iterate through all study ids and insert them one-by-one to a 'book_study' table
+        for study_id in study_ids:
+            cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
+                           + request.form['BOOK_ID'] + ", "
+                           + str(study_id) + ")")
+        # commit to database
+        connection.commit()
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing the database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 16,
+            "message": "Error when querying database. 1161",
+            "database_message": str(e)
+        }
+
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+
+    return res
+    
