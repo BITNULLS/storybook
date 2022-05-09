@@ -29,7 +29,7 @@ from flask import Blueprint
 from flask import send_file
 from flask import redirect
 
-from pdf2image import convert_from_path
+import fitz
 import os
 import csv
 import uuid
@@ -166,13 +166,16 @@ def admin_book_upload():
         }, 400, {"Content-Type": "application/json"}
 
     # get parameters for adding to book table
-    book_name = (request.form.get('title')).strip() # Gives us the value of 'book name' field from frontend
-    book_description = (request.form.get('description')).strip() # Gives us the value of 'book description' field from frontend
-    study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
+    # Gives us the value of 'book name' field from frontend
+    book_name = (request.form.get('book_name')).strip()
+    # Gives us the value of 'book description' field from frontend
+    book_description = (request.form.get('book_description')).strip()
+    # Gives us the list of all study ids that are being selected on frontend
+    study_ids = request.form.getlist('study_ids')
 
     # check if the post request has the file part
     if 'file' not in request.files:
-        a_admin_log.debug('User did not provide a file in admin_book_upload')
+        a_admin_log.debug('Admin did not provide a file in admin_book_upload')
         return {
             "status": "fail",
             "fail_no": 10,
@@ -184,7 +187,7 @@ def admin_book_upload():
 
     if file.filename == '':
         a_admin_log.debug(
-            'User did not provide a filename for the file in admin_book_upload'
+            'Admin did not provide a filename for the file in admin_book_upload'
         )
         return {
             "status": "fail",
@@ -200,9 +203,6 @@ def admin_book_upload():
         file_path = os.path.join( temp_folder, filename )
         file.save(file_path)
 
-        # convert pdf to images
-        book_pngs = convert_from_path(file_path, 500)
-
         # remove .pdf extension from filename
         filename = filename.rstrip(".pdf")
 
@@ -211,10 +211,19 @@ def admin_book_upload():
         if not os.path.exists( upload_temp_folder ):
             os.makedirs( upload_temp_folder )
 
+        a_admin_log.debug('An admin is trying to upload a book')
+        a_admin_log.debug(f'Title:       {book_name}')
+        a_admin_log.debug(f'Description: {book_description}')
+        a_admin_log.debug(f'Study IDs:   {study_ids}')
+
         # 1) insert files into bucket
         try:
+            doc = fitz.open(file_path)
+            mat = fitz.Matrix(2.0, 2.0)
             # iterate through length of book
-            for i in range(len(book_pngs)):
+            i = 0
+            for page in doc:
+
                 # Save pages as images in the pdf
                 file_upload_folder = os.path.join(
                     upload_temp_folder,
@@ -230,11 +239,29 @@ def admin_book_upload():
                         book_image_name
                     )
                 )
-                book_pngs[i].save(file_upload_image_path, 'PNG')
+
+                a_admin_log.debug(f"Calculated local page save path to be: {file_upload_image_path}")
+
+                a_admin_log.debug(f"Converting page {i} of book into a png")
+
+                # render page to an image
+                book_png = page.get_pixmap(matrix=mat)
+                # store image as a PNG
+                book_png.save(file_upload_image_path)
+                a_admin_log.debug(f"Successfully converted page {i} into a png")
+
+                bucket_upload_path = filename + '_images/' + book_image_name
+
+                a_admin_log.debug(f"Calculated upload bucket path to be: {bucket_upload_path}")
+
                 # upload images to a folder in bucket
-                upload_bucket_file(file_upload_image_path, filename + '/' + book_image_name)
+                upload_bucket_file(file_upload_image_path, bucket_upload_path)
+                a_admin_log.debug(f"Successfully uploaded page {i} of book to bucket")
+
                 # remove img file
                 os.remove(file_upload_image_path)
+                a_admin_log.debug(f"Deleted page {i} locally")
+                i += 1
 
             # remove temp dir
             shutil.rmtree( upload_temp_folder )
@@ -260,7 +287,7 @@ def admin_book_upload():
                            + book_name + "', '"
                            + book_description + "', '"
                            + filename + "', "
-                           + str(len(book_pngs)) + ")")
+                           + str(i) + ")")
             # commit to database
             connection.commit()
         except cx_Oracle.Error as e:
@@ -288,7 +315,7 @@ def admin_book_upload():
                 "database_message": str(e)
             }
 
-        book_id = cursor.fetchone()
+        book_id = cursor.fetchone()['BOOK_ID']
         if book_id is None:
             a_admin_log.debug('Book ID not found from the parameter values ' +\
                 'upon querying database')
@@ -298,15 +325,17 @@ def admin_book_upload():
                 "message": "book id not found upon querying database"
             }, 400, {"Content-Type": "application/json"}
 
+        a_admin_log.debug(f'New Book ID is {book_id}')
+
         # 4) insert studies assigned to a book in 'book_study' table
         try:
-            # Iterate through all study ids and insert them one-by-one to a 'book_study' table
+            # iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
-                               + request.form['BOOK_ID'] + ", "
+                               + str(book_id) + ", "
                                + str(study_id) + ")")
-            # commit to database
-            connection.commit()
+                # commit to database
+                connection.commit()
         except cx_Oracle.Error as e:
             a_admin_log.warning('Error when accessing the database')
             a_admin_log.warning(e)
