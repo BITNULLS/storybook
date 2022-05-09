@@ -5,6 +5,6 @@ cryptography    # For generating secure keys
 oci             # Interface for Oracle Cloud Infrastrcture Object Storage (buckets)
 pyjwt           # For making JWT cookies to authorize users
 flask_cors      # CORS access policy for Flask (to allow requests from anywhere)
-pdf2image       # For converting PDFs to PNGs
+PyMuPDF         # For converting PDFs to PNGs
 pdoc            # For generating documentation for the project
 autopep8        # For formatting Python scripts automatically
