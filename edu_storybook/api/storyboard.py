@@ -16,7 +16,6 @@ from flask import request
 from flask import Blueprint
 from flask import send_file
 
-from pdf2image import convert_from_path
 import jwt
 import cx_Oracle
 import logging
