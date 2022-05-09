@@ -249,6 +249,8 @@ def login():
         "sub": user_id,
         "permission": result['ADMIN']
     }, jwt_key, algorithm=Config.jwt_alg)
+    if type(token) is bytes:
+        token = token.decode('utf-8')
     res.set_cookie(
         "Authorization",
         "Bearer " + token,
@@ -450,6 +452,8 @@ def register():
         "sub": user_id,
         "permission": result['ADMIN']
     }, jwt_key, algorithm=Config.jwt_alg)
+    if type(token) is bytes:
+        token = token.decode('utf-8')
     res.set_cookie(
         "Authorization",
         "Bearer " + token,
