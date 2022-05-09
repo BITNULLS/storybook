@@ -1238,7 +1238,7 @@ def admin_school():
     try:
         assert 'school_name' in request.form
     except AssertionError:
-        a_admin_log.debug('An admin did not provide the school_name or school_id when ' +\
+        a_admin_log.debug('An admin did not provide the school_name when ' +\
             'updating  data for a book')
         return {
             "status": "fail",
@@ -1250,11 +1250,17 @@ def admin_school():
     # check if post method
     if request.method == 'POST':
         cursor = connection.cursor()
-
+        
         try:
             cursor.callproc("insert_school_proc",\
                 [request.form['school_name']])
             connection.commit()
+            cursor.execute("Select school_id from School where school.school_name = '"+ request.form['school_name']+ "'")
+            #label_results_from(cursor)
+            school_id = cursor.fetchall()
+            return{
+                "school_id": school_id
+            }
         except cx_Oracle.Error as e:
             a_admin_log.warning('Error when accessing database')
             a_admin_log.warning(e)
@@ -1264,49 +1270,47 @@ def admin_school():
                 "message": "Error when accessing database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        return{
-            "status":"ok"
-        }
-    try:
-        assert 'school_id' in request.form
-    except AssertionError:
-        a_admin_log.debug('An admin did not provide the school_name or school_id when ' +\
-            'updating  data for a book')
-        return {
-            "status": "fail",
-            "fail_no": 1,
-            "message": "school_id or school_name was not provided."
-        }, 400, {"Content-Type": "application/json"}
+    else:
+        try:
+            assert 'school_id' in request.form
+        except AssertionError:
+            a_admin_log.debug('An admin did not provide the school_name or school_id when ' +\
+                'updating  data for a book')
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "school_id or school_name was not provided."
+            }, 400, {"Content-Type": "application/json"}
 
 
     #make sure school_id is an int
-    try:
-        school_id = int(request.form['school_id'])
-    except ValueError:
-        a_admin_log.debug('An admin did not provide a numerical school_id when ' +\
-            'updating  data for a book')
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "school_id failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
-    # check if put method
-    if request.method == 'PUT':
-        cursor = connection.cursor()
-
         try:
-            cursor.callproc("edit_school_proc",\
-                [int(request.form['school_id']), request.form['school_name']])
-            connection.commit()
-        except cx_Oracle.Error as e:
-            a_admin_log.warning('Error when accessing database')
-            a_admin_log.warning(e)
+            school_id = int(request.form['school_id'])
+        except ValueError:
+            a_admin_log.debug('An admin did not provide a numerical school_id when ' +\
+                'updating  data for a book')
             return {
                 "status": "fail",
-                "fail_no": 4,
-                "message": "Error when accessing database.",
-                "database_message": str(e)
+                "fail_no": 2,
+                "message": "school_id failed a sanitize check. The POSTed field should be an integer."
             }, 400, {"Content-Type": "application/json"}
+    # check if put method
+        if request.method == 'PUT':
+            cursor = connection.cursor()
+
+            try:
+                cursor.callproc("edit_school_proc",\
+                    [int(request.form['school_id']), request.form['school_name']])
+                connection.commit()
+            except cx_Oracle.Error as e:
+                a_admin_log.warning('Error when accessing database')
+                a_admin_log.warning(e)
+                return {
+                    "status": "fail",
+                    "fail_no": 4,
+                    "message": "Error when accessing database.",
+                    "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
 
     # TODO: Fix cascading delete with schools that reference delete
     # check if school name and id and then delete it
@@ -1328,9 +1332,15 @@ def admin_school():
             }, 400, {"Content-Type": "application/json"}
     '''
 
-    return{
-        'status':  'ok'
-    }
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+    return res
 
 
 @a_admin.route("/api/admin/book/update", methods=['POST'])
