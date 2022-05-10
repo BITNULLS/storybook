@@ -19,35 +19,37 @@ suggestion from: @lisapat -->
     <!--Modal for Add to Study-->
     <div class="modal fade" id="addStudyToBook" tabindex="-1" role="dialog" aria-labelledby="createNewStudyModalLabel"
         aria-hidden="true">
-        <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data" >
-            <input type="hidden" name="redirect" value="/admin/book_manager">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="selectBookModalLabel">Add Book to Study</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="hidden" id="bookId" name="book_id" value="book_id">
-                        <input type="hidden" name="direction" id="direction" value="stob">
-
-                        <!-- TODO: admin_add_book_to_study/  Add all the study ids and have the ones the book is involved with checked -->
-                        <div class="form-group">
-                            <label for="study_id">Study ID(s) for Book</label>
-                            <select multiple class="form-control" id="study_ids" name="study_id">
-                                ¶addStudy
-                            </select>
+        <div class="modal-dialog modal-lg">
+            <form action="/api/admin/book/study" method="POST" enctype="multipart/form-data" >
+                <input type="hidden" name="redirect" value="/admin/book_manager">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="selectBookModalLabel">Add Book to Study</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="bookId" name="book_id" value="book_id">
+                            <input type="hidden" name="direction" id="direction" value="stob">
+    
+                            <!-- TODO: admin_add_book_to_study/  Add all the study ids and have the ones the book is involved with checked -->
+                            <div class="form-group">
+                                <label for="study_id">Study ID(s) for Book</label>
+                                <select multiple class="form-control" id="study_ids" name="study_id">
+                                    ¶addStudy
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary btn-atts bg-info" >Save</button>
+                            <!--TODO: make info transfer to backend-->
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary btn-atts bg-info" >Save</button>
-                        <!--TODO: make info transfer to backend-->
-                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
 
