@@ -28,7 +28,7 @@ jobs:
         sudo apt install unzip
         unzip -q *.zip
         cd instantclient_21_6
-        touch edu_storybook/core/data/oracle_dir.txt
+        touch ../edu_storybook/core/data/oracle_dir.txt
         echo $(pwd) >> edu_storybook/core/data/oracle_dir.txt
         cd ..
         ls edu_storybook/core/data/
