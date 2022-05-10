@@ -1577,7 +1577,7 @@ def admin_download_free_response():
 @a_admin.route("/api/admin/get/user/school", methods=['GET'])
 def admin_get_users_school():
     """
-    Exports user data to a JSON.
+    Exports user data for that specfic school to a JSON.
 
     - Connects to database.
     - Computes a select query to get user data.
