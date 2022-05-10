@@ -24,7 +24,7 @@ jobs:
         pip3 install -r requirements.txt
     - name: Create oracle_dir.txt
       run: |
-        mkdir opt/oracle
+        mkdir -p opt/oracle
         cd opt/oracle
         sudo wget -q https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip
         sudo apt install unzip
