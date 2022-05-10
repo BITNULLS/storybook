@@ -28,11 +28,11 @@ jobs:
         sudo apt install unzip
         unzip -q *.zip
         cd instantclient_21_6
-        ls
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
+        export DPI_DEBUG_LEVEL=64
+        echo "DPI_DEBUG_LEBEL=64" >> $GITHUB_ENV
         cd ..
         echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
-        ls instant*
     - name: Create StorybookFiles Files
       run: |
         echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
