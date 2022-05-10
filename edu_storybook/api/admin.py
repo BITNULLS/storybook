@@ -19,6 +19,7 @@ Routes:
 /api/admin/book/update
 /api/admin/study
 /api/admin/download/free_response
+/api/admin/get/user/school
 ```
 """
 
@@ -1611,3 +1612,60 @@ def admin_download_free_response():
             "message": "Error when sending csv file.",
             "flask_message": str(e)
         }
+
+@a_admin.route("/api/admin/get/user/school", methods=['GET'])
+def admin_get_users_school():
+    """
+    Exports user data for that specfic school to a JSON.
+
+    - Connects to database.
+    - Computes a select query to get user data.
+    - return User_profile for each user that belongs to that school.
+        Important: Sort by join date, or login date, or something. We want fresh
+        users first.
+    """
+
+    # validate that user has rights to access
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
+
+    try:
+        school_id = int(request.args.get('school_id'))
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "school_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # connect to database
+    connection = pool.acquire()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("Select * from User_profile where school_id = "+ str(school_id))
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    users = cursor.fetchall()
+    return {
+        "users": users
+    }

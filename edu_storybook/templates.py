@@ -54,15 +54,16 @@ TEMPLATES = {
         "edit_book": load_template("templates/admin/edit_book.html"),
         "index": load_template("templates/admin/index.html"),
         "study_manager": load_template("templates/admin/study_manager.html"),
-        "upload_book": load_template("templates/admin/upload_book.html"), 
-        "book": load_template("templates/admin/book.html"), 
+        "upload_book": load_template("templates/admin/upload_book.html"),
+        "book": load_template("templates/admin/book.html"),
         "book_card": load_template("templates/admin/book_card.html"),
-        "study_list": load_template("templates/admin/study_list.html"), 
-        "add_study": load_template("templates/admin/add_to_study.html"), 
+        "study_list": load_template("templates/admin/study_list.html"),
+        "add_study": load_template("templates/admin/add_to_study.html"),
         "user_list": load_template("templates/admin/user_list.html"),
         "add_book": load_template("templates/admin/add_to_book.html"),
         "add_user": load_template("templates/admin/add_to_user.html"),
-        "school_options": load_template("templates/admin/school_id_option.html")
+        "school_options": load_template("templates/admin/school_id_option.html"),
+        "school_list": load_template("templates/admin/school_list.html")
     },
     "navbar": {
         "logged_admin": load_template("templates/navbar/logged_admin.html"),
@@ -157,6 +158,7 @@ class Templates:
     '''
     Admin Upload Book template.
     '''
+    admin_school_list: Template = TEMPLATES['admin']['school_list']
 
     navbar_logged_admin: Template = TEMPLATES['navbar']['logged_admin']
     '''

@@ -50,6 +50,33 @@ there will be a popup that allows the administrator to create studies
             $('#userId').val(user_id);
             $('#addStudyToUser').modal('show');
         }
+
+        function viewUsersinSchool(school_id){
+            $.ajax({
+                url: "/api/admin/get/user/school",
+                type: "GET",
+                data: {
+                    "school_id": school_id
+                },
+                success: function(response) {
+                    var users = response['users'];
+                    console.log(response)
+
+                    $('#showSchoolTable').empty();
+
+                    users.forEach(function(element, index) {
+                        var user_row = $(`<tr><td>${element["EMAIL"]}</td><td>${element["FIRST_NAME"]}</td><td>${element["LAST_NAME"]}</td></tr>`);
+                        $('#showSchoolTable').append(user_row);
+                    });
+
+                    $('#showSchools').modal('show');
+
+                },
+                failure: function(xhr){
+                    alert("Error getting the users from specific school in database")
+                }
+            })
+        }
     </script>
 
     <!--Modal for Adding a Book to this Study -->
@@ -152,6 +179,37 @@ there will be a popup that allows the administrator to create studies
         </div>
     </div>
 
+    <!--Modal for Viewing Schools and Users assigned -->
+    <div class="modal fade" id="showSchools" tabindex="-1" role="dialog" aria-labelledby="createNewSchoolModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="selectSchoolModalLabel">Users in Study</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">User Email</th>
+                                    <th scope="col">First Name</th>
+                                    <th scope="col">Last Name</th>
+                                </tr>
+                            </thead>
+                            <tbody id="showSchoolTable">
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-atts bg-info" data-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="col-md-1 col-sm-1"></div>
 
@@ -163,6 +221,7 @@ there will be a popup that allows the administrator to create studies
             <nav class="nav nav-tabs" role="tablist">
                 <a class="nav-link active" href="#studies" aria-controls="1" role="tab" data-toggle="tab">Studies</a>
                 <a class="nav-link" href="#users" aria-controls="2" role="tab" data-toggle="tab">Users</a>
+                <a class="nav-link" href="#schools" aria-controls="3" role="tab" data-toggle="tab">Schools</a>
             </nav>
 
             <!-- Studies tab -->
@@ -201,8 +260,22 @@ there will be a popup that allows the administrator to create studies
                         </tbody>
                     </table>
                 </div>
-            </div>
 
+                <!-- School tab -->
+                    <div role="tabpanel" class="tab-pane active" id="schools">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">School Name</th>
+                                    <th scope="col">Users</th>
+                                    <th scope="col">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ¶school_list
+                            </tbody>
+                        </table>
+                    </div>
         </div>
     </div>
     <div class="col-md-1 col-sm-1"></div>
