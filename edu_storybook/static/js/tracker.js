@@ -7,7 +7,6 @@ var book_id_val = null;
 var page_num_val = null;
 var page_num_next_val = null;
 var page_num_back_val = null;
-//var count = 0;
 
 function calculateTime() {
     const currDate = new Date();
@@ -157,7 +156,6 @@ function change_answer_question(book_id) {
 }
 
 function enter_text_response() {
- //   book_id_val = book_id;
     var actionTime = calculateTime();
 
     trackEvent(lastAction, actionTime, 12, 'User entered a textbox.');
@@ -165,7 +163,6 @@ function enter_text_response() {
 }
 
 function exit_text_response() {
-//    book_id_val = book_id;
     var actionTime = calculateTime();
 
     trackEvent(lastAction, actionTime, 13, 'User exited a textbox.');
