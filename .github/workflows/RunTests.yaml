@@ -24,14 +24,13 @@ jobs:
         pip3 install -r requirements.txt
     - name: Create oracle_dir.txt
       run: |
-        ls
-        cd storybook
+        cd ..
         wget -q https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip
         sudo apt install unzip
         unzip -q *.zip
         cd instantclient_21_6
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
-        cd ../..
+        cd storybook
         echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
