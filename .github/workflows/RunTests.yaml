@@ -30,8 +30,8 @@ jobs:
         cd instantclient_21_6
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd ..
-        echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
-        more edu_storybook/core/data/oracle_dir.txt
+        echo /home/runner/work/storybook/storybook/instantclient_21_6 >> edu_storybook/core/data/oracle_dir.txt
+        cat edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
