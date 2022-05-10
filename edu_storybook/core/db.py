@@ -24,7 +24,6 @@ with open(fix_filepath(__file__, config['sensitives']['files']['oracle_dir'])) a
 assert oracle_lib_dir is not None and oracle_lib_dir != '', config['sensitives'][
     'folders']['oracle_dir'] + ' is empty, it needs the filepath to the Oracle Instant Client'
 
-print(oracle_lib_dir.strip())
 cx_Oracle.init_oracle_client(lib_dir=oracle_lib_dir.strip())
 
 oracle_configs = sensitive.oracle_config

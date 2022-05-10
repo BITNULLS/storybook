@@ -31,6 +31,7 @@ jobs:
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd ..
         echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
+        more edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
