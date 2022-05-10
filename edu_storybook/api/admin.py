@@ -1669,3 +1669,166 @@ def admin_get_users_school():
     return {
         "users": users
     }
+
+
+@a_admin.route("/api/admin/static/page/<str:static_page_name>", methods=['POST', 'GET', 'PUT', 'DELETE'])
+def admin_static_page(static_page_name):
+    """
+    This endpoint allows an admin to get, create, update, or delete a static_page.
+     A static page is a page that the admin can edit that will be displayed
+     ultimately at /static/page/<str:static_page_name> that will host the website's about
+      page, cookie page, etc.
+    """
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
+
+    # grab a connection
+    connection = pool.acquire()
+
+    if request.method == 'GET':  # Get = get (retrieve pages)
+        cursor = connection.cursor()
+        # sanitize inputs: make sure action_start and action_stop are in correct format
+        if re_alphanumeric.match(static_page_name) is None:
+            a_admin_log.warning('User provided an invalid static page name')
+        try:
+            cursor.execute(
+                "SELECT CONTENT FROM STATIC_PAGE WHERE STATIC_PAGE.NAME = " + static_page_name
+            )
+            label_results_from(cursor)
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+        page = cursor.fetchall()
+        return {
+            "page": page
+        }
+
+
+
+    # Get, delete  done - need to finish post, put 
+
+
+    elif request.method == 'POST':
+        # check to make sure you have a book_id
+        try:
+            assert 'static_page_content' in request.form
+            assert 'description' in request.form
+        except AssertionError:
+            a_admin_log.debug('An admin did not provide all of the form ' +\
+                'fields when creating a static page')
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "static_page_content not provided"
+            }, 400, {"Content-Type": "application/json"}
+        if re_alphanumeric.match(static_page_name) is None:
+            a_admin_log.warning('User provided an invalid static page name')
+
+        # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
+        # regex is not very efficient method here for sql injection check
+        cursor = connection.cursor()
+        try:
+            cursor.execute()
+            # commit changes to db
+            connection.commit()
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database. line 889",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+        return {
+          "status": "ok"
+        }
+
+    elif request.method == 'PUT':
+        # check to make sure you have a book_id
+        try:
+            assert 'static_page_content' in request.form
+            assert 'description' in request.form
+        except AssertionError:
+            a_admin_log.debug('An admin did not provide all of the form ' +\
+                'fields when creating a static page')
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "static_page_content not provided"
+            }, 400, {"Content-Type": "application/json"}
+        if re_alphanumeric.match(static_page_name) is None:
+            a_admin_log.warning('User provided an invalid static page name')
+
+        # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
+        # regex is not very efficient method here for sql injection check
+        cursor = connection.cursor()
+        try:
+            cursor.execute()
+            # commit changes to db
+            connection.commit()
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing the database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 3,
+                "message": "Error when querying database. line 889",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
+        return {
+          "status": "ok"
+        }
+
+
+    elif request.method == 'DELETE':  # DELETE = delete a page
+        # sanitize inputs: make sure action_start and action_stop are in correct format
+        if re_alphanumeric.match(static_page_name) is None:
+            a_admin_log.warning('User provided an invalid static page name')
+        cursor = connection.cursor()
+
+        try:
+            cursor.execute("DELETE FROM STATIC_PAGE WHERE STATIC_PAGE.NAME = "+ static_page_name )
+            connection.commit()
+        except cx_Oracle.Error as e:
+            a_admin_log.warning('Error when accessing database')
+            a_admin_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }
+
+        return {
+            "status": "ok"
+        }
+    else:
+        a_admin_log.warning(
+            'This error should not even be possible in admin_page_handler, as' +
+            'it would require the user using an HTTP method that is not GET, ' +
+            'POST, PUT, or DELETE, but somehow allowed by Flask; even though ' +
+            'this endpoint specifically only allows those HTTP methods.'
+        )
+        return {
+            "status": "fail",
+            "fail_no": 5,
+            "message": "Invalid HTTP operation, not GET, POST, PUT, or DELETE"
+        }, 400, {"Content-Type": "application/json"}
