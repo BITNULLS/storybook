@@ -30,7 +30,7 @@ jobs:
         unzip -q *.zip
         cd instantclient_21_6
         echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
-        cd storybook
+        cd ../storybook
         echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
