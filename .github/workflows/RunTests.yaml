@@ -28,11 +28,9 @@ jobs:
         sudo apt install unzip
         unzip -q *.zip
         cd instantclient_21_6
-        touch ../edu_storybook/core/data/oracle_dir.txt
-        echo $(pwd) >> edu_storybook/core/data/oracle_dir.txt
+        echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
         cd ..
-        ls edu_storybook/core/data/
-        more edu_storybook/core/data/oracle_dir.txt
+        echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
