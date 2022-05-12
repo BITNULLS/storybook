@@ -1,5 +1,4 @@
 import sys
-import os
 sys.path.append("edu_storybook/") # Adds higher directory to python modules path.
 sys.path.append("edu_storybook/api/") # Adds higher directory to python modules path.
 sys.path.append('.')
@@ -17,7 +16,7 @@ class TestEduStorybook(unittest.TestCase):
     """
 
     def test_load(self):
-        response = c.get(os.getcwd())
+        response = c.get('/home/runner/work/storybook/storybook/')
         self.assertEqual(
             response.status_code, 
             200, 
