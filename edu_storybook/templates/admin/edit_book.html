@@ -130,16 +130,36 @@
 
         let insertAfter = $('#insert-question').val(); //this is the page the admin selected to insert the question
         let question = $('#input_MC_question').val(); //this is the question being asked 
+
+        if (insertAfter == null) {
+            $('#insert-question').get(0).setCustomValidity('Please select a page to insert the question after');
+            $('#insert-question').get(0).reportValidity();
+            return;
+        } 
+        if ((question == null) || (question == '')) {
+            $('#input_SA_question').get(0).setCustomValidity('Please type your question');
+            $('#input_SA_question').get(0).reportValidity();
+            return;
+        }
+
         let randQuestionID = Math.round(Math.random() * 1000000000);
         let questionPreview = $('<div id="' + randQuestionID + '">' + question + '</div>'); //styling of the question
 
-        var answers = []
+        var answers = [];
         var count = 0;
         $('#mc-answer-choice-holder').children().each(function (index, element) {
             var ans = {};
             ans['correct'] = $('.input-group-prepend').children().children()[count].checked; //getting if the answer checked or not
             ans['content'] = $(element).children('input').val(); //getting the text for the answer
             ans['feedback'] = $('.feedback-text-area')[count].value; //getting the feedback for the answer
+
+            console.log(ans['content']);
+            if (ans['content'] == '') {
+                ans['content'].get(0).setCustomValidity('Please specify an answer');
+                ans['content'].get(0).reportValidity();
+                return;
+            };
+
             count = count + 1;
             answers.push(ans);
         });
@@ -159,6 +179,7 @@
         answer_choices += '</div>';
         answer_choices = $(answer_choices);
 
+        
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
         deleteButton.attr(
@@ -231,8 +252,24 @@
     function shortAnswerNewQuizQ() {
         let insertAfter = $('#insert-question').val();
         let question = $('#input_SA_question').val();
+
+        if (insertAfter == null) {
+            console.log("in insert-after");
+            $('#insert-question').get(0).setCustomValidity('Please select a page to insert the question after');
+            $('#insert-question').get(0).reportValidity();
+            return;
+        } 
+        if ((question == null) || (question == '')) {
+            console.log("in insert question")
+            $('#input_SA_question').get(0).setCustomValidity('Please type your question');
+            $('#input_SA_question').get(0).reportValidity();
+            return;
+        }
+
         let randQuestionID = Math.round(Math.random() * 1000000000);
+
         let questionPreview = $('<div class=mb-3 id="' + randQuestionID + '">' + question + '</div>');
+        let main_question = questionPreview; //this is the header
 
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
@@ -244,7 +281,7 @@
 
         let card_class = document.createElement("div");
         let insertBefore = parseInt(insertAfter) + parseInt(1);
-        $('#page-' + insertBefore).before(main_question.append(deleteButton).append(answer_choices));
+        $('#page-' + insertBefore).before(main_question.append(deleteButton));
 
         //adding the question that was created to the array 
         //first getting all the information - check endpoint admin/page
@@ -254,9 +291,9 @@
         let question_in = question;
         let page_prev_in = parseInt(insertAfter); //page before question
         let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
-        let answers_in = ""; //TODO: get the optional answer that the admin typed for this question
-        let answers_feedback_in = "";
+        let answers_in = "";
         let answers_correct_in = "";
+        let answers_feedback_in = "";
 
         let thisNewQ = {
                             "rand_question_id_internal": randQuestionID,
@@ -266,11 +303,15 @@
                             "page_prev_in": page_prev_in,
                             "page_next_in": page_next_in, 
                             "answers_in": answers_in, 
-                            "question_type_in": 0, 
+                            "question_type_in": 0,
                             "answers_feedback_in": answers_feedback_in,
                             "answers_correct_in": answers_correct_in
                         }
+        
+        console.log(thisNewQ);
         questionsCreated.push(thisNewQ);
+        console.log(questionsCreated);
+
 
     }
 

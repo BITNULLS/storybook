@@ -166,8 +166,8 @@ def admin_book_upload():
         }, 400, {"Content-Type": "application/json"}
 
     # get parameters for adding to book table
-    book_name = (request.form.get('title')).strip() # Gives us the value of 'book name' field from frontend
-    book_description = (request.form.get('description')).strip() # Gives us the value of 'book description' field from frontend
+    book_name = (request.form['book_name']).strip() # Gives us the value of 'book name' field from frontend
+    book_description = (request.form['book_description']).strip() # Gives us the value of 'book description' field from frontend
     study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
 
     # check if the post request has the file part
