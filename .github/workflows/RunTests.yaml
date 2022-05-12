@@ -24,15 +24,11 @@ jobs:
         pip3 install -r requirements.txt
     - name: Create oracle_dir.txt
       run: |
-        mkdir -p opt/oracle
-        cd opt/oracle
-        sudo wget -q https://download.oracle.com/otn_software/linux/instantclient/216000/instantclient-basic-linux.x64-21.6.0.0.0dbru.zip
-        sudo apt install unzip
-        sudo unzip -q *.zip
-        cd instantclient_21_6
-        echo "INSTANT_DIR=$(pwd)" >> $GITHUB_ENV
-        cd ../../..
-        echo $INSTANT_DIR >> edu_storybook/core/data/oracle_dir.txt
+        sudo apt-get install libaio1
+        sudo apt-get install alien
+        sudo wget -q https://download.oracle.com/otn_software/linux/instantclient/216000/oracle-instantclient-basic-21.6.0.0.0-1.el8.x86_64.rpm
+        sudo alien -i oracle*.rpm
+        echo /usr/lib/oracle/21/client64/lib >> edu_storybook/core/data/oracle_dir.txt
     - name: Create StorybookFiles Files
       run: |
         echo "$JSON" >> edu_storybook/core/data/StorybookFiles.json
