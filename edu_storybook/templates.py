@@ -33,12 +33,10 @@ def load_template(filepath: str) -> EduTemplate:
 
     Returns: A loaded template.
     """
-    os.system('ls')
-    os.system('ls templates/admin')
     t = None
     # TODO ASSERT FILEPATH IS LEGIT FILE
     #assert os.path.isfile(filepath), `Provided template '
-    with open(filepath, 'r', encoding='utf-8') as f:
+    with open(os.getcwd() + filepath, 'r', encoding='utf-8') as f:
         t = EduTemplate('\n'.join(f.readlines()))
     return t
 
