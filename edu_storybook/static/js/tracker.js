@@ -146,7 +146,6 @@ function user_answered_question(book_id) {
 
 }
 
-// references quiz_fr.html
 function change_answer_question(book_id) {
 
     book_id_val = book_id;
@@ -166,6 +165,7 @@ function enter_text_response(book_id) {
     lastAction = actionTime;
 }
 
+// references quiz_fr.html
 function exit_text_response(book_id) {
 
     book_id_val = book_id;
