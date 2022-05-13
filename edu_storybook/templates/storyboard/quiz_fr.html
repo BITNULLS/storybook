@@ -16,13 +16,14 @@
                             <input type="hidden" name="redirect" value="¶url">
                             <input type="hidden" name="type" value="fr">
                             <input type="hidden" name="question_id" value="¶question_id">
+
                             <div class="card">
                                 <div class="card-body">
                                     <div class="input-group">
                                         <div class="input-group-prepend">
                                             <span class="input-group-text">Your response</span>
                                         </div>
-                                        <textarea class="form-control" name="answer" aria-label="With textarea"></textarea>
+                                        <textarea onmouseenter="enter_text_response(¶book_id_val)" onmouseleave="exit_text_response(¶book_id_val)" class="form-control" name="answer" aria-label="With textarea"></textarea>
                                     </div>
                                 </div>
                             </div>

@@ -130,6 +130,7 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
                     url = "/storyboard/" + str(book_id)+ "/" + str(page_number),
                     question = display_question,
                     question_id = display_question_id,
+                    book_id_val = str(book_id),
                     prevPageURL = "/storyboard/" + str(book_id) + "/" + str(page_number - 1)
                 )
             )
