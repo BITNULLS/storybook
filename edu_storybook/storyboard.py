@@ -12,6 +12,7 @@ import jwt
 from flask import Blueprint
 from flask import request
 from flask import abort
+from string import ascii_uppercase
 
 from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
@@ -93,7 +94,7 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
             
             display_question = question['question']
             display_question_id = question['question_id']
-            option_labels = ["A", "B", "C", "D", "E"]
+            option_labels = list(ascii_uppercase)
             label_index = 0
                 
             # Logic to dynamically add buttons on-the-fly
