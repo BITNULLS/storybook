@@ -434,6 +434,53 @@ def register():
     send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com',
                 'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' +
                 '\n\nThanks for registering an account with Edu Storybooks! :)')
+
+    # Get all the books belonging to studies for a user
+    try:
+        cursor.execute(
+            "SELECT DISTINCT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK "+
+            "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
+            "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
+            "WHERE user_study.user_id= '"+ result['USER_ID'] +"'"
+        )
+    except cx_Oracle.Error as e:
+        a_index_log.warning('Error when acessing database')
+        a_index_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing books.",
+            "database_message": str(e)
+        }
+
+    # assign variable data to cursor.fetchall()
+    label_results_from(cursor)
+    user_books = cursor.fetchall()
+    
+    # Insert LAST_PAGE entry for each books to be 2 for a newly registered user
+    # This is the starting point for last_page and from now on it will keep updating whenever user clicks on
+    # "Next" or "Prev" buttons
+    
+    for book in user_books:
+        try:
+            cursor.callproc("track_last_page",\
+                [result['USER_ID'],\
+                book['BOOK_ID'],\
+                2,\
+                result['ADMIN']])
+            # commit changes to db
+            connection.commit()
+            
+        except cx_Oracle.Error as e:
+            a_index_log.warning('Error when acessing database')
+            a_index_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 6,
+                "message": "Error when querying database.",
+                "database_message": str(e)
+            }, 400, {"Content-Type": "application/json"}
+
     res = None
     if 'redirect' in request.form:
         user_redirect_url = sanitize_redirects(request.form['redirect'])
@@ -508,7 +555,7 @@ def get_users_books():
             "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
             "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
             "INNER JOIN LAST_PAGE ON last_page.book_id = book.book_id "+
-            "WHERE user_study.user_id= '"+ token['sub'] +"'"
+            "WHERE user_study.user_id= '" + token['sub'] + "' AND last_page.user_id = '" + token['sub'] + "'"
         )
     except cx_Oracle.Error as e:
         a_index_log.warning('Error when acessing database')
