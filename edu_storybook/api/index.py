@@ -111,58 +111,25 @@ def get_book_info(book_id_in: int):
     return json.dumps(data)
 
 
-@a_index.route("/api/schools", methods=['GET'])
-def get_schools():
+@a_index.route("/api/schools/<int:offset>", methods=['GET'])
+def get_schools(offset: int):
     '''
     Return a list of schools in the same style/format/convention that
     admin_get_users() returns a list of users.
     '''
 
     # validate that user has rights to access books
-    auth = request.cookies.get('Authorization')
-    vl = validate_login(
-        auth,
-        permission=0
-    )
-    if vl != True:
-        return vl
-
-    if 'Bearer ' in auth:
-        auth = auth.replace('Bearer ', '', 1)
-
-    # check to make sure you have a offset
-    try:
-        assert 'offset' in request.form
-    except AssertionError:
-        a_index_log.debug(
-            'User did not provide offset in request for get_schools'
-        )
-        return {
-            "status": "fail",
-            "fail_no": 1,
-            "message": "offset was not provided."
-        }, 400, {"Content-Type": "application/json"}
-
-    # sanitize inputs: make sure offset is int
-    try:
-        offset = int(request.form['offset'])
-    except ValueError:
-        a_index_log.debug('A user provided a non-int value for offset')
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "offset failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
-
+    
     # connect to database
     connection = pool.acquire()
     cursor = connection.cursor()
 
     try:
         cursor.execute(
-            "SELECT SCHOOL_NAME FROM SCHOOL ORDER BY SCHOOL_ID OFFSET " +
-            request.form["offset"] + " ROWS FETCH NEXT 50 ROWS ONLY"
+            "SELECT SCHOOL_NAME, SCHOOL_ID FROM SCHOOL ORDER BY SCHOOL_ID"
         )
+        label_results_from(cursor)
+
     except cx_Oracle.Error as e:
         a_index_log.warning('Error when accessing database')
         a_index_log.warning(e)
@@ -176,7 +143,7 @@ def get_schools():
     schools = cursor.fetchall()
 
     return {
-        "schools": list(map(lambda x: x[0], schools))
+        "schools": schools
     }
 
 
@@ -282,6 +249,8 @@ def login():
         "sub": user_id,
         "permission": result['ADMIN']
     }, jwt_key, algorithm=Config.jwt_alg)
+    if type(token) is bytes:
+        token = token.decode('utf-8')
     res.set_cookie(
         "Authorization",
         "Bearer " + token,
@@ -483,6 +452,8 @@ def register():
         "sub": user_id,
         "permission": result['ADMIN']
     }, jwt_key, algorithm=Config.jwt_alg)
+    if type(token) is bytes:
+        token = token.decode('utf-8')
     res.set_cookie(
         "Authorization",
         "Bearer " + token,
@@ -533,7 +504,7 @@ def get_users_books():
 
     try:
         cursor.execute(
-            "SELECT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
+            "SELECT DISTINCT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
             "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
             "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
             "INNER JOIN LAST_PAGE ON last_page.book_id = book.book_id "+

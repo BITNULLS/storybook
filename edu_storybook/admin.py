@@ -24,7 +24,7 @@ from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
 from edu_storybook.navbar import make_navbar
 
-from edu_storybook.api.admin import admin_get_books, admin_get_users
+from edu_storybook.api.admin import admin_get_books, admin_get_users, admin_school
 
 from flask import request
 from flask import Blueprint
@@ -58,11 +58,18 @@ def gen_admin_index():
         log.debug('A non-admin user tried to access the /admin/ page.')
         abort(403)
 
+    all_schools = ""
+    for b in admin_school()['schools']:
+        all_schools += Templates.admin_school_list.substitute(
+            school_name = b['SCHOOL_NAME'],
+            school_id = b['SCHOOL_ID']
+        )
     the_index_page = Templates._base.substitute(
         title = "Admin Homepage",
         description = "A motivational storybook that helps students learn.",
         body = Templates.admin_index.substitute(
-            navbar = make_navbar( auth )
+            navbar = make_navbar( auth ), 
+            school_options=all_schools
         )
     )
     return the_index_page
@@ -246,7 +253,8 @@ def gen_admin_study_manager():
         studies += Templates.admin_study_list.substitute(
             study_id = s['STUDY_ID'],
             study_name = s['STUDY_NAME'],
-            school_name = s['SCHOOL_NAME']
+            school_name = s['SCHOOL_NAME'], 
+            study_invite_code = s['STUDY_INVITE_CODE']
         )
         addStudy += Templates.admin_add_study.substitute(
             study_id = s['STUDY_ID'],
@@ -278,6 +286,13 @@ def gen_admin_study_manager():
             book_pages = b['PAGE_COUNT']
             #book_study = b['STUDY_ID']
         )
+    schoolList = ""
+    for s in admin_school()['schools']:
+        schoolList += Templates.admin_school_list.substitute(
+            school_name = s['SCHOOL_NAME'],
+            school_id = s['SCHOOL_ID']
+        )
+
     study_manager_page = Templates._base.substitute(
         title = "Admin: Study Manager",
         description = "A motivational storybook that helps students learn.",
@@ -287,7 +302,8 @@ def gen_admin_study_manager():
             add_study = addStudy,
             user_list = users,
             add_user= addUsers,
-            add_book = addBooks
+            add_book = addBooks,
+            school_list = schoolList
         )
     )
     return study_manager_page

@@ -1,14 +1,11 @@
 <div class="container mt-5">
     <div class="row">
         <!-- Modal -->
-        <div class="modal fade" id="mcquizModal" tabindex="-1" role="dialog" aria-labelledby="mcquizModalLabel" aria-hidden="true">
+        <div class="modal fade" id="mcquizModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="mcquizModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="mcquizModalLabel">¶question</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
                     </div>
         
                     <div class="modal-body">
@@ -16,7 +13,7 @@
                     </div>
                 
                     <div class="modal-footer">
-                        <button class="btn btn-info"> <a href="¶prevPageURL" style="color: white"> Previous Page </a></button>
+                        <a class='btn btn-primary' href="¶prevPageURL" role='button'> Previous Page </a>
                     </div>
                 </div>
             </div>

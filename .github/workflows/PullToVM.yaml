@@ -5,23 +5,11 @@ on:
     branches:
       - main
 
-env:
-  JSON: ${{ secrets.STORYBOOK_FILES_JSON }}
-  PEM: ${{ secrets.STORYBOOK_FILES_PEM }}
-  SSH: ${{ secrets.SSH_KEY }}
-
 jobs:
   build:
     name: Update Repo on VM
     runs-on: ubuntu-latest
     steps:
-    - name: Set Up Sensitive Files
-      run: |
-        echo $env:JSON > StorybookFiles.json
-        echo $env:PEM > StorybookFiles.pem
-        echo $env:SSH > ssh.key
-        scp -i ssh.key StorybookFiles.json ubuntu@129.158.41.86:/home/ubuntu/storybook/edu_storybook/core/data
-        scp -i ssh.key StorybookFiles.pem ubuntu@129.158.41.86:/home/ubuntu/storybook/edu_storybook/core/data
     - name: SSH Into VM
       uses: appleboy/ssh-action@master
       with:
@@ -31,4 +19,6 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           if [ ! -d "/home/ubuntu/storybook" ]; then git clone https://${{ secrets.VM_USER_TOKEN }}@github.com/BITNULLS/storybook.git; else cd storybook; git restore *; git pull; cd ..; fi
+          cp /home/ubuntu/configFiles/StorybookFiles.json /home/ubuntu/storybook/edu_storybook/core/data/
+          cp /home/ubuntu/configFiles/StorybookFiles.pem /home/ubuntu/storybook/edu_storybook/core/data/
           exit

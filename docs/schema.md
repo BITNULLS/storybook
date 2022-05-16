@@ -69,7 +69,7 @@ This table provides the information about the ideal answer of a question
 | QUESTION_ID | ID to a question in [`QUESTION`](#QUESTION) that the answer is related to |
 | ANSWER | Full text of answer |
 | CORRECT | Identifies if an answer to a particular QUESTION_ID is correct. 1 if correct. 0 if they are not correct |
-| FEEDBACK | Feedback for an answer. More specifically, this applies to multiple choice options where each
+| ANSWER_FEEDBACK | Feedback for an answer. More specifically, this applies to multiple choice options where each
 option is an answer and each option has feedback attached to it |
 
 <br>
@@ -83,7 +83,6 @@ This table provides the information about the book
 | BOOK_ID | Unique number ID to uniquely identify the book |
 | BOOK_NAME | Full name of book |
 | CREATED_ON | Date that the book was added to site |
-| URL | Filepath to the book in the file bucket |
 | DESCRIPTION | Text description of the book |
 | PAGE_COUNT | Number of pages in the book |
 | FOLDER | Folder that gets created in the cloud bucket for the book |

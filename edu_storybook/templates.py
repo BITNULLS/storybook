@@ -54,14 +54,16 @@ TEMPLATES = {
         "edit_book": load_template("templates/admin/edit_book.html"),
         "index": load_template("templates/admin/index.html"),
         "study_manager": load_template("templates/admin/study_manager.html"),
-        "upload_book": load_template("templates/admin/upload_book.html"), 
-        "book": load_template("templates/admin/book.html"), 
+        "upload_book": load_template("templates/admin/upload_book.html"),
+        "book": load_template("templates/admin/book.html"),
         "book_card": load_template("templates/admin/book_card.html"),
-        "study_list": load_template("templates/admin/study_list.html"), 
-        "add_study": load_template("templates/admin/add_to_study.html"), 
+        "study_list": load_template("templates/admin/study_list.html"),
+        "add_study": load_template("templates/admin/add_to_study.html"),
         "user_list": load_template("templates/admin/user_list.html"),
         "add_book": load_template("templates/admin/add_to_book.html"),
-        "add_user": load_template("templates/admin/add_to_user.html")
+        "add_user": load_template("templates/admin/add_to_user.html"),
+        "school_options": load_template("templates/admin/school_id_option.html"),
+        "school_list": load_template("templates/admin/school_list.html")
     },
     "navbar": {
         "logged_admin": load_template("templates/navbar/logged_admin.html"),
@@ -80,8 +82,7 @@ TEMPLATES = {
         "quiz": {
             "fr": load_template("templates/storyboard/quiz_fr.html"),
             "mc_item": load_template("templates/storyboard/quiz_mc_item.html"),
-            "mc": load_template("templates/storyboard/quiz_mc.html"),
-            "feedback": load_template("templates/storyboard/quiz_feedback.html")
+            "mc": load_template("templates/storyboard/quiz_mc.html")
         },
         "viewer": load_template("templates/storyboard/viewer.html")
     },
@@ -97,7 +98,10 @@ TEMPLATES = {
     "_base": load_template("templates/_base.html"),
     "index": load_template("templates/index.html"),
     "login": load_template("templates/login.html"),
-    "register": load_template("templates/register.html")
+    "register": {
+        "reg": load_template("templates/register.html"),
+        "school_option": load_template("templates/school_list.html")
+    }
 }
 
 class Templates:
@@ -148,10 +152,13 @@ class Templates:
 
     admin_user_list: Template = TEMPLATES['admin']['user_list']
 
+    admin_school_list: Template = TEMPLATES['admin']['school_options']
+
     admin_upload_book: Template = TEMPLATES['admin']['upload_book']
     '''
     Admin Upload Book template.
     '''
+    admin_school_list: Template = TEMPLATES['admin']['school_list']
 
     navbar_logged_admin: Template = TEMPLATES['navbar']['logged_admin']
     '''
@@ -206,16 +213,11 @@ class Templates:
     Storyboard Quiz Multiple Choice (MC) template.
     '''
     
-    storyboard_quiz_feedback: Template = TEMPLATES['storyboard']['quiz']['feedback']
-    '''
-    Storyboard Quiz Multiple Choice (MC) feedback template.
-    '''
-
     storyboard_viewer: Template = TEMPLATES['storyboard']['viewer']
     '''
     Storyboard Viewer template.
     '''
-
+    
     _base: Template = TEMPLATES['_base']
     '''
     The base template that every other template should be baked into.
@@ -231,7 +233,10 @@ class Templates:
     Login template.
     '''
 
-    register: Template = TEMPLATES['register']
+    register: Template = TEMPLATES['register']['reg']
     '''
     Register template.
     '''
+
+    school_card: Template = TEMPLATES['register']['school_option']
+

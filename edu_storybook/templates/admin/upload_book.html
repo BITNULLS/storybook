@@ -1,5 +1,23 @@
 ¶navbar
 
+<div class="container">
+    <div class="row mt-5">
+        <div class="col col-md-4 col-sm-3"></div>
+        <div class="col-12">
+            <div class="alert alert-warning" role="alert">
+                <h1>Warning!</h1>
+                <p>Before you upload a book, you should:</p>
+                <p>- Remove all pages that have questions, answers, or answer feedbacks (you will have to add these in manually, later).</p>
+                <p>- Remove hyperlinks, as they will not be functional when the book is converted to PNG images.</p>
+                <p>- Make sure all pages are in the order desired.</p>
+                <p>- If you are uploading a large book, please wait some time. It may take a few seconds up to a minute or two to fully upload</p>
+                <p>- Only click the upload button once</p>
+            </div>
+        </div>
+        <div class="col col-md-4 col-sm-3"></div>
+    </div>
+</div>
+
 <div class="row mt-5">
     <div class="col-12 col-md-4 col-sm-3"></div>
     <div class="col">
@@ -7,35 +25,47 @@
 
         <div class="card pl-1 pr-1">
             <div class="card-body">
+                <form action="/api/admin/book/upload" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="redirect" value="/admin/">
+                    <div class="form-group">
+                        <input
+                            required
+                            class="form-control-file"
+                            id="book_file"
+                            type="file"
+                            accept="pdf/*"
+                            name="file" />
+                    </div>
+                    <div class="form-group">
+                        <input
+                            required
+                            class="form-control"
+                            type="text"
+                            id="book_name"
+                            name="book_name"
+                            placeholder="Title of book" />
+                    </div>
+                    <div class="form-group">
+                        <label for="study_id">Study ID(s) for Book</label>
+                        <select
+                            required
+                            multiple
+                            class="form-control"
+                            id="study_ids"
+                            name="study_ids">
+                            ¶add_study
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea required class="form-control" type="text" id="book_description" name="book_description" placeholder="Description of book" rows="3"></textarea>
+                    </div>
+                    <div class="form-group text-center">
+                        <button type="submit" class="btn btn-primary">Upload Book</button>
+                    </div>
+                </form>
 
-        <form action="/api/admin/book/upload" method="POST" enctype="multipart/form-data">
-          <input type="hidden" name="redirect" value="/admin/">
-          <div class="form-group">
-            <input class="form-control-file" id="book_file" type="file" accept="pdf/*" name="file" />
-          </div>
-          <div class="form-group">
-            <input class="form-control" id="title" type="text" name="book_name" placeholder="Title of Book" />
-          </div>
-          <div class="form-group">
-            <label for="study_id">Study ID(s) for Book</label>
-            <select multiple class="form-control" id="study_id" name="study_id">
-              ¶add_study
-            </select>
-          </div>
-          <div class="form-group">
-            <textarea class="form-control" id="description" type="text" name="book_description"
-            placeholder="Description of Book" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label htmlFor="file" class="col text-center">
-              <input id="file-upload-btn" class="btn btn-info btn-atts" type="submit" value="Upload Book" style{minWidth: 180,
-                margin: 10} />
-            </label>
-          </div>
-        </form>
-        
-      </div>
-    </div>
+            </div>
+        </div>
 
     </div>
     <div class="col col-12 col-md-4 col-sm-3"></div>
