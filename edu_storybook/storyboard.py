@@ -12,6 +12,7 @@ import jwt
 from flask import Blueprint
 from flask import request
 from flask import abort
+from string import ascii_uppercase
 
 from edu_storybook.templates import Templates
 from edu_storybook.core.config import config
@@ -93,12 +94,16 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
             
             display_question = question['question']
             display_question_id = question['question_id']
+            option_labels = list(ascii_uppercase)
+            label_index = 0
                 
             # Logic to dynamically add buttons on-the-fly
             for answer_choice in question['answers']:
+                curr_label = option_labels[label_index]   
                 button_value = answer_choice['answer_id']
-                answer_choice_name = answer_choice['answer']
+                answer_choice_name = "<b>" + curr_label + ".</b> &nbsp;" + answer_choice['answer']
                 options_buttons = options_buttons + "<button name='answer_id' onclick='$.fn.options_handler(" + str(button_value) + ")' style='min-width:100%' value='" + str(button_value) + "' class='btn btn-info'> " + answer_choice_name + " </button> <br> <br>"
+                label_index = label_index + 1
             
             display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
                 question_id = display_question_id,
