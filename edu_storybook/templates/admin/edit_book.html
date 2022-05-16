@@ -24,6 +24,8 @@
 
     //modal for the admin to select which book to edit 
     function displaySelectedBook(book_id, page_count, school_id) {
+
+        //place the pages indicators and the pages in first
         book_id_temp = book_id;
         school_id_temp = school_id;
 
@@ -50,11 +52,60 @@
             $('#book-images-list').append(pageIndicator);
             $('#book-images-list').append(singlePage);
         }
+
+        //then add in the questions that have already been created
+        console.log("putting all the page indicators and pages in the preview");
+        addExistingQuestions(book_id);
+
     }
 
     //list of dictionaries to be sent to backend 
-    var questionsCreated = []
-    var questionsDeleted = []
+    var questionsCreated = [] //new questions added during open session (send to backend)
+    var existingQuestions = []; //questions from database
+    var deleteExistingQuestions = []; //questions from database that need to be deleted (send to backend)
+
+    function addExistingQuestions(book_id_in) {
+
+        $.ajax({
+            url: "/api/admin/page",
+            method: "GET",
+            data: {
+                book_id: book_id_in
+            },
+            success: function(data) {
+                existingQuestions = data['questions'];
+                //for each questions pulled from the backend 
+                    //  create a question preview in the correct spot of the book 
+                    //  on delete click, add to deleteExistingQuestions array
+                
+                for (let i = 0; i < existingQuestions.length; i++) {
+
+                    console.log(existingQuestions[i]["QUESTION"]);
+                    console.log(existingQuestions[i]["QUESTION_ID"]);
+                    console.log(existingQuestions[i]["ANSWER"]);
+                    console.log(existingQuestions[i]["ANSWER_FEEDBACK"]);
+                    console.log(existingQuestions[i]["CORRECT"]);
+                    console.log(existingQuestions[i]["PAGE_PREV"]);
+                    console.log(existingQuestions[i]["PAGE_NEXT"]);
+                   
+                }
+
+
+
+            },
+            failure: function(xhr) {
+                alert("Unable to GET questions from backend");
+            }
+        });
+
+    }
+
+    function deletedExistingQuestion(questionID) {
+        // delete a quiz
+
+        // grab the book_id and the other elements needed to delete a question
+        // from the page, and then add that to the questionDeleted array
+    }
 
     //adds spot to put in a new answer choice by the admin for a question
     function addChoiceA() {
@@ -74,28 +125,41 @@
 
     }
 
-    function deletedExistingQuestion(questionID) {
-        // delete a quiz
-
-        // grab the book_id and the other elements needed to delete a question
-        // from the page, and then add that to the questionDeleted array
-    }
-
     //invoked when admin clicks Add Question button for multiple choice
     function multChoiceNewQuizQ() {
 
         let insertAfter = $('#insert-question').val(); //this is the page the admin selected to insert the question
         let question = $('#input_MC_question').val(); //this is the question being asked 
+
+        if (insertAfter == null) {
+            $('#insert-question').get(0).setCustomValidity('Please select a page to insert the question after');
+            $('#insert-question').get(0).reportValidity();
+            return;
+        } 
+        if ((question == null) || (question == '')) {
+            $('#input_SA_question').get(0).setCustomValidity('Please type your question');
+            $('#input_SA_question').get(0).reportValidity();
+            return;
+        }
+
         let randQuestionID = Math.round(Math.random() * 1000000000);
         let questionPreview = $('<div id="' + randQuestionID + '">' + question + '</div>'); //styling of the question
 
-        var answers = []
+        var answers = [];
         var count = 0;
         $('#mc-answer-choice-holder').children().each(function (index, element) {
             var ans = {};
             ans['correct'] = $('.input-group-prepend').children().children()[count].checked; //getting if the answer checked or not
             ans['content'] = $(element).children('input').val(); //getting the text for the answer
             ans['feedback'] = $('.feedback-text-area')[count].value; //getting the feedback for the answer
+
+            console.log(ans['content']);
+            if (ans['content'] == '') {
+                ans['content'].get(0).setCustomValidity('Please specify an answer');
+                ans['content'].get(0).reportValidity();
+                return;
+            };
+
             count = count + 1;
             answers.push(ans);
         });
@@ -115,6 +179,7 @@
         answer_choices += '</div>';
         answer_choices = $(answer_choices);
 
+        
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
         deleteButton.attr(
@@ -187,8 +252,24 @@
     function shortAnswerNewQuizQ() {
         let insertAfter = $('#insert-question').val();
         let question = $('#input_SA_question').val();
+
+        if (insertAfter == null) {
+            console.log("in insert-after");
+            $('#insert-question').get(0).setCustomValidity('Please select a page to insert the question after');
+            $('#insert-question').get(0).reportValidity();
+            return;
+        } 
+        if ((question == null) || (question == '')) {
+            console.log("in insert question")
+            $('#input_SA_question').get(0).setCustomValidity('Please type your question');
+            $('#input_SA_question').get(0).reportValidity();
+            return;
+        }
+
         let randQuestionID = Math.round(Math.random() * 1000000000);
+
         let questionPreview = $('<div class=mb-3 id="' + randQuestionID + '">' + question + '</div>');
+        let main_question = questionPreview; //this is the header
 
         let deleteButton = $('<button>Delete</button>');
         deleteButton.attr("class", "btn btn-outline-secondary float-right");
@@ -200,7 +281,7 @@
 
         let card_class = document.createElement("div");
         let insertBefore = parseInt(insertAfter) + parseInt(1);
-        $('#page-' + insertBefore).before(main_question.append(deleteButton).append(answer_choices));
+        $('#page-' + insertBefore).before(main_question.append(deleteButton));
 
         //adding the question that was created to the array 
         //first getting all the information - check endpoint admin/page
@@ -210,9 +291,9 @@
         let question_in = question;
         let page_prev_in = parseInt(insertAfter); //page before question
         let page_next_in = parseInt(insertAfter) + parseInt(1); //page after question
-        let answers_in = ""; //TODO: get the optional answer that the admin typed for this question
-        let answers_feedback_in = "";
+        let answers_in = "";
         let answers_correct_in = "";
+        let answers_feedback_in = "";
 
         let thisNewQ = {
                             "rand_question_id_internal": randQuestionID,
@@ -222,16 +303,23 @@
                             "page_prev_in": page_prev_in,
                             "page_next_in": page_next_in, 
                             "answers_in": answers_in, 
-                            "question_type_in": 0, 
+                            "question_type_in": 0,
                             "answers_feedback_in": answers_feedback_in,
                             "answers_correct_in": answers_correct_in
                         }
+        
+        console.log(thisNewQ);
         questionsCreated.push(thisNewQ);
+        console.log(questionsCreated);
+
 
     }
 
     //when admin clicks Save & Publish
     function submitQuestions() {
+
+        //first check for validity of all the inputs 
+
         //for everything in the questionsCreated array, send it to the backend
 
         questionsCreated.forEach(function (e) {
@@ -244,10 +332,27 @@
                 console.log("success");
             },
             failure: function(xhr) {
-                alert("Cannot send data from questions to backend");
+                alert("Cannot send data from questions to insert to backend");
             }
             })
         });
+
+        /*
+        deleteExistingQuestions.forEach(function (e) {
+            $.ajax({
+                url: '/api/admin/page',
+                type: 'DELETE',
+                data: e, 
+            success: function(response) {
+                alert("Successfully deleted questions");
+                console.log("success");
+            },
+            failure: function(xhr) {
+                alert("Cannot send data from questions to delete backend");
+            }
+            })
+        });
+        */
 
     }
 
@@ -256,7 +361,7 @@
 <!--Modal for selecting a book-->
 <div class="modal fade" id="selectBookModal" tabindex="-1" role="dialog" aria-labelledby="selectBookModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="selectBookModalLabel">Select a Book to Edit</h5>

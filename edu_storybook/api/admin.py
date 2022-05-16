@@ -19,6 +19,7 @@ Routes:
 /api/admin/book/update
 /api/admin/study
 /api/admin/download/free_response
+/api/admin/get/user/school
 ```
 """
 
@@ -29,7 +30,7 @@ from flask import Blueprint
 from flask import send_file
 from flask import redirect
 
-from pdf2image import convert_from_path
+import fitz
 import os
 import csv
 import uuid
@@ -166,13 +167,16 @@ def admin_book_upload():
         }, 400, {"Content-Type": "application/json"}
 
     # get parameters for adding to book table
-    book_name = (request.form.get('title')).strip() # Gives us the value of 'book name' field from frontend
-    book_description = (request.form.get('description')).strip() # Gives us the value of 'book description' field from frontend
-    study_ids = request.form.getlist('study_id') # Gives us the list of all study ids that are being selected on frontend
+    # Gives us the value of 'book name' field from frontend
+    book_name = (request.form.get('book_name')).strip()
+    # Gives us the value of 'book description' field from frontend
+    book_description = (request.form.get('book_description')).strip()
+    # Gives us the list of all study ids that are being selected on frontend
+    study_ids = request.form.getlist('study_ids')
 
     # check if the post request has the file part
     if 'file' not in request.files:
-        a_admin_log.debug('User did not provide a file in admin_book_upload')
+        a_admin_log.debug('Admin did not provide a file in admin_book_upload')
         return {
             "status": "fail",
             "fail_no": 10,
@@ -184,7 +188,7 @@ def admin_book_upload():
 
     if file.filename == '':
         a_admin_log.debug(
-            'User did not provide a filename for the file in admin_book_upload'
+            'Admin did not provide a filename for the file in admin_book_upload'
         )
         return {
             "status": "fail",
@@ -200,9 +204,6 @@ def admin_book_upload():
         file_path = os.path.join( temp_folder, filename )
         file.save(file_path)
 
-        # convert pdf to images
-        book_pngs = convert_from_path(file_path, 500)
-
         # remove .pdf extension from filename
         filename = filename.rstrip(".pdf")
 
@@ -211,10 +212,19 @@ def admin_book_upload():
         if not os.path.exists( upload_temp_folder ):
             os.makedirs( upload_temp_folder )
 
+        a_admin_log.debug('An admin is trying to upload a book')
+        a_admin_log.debug(f'Title:       {book_name}')
+        a_admin_log.debug(f'Description: {book_description}')
+        a_admin_log.debug(f'Study IDs:   {study_ids}')
+
         # 1) insert files into bucket
         try:
+            doc = fitz.open(file_path)
+            mat = fitz.Matrix(2.0, 2.0)
             # iterate through length of book
-            for i in range(len(book_pngs)):
+            i = 0
+            for page in doc:
+
                 # Save pages as images in the pdf
                 file_upload_folder = os.path.join(
                     upload_temp_folder,
@@ -230,11 +240,29 @@ def admin_book_upload():
                         book_image_name
                     )
                 )
-                book_pngs[i].save(file_upload_image_path, 'PNG')
+
+                a_admin_log.debug(f"Calculated local page save path to be: {file_upload_image_path}")
+
+                a_admin_log.debug(f"Converting page {i} of book into a png")
+
+                # render page to an image
+                book_png = page.get_pixmap(matrix=mat)
+                # store image as a PNG
+                book_png.save(file_upload_image_path)
+                a_admin_log.debug(f"Successfully converted page {i} into a png")
+
+                bucket_upload_path = filename + '_images/' + book_image_name
+
+                a_admin_log.debug(f"Calculated upload bucket path to be: {bucket_upload_path}")
+
                 # upload images to a folder in bucket
-                upload_bucket_file(file_upload_image_path, filename + '/' + book_image_name)
+                upload_bucket_file(file_upload_image_path, bucket_upload_path)
+                a_admin_log.debug(f"Successfully uploaded page {i} of book to bucket")
+
                 # remove img file
                 os.remove(file_upload_image_path)
+                a_admin_log.debug(f"Deleted page {i} locally")
+                i += 1
 
             # remove temp dir
             shutil.rmtree( upload_temp_folder )
@@ -260,7 +288,7 @@ def admin_book_upload():
                            + book_name + "', '"
                            + book_description + "', '"
                            + filename + "', "
-                           + str(len(book_pngs)) + ")")
+                           + str(i) + ")")
             # commit to database
             connection.commit()
         except cx_Oracle.Error as e:
@@ -288,7 +316,7 @@ def admin_book_upload():
                 "database_message": str(e)
             }
 
-        book_id = cursor.fetchone()
+        book_id = cursor.fetchone()['BOOK_ID']
         if book_id is None:
             a_admin_log.debug('Book ID not found from the parameter values ' +\
                 'upon querying database')
@@ -298,15 +326,17 @@ def admin_book_upload():
                 "message": "book id not found upon querying database"
             }, 400, {"Content-Type": "application/json"}
 
+        a_admin_log.debug(f'New Book ID is {book_id}')
+
         # 4) insert studies assigned to a book in 'book_study' table
         try:
-            # Iterate through all study ids and insert them one-by-one to a 'book_study' table
+            # iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
-                               + request.form['BOOK_ID'] + ", "
+                               + str(book_id) + ", "
                                + str(study_id) + ")")
-            # commit to database
-            connection.commit()
+                # commit to database
+                connection.commit()
         except cx_Oracle.Error as e:
             a_admin_log.warning('Error when accessing the database')
             a_admin_log.warning(e)
@@ -608,7 +638,7 @@ def admin_page_handler():
 
         # check to make sure you have a book_id
         try:
-            assert 'book_id' in request.form
+            assert 'book_id' in request.args
         except AssertionError:
             a_admin_log.debug('An admin did not provide the book_id of ' +\
                 'the book when getting a question')
@@ -619,7 +649,7 @@ def admin_page_handler():
             }, 400, {"Content-Type": "application/json"}
 
         try:
-            book_id = int(request.form['book_id'])
+            book_id = int(request.args.get('book_id'))
         except ValueError:
             a_admin_log.debug('An admin provided non-int form data when ' +\
                 'getting a question')
@@ -631,10 +661,10 @@ def admin_page_handler():
 
         try:
             cursor.execute(
-                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION " +
+                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, ANSWER.ANSWER, ANSWER.CORRECT, ANSWER.ANSWER_FEEDBACK FROM QUESTION " +
                 "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID " +
                 "INNER JOIN ANSWER ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID " +
-                "WHERE BOOK_ID=" + request.form["book_id"]
+                "WHERE BOOK_ID=" + str(book_id)
             )
             label_results_from(cursor)
         except cx_Oracle.Error as e:
@@ -1049,11 +1079,15 @@ def admin_get_books(offset: int):
     cursor = connection.cursor()
 
     try:
+        # TODO: keep this in the future merge conflict; important
         cursor.execute(
-            "SELECT BOOK.BOOK_ID, BOOK.BOOK_NAME, BOOK.DESCRIPTION, BOOK.PAGE_COUNT, BOOK_STUDY.STUDY_ID FROM BOOK " +
-            "INNER JOIN BOOK_STUDY ON BOOK_STUDY.BOOK_ID = BOOK.BOOK_ID "+
-            "OFFSET "+
-            str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
+            "SELECT book.book_id, book.book_name, book.description, " +
+            "LISTAGG(BOOK_STUDY.STUDY_ID, ', ') WITHIN GROUP( " +
+            "ORDER BY BOOK_STUDY.STUDY_ID) AS Studies " +
+            "FROM book " +
+            "INNER JOIN book_study ON book_study.book_id = book.book_id " +
+            "group by book.book_id, book.book_name, book.description " +
+            "OFFSET " + str(offset) + " ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:
@@ -1238,7 +1272,7 @@ def admin_school():
     try:
         assert 'school_name' in request.form
     except AssertionError:
-        a_admin_log.debug('An admin did not provide the school_name or school_id when ' +\
+        a_admin_log.debug('An admin did not provide the school_name when ' +\
             'updating  data for a book')
         return {
             "status": "fail",
@@ -1250,11 +1284,17 @@ def admin_school():
     # check if post method
     if request.method == 'POST':
         cursor = connection.cursor()
-
+        
         try:
             cursor.callproc("insert_school_proc",\
                 [request.form['school_name']])
             connection.commit()
+            cursor.execute("Select school_id from School where school.school_name = '"+ request.form['school_name']+ "'")
+            #label_results_from(cursor)
+            school_id = cursor.fetchall()
+            return{
+                "school_id": school_id
+            }
         except cx_Oracle.Error as e:
             a_admin_log.warning('Error when accessing database')
             a_admin_log.warning(e)
@@ -1264,49 +1304,47 @@ def admin_school():
                 "message": "Error when accessing database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-        return{
-            "status":"ok"
-        }
-    try:
-        assert 'school_id' in request.form
-    except AssertionError:
-        a_admin_log.debug('An admin did not provide the school_name or school_id when ' +\
-            'updating  data for a book')
-        return {
-            "status": "fail",
-            "fail_no": 1,
-            "message": "school_id or school_name was not provided."
-        }, 400, {"Content-Type": "application/json"}
+    else:
+        try:
+            assert 'school_id' in request.form
+        except AssertionError:
+            a_admin_log.debug('An admin did not provide the school_name or school_id when ' +\
+                'updating  data for a book')
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "school_id or school_name was not provided."
+            }, 400, {"Content-Type": "application/json"}
 
 
     #make sure school_id is an int
-    try:
-        school_id = int(request.form['school_id'])
-    except ValueError:
-        a_admin_log.debug('An admin did not provide a numerical school_id when ' +\
-            'updating  data for a book')
-        return {
-            "status": "fail",
-            "fail_no": 2,
-            "message": "school_id failed a sanitize check. The POSTed field should be an integer."
-        }, 400, {"Content-Type": "application/json"}
-    # check if put method
-    if request.method == 'PUT':
-        cursor = connection.cursor()
-
         try:
-            cursor.callproc("edit_school_proc",\
-                [int(request.form['school_id']), request.form['school_name']])
-            connection.commit()
-        except cx_Oracle.Error as e:
-            a_admin_log.warning('Error when accessing database')
-            a_admin_log.warning(e)
+            school_id = int(request.form['school_id'])
+        except ValueError:
+            a_admin_log.debug('An admin did not provide a numerical school_id when ' +\
+                'updating  data for a book')
             return {
                 "status": "fail",
-                "fail_no": 4,
-                "message": "Error when accessing database.",
-                "database_message": str(e)
+                "fail_no": 2,
+                "message": "school_id failed a sanitize check. The POSTed field should be an integer."
             }, 400, {"Content-Type": "application/json"}
+    # check if put method
+        if request.method == 'PUT':
+            cursor = connection.cursor()
+
+            try:
+                cursor.callproc("edit_school_proc",\
+                    [int(request.form['school_id']), request.form['school_name']])
+                connection.commit()
+            except cx_Oracle.Error as e:
+                a_admin_log.warning('Error when accessing database')
+                a_admin_log.warning(e)
+                return {
+                    "status": "fail",
+                    "fail_no": 4,
+                    "message": "Error when accessing database.",
+                    "database_message": str(e)
+                }, 400, {"Content-Type": "application/json"}
 
     # TODO: Fix cascading delete with schools that reference delete
     # check if school name and id and then delete it
@@ -1328,9 +1366,15 @@ def admin_school():
             }, 400, {"Content-Type": "application/json"}
     '''
 
-    return{
-        'status':  'ok'
-    }
+    res = None
+    if 'redirect' in request.form:
+        user_redirect_url = sanitize_redirects(request.form['redirect'])
+        res = make_response(redirect(user_redirect_url))
+    else:
+        res = make_response({
+            "status": "ok"
+        })
+    return res
 
 
 @a_admin.route("/api/admin/book/update", methods=['POST'])
@@ -1572,3 +1616,60 @@ def admin_download_free_response():
             "message": "Error when sending csv file.",
             "flask_message": str(e)
         }
+
+@a_admin.route("/api/admin/get/user/school", methods=['GET'])
+def admin_get_users_school():
+    """
+    Exports user data for that specfic school to a JSON.
+
+    - Connects to database.
+    - Computes a select query to get user data.
+    - return User_profile for each user that belongs to that school.
+        Important: Sort by join date, or login date, or something. We want fresh
+        users first.
+    """
+
+    # validate that user has rights to access
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=1
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer ' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
+
+    try:
+        school_id = int(request.args.get('school_id'))
+    except ValueError:
+        return {
+            "status": "fail",
+            "fail_no": 2,
+            "message": "school_id failed a sanitize check. The POSTed field should be an integer."
+        }, 400, {"Content-Type": "application/json"}
+
+    # connect to database
+    connection = pool.acquire()
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute("Select * from User_profile where school_id = "+ str(school_id))
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_admin_log.warning('Error when accessing database')
+        a_admin_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 3,
+            "message": "Error when accessing database.",
+            "database_message": str(e)
+        }, 400, {"Content-Type": "application/json"}
+
+    users = cursor.fetchall()
+    return {
+        "users": users
+    }

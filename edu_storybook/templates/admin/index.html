@@ -17,10 +17,31 @@
     //function toggles the ability to see the input field for a new school
     //when "other" is selected
     function showNewSchoolOption() {
-        let option = $('#school-for-study-select').val();
+        let option = $('#school_id').val();
         if (option == "newSchool")
             $('#new-school-for-study').toggleClass("d-none");
-    } 
+        console.log($('#school_id').val())
+    }
+
+    function createNewSchool(){
+        console.log(document.getElementById('school-input-from-user').value)
+        $.ajax({
+                url: "/api/admin/school",
+                type: "POST",
+                data: {
+                    "school_name": document.getElementById('school-input-from-user').value
+                },
+                success: function(response) {
+                    var hi = response['school_id'][0]
+                    var newSchoolWhoDis = $('<option value="' + hi + '"> '+ document.getElementById('school-input-from-user').value +'</option>')
+                    $('#school_id').append(newSchoolWhoDis)
+                    console.log(hi)
+                },
+                failure: function(xhr){
+                    alert("Error creating a new school in database.")
+                }
+            })
+    }
 </script>
 
 <!--Modal for Create New Study-->
@@ -48,7 +69,9 @@
                     <!--School of New Study-->
                     <label for="message-text" class="col-form-label">Select a School:</label>
                     <div class="input-group mb-3">
-                        <select class="form-control" id="school_id" name="school_id"placeholder="Select a School">
+                        <select class="form-control" id="school_id" onclick="showNewSchoolOption()" name="school_id" placeholder="Select a School">
+                            <option value="" disabled selected>Select a School</option>
+                            <option value="newSchool">Other</option>
                             ¶school_options
                             <!--do we need an option for new school?-->
                         </select>
@@ -67,8 +90,44 @@
                         <div class="form-group">
                             <input type="text" class="form-control" href="#" id="school-input-from-user"
                                 aria-describedby="basic-addon2">
+                            <button type="button" class="btn btn-random bg-info" id="new_id" onclick="createNewSchool()">Create School</button>
                         </div>
                     </div> 
+            </div>
+
+            <!--Button to send data to backend-->
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-atts bg-info">Create</button>
+                <!--TODO: make info transfer to backend-->
+            </div>
+
+        </div>
+    </div>
+    </form>
+</div>
+
+
+<!--Modal for Create New School-->
+<div class="modal fade" id="createNewSchoolModal" tabindex="-1" role="dialog" aria-labelledby="createNewSchoolModalLabel"
+    aria-hidden="true">
+    <form action="/api/admin/school" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="redirect" value="/admin/">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectSchoolModalLabel">Create a New School</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                    <!--Name of New School-->
+                    <label for="message-text" class="col-form-label">School Name:</label>
+                    <div class="form-group">
+                        <input type="text" id="school_name" name="school_name" placeholder= "School name here">
+                    </div>
             </div>
 
             <!--Button to send data to backend-->
@@ -112,6 +171,8 @@
                 Manager</a>
             <button class="btn btn-atts bg-info" data-toggle="modal" data-target="#createNewStudyModal" onclick="generateNewID()">Create
                 New Study</button>
+            <button class="btn btn-atts bg-info" data-toggle="modal" data-target="#createNewSchoolModal">Create
+                New School</a>
         </div>
         <div class="col text-center col_atts">
             <h3 class="text-center mt-5">Download Data</h3>

@@ -14,6 +14,7 @@ from edu_storybook.core.sensitive import jwt_key
 
 
 from edu_storybook.api.index import get_users_books
+from edu_storybook.api.storyboard import get_last_page
 from edu_storybook.core import auth
 from edu_storybook.core.config import config
 from edu_storybook.core.auth import validate_login
@@ -66,13 +67,15 @@ def gen_books():
         )
     else:
         for b in get_users_books()['books']:
+            last_page_val = get_last_page(b['BOOK_ID'], token['sub'])
+            
             all_books += Templates.story_selection_book.substitute(
             book_title=b['BOOK_NAME'],
             book_description=b['DESCRIPTION'],
             book_id=b["BOOK_ID"],
             book_cover='/api/storyboard/cover/' + str(b['BOOK_ID']),
-            last_page=b['LAST_PAGE'],  # if last_page is null then 0
-            book_url='/storyboard/' + str(b['BOOK_ID']) + '/' + str(b['LAST_PAGE'])
+            last_page = last_page_val,
+            book_url='/storyboard/' + str(b['BOOK_ID']) + '/' + str(last_page_val)
         )
 
     story_selection_page = Templates._base.substitute(
