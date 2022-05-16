@@ -1079,6 +1079,7 @@ def admin_get_books(offset: int):
     cursor = connection.cursor()
 
     try:
+        # TODO: keep this in the future merge conflict; important
         cursor.execute(
             "SELECT book.book_id, book.book_name, book.description, " +
             "LISTAGG(BOOK_STUDY.STUDY_ID, ', ') WITHIN GROUP( " +
