@@ -3,7 +3,7 @@
         <input type="hidden" name="redirect" value="¶url">
         <input type="hidden" name="question_id" value="¶question_id">
         <input type="hidden" name="type" value="mc">
-        <input type="hidden" name="book_id_name" value="¶book_id_val">
+        <input type="hidden" name="book_id" value="¶book_id_val">
 
         ¶options
     </div>
@@ -13,7 +13,7 @@
     $(document).ready(() => {
 
         $.fn.options_handler = function( answer_id_in ){
-            var book_id = $("input[name = book_id_name]").val();
+            var book_id = $("input[name = book_id]").val();
             var redirect_in = $("input[name = redirect]").val();
             var question_id_in = $("input[name = question_id]").val();
             var type_in = $("input[name = type]").val();
