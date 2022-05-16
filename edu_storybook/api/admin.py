@@ -638,7 +638,7 @@ def admin_page_handler():
 
         # check to make sure you have a book_id
         try:
-            assert 'book_id' in request.form
+            assert 'book_id' in request.args
         except AssertionError:
             a_admin_log.debug('An admin did not provide the book_id of ' +\
                 'the book when getting a question')
@@ -649,7 +649,7 @@ def admin_page_handler():
             }, 400, {"Content-Type": "application/json"}
 
         try:
-            book_id = int(request.form['book_id'])
+            book_id = int(request.args.get('book_id'))
         except ValueError:
             a_admin_log.debug('An admin provided non-int form data when ' +\
                 'getting a question')
@@ -661,10 +661,10 @@ def admin_page_handler():
 
         try:
             cursor.execute(
-                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, ANSWER.ANSWER FROM QUESTION " +
+                "SELECT QUESTION.QUESTION_ID, QUESTION.QUESTION, QUESTION.PAGE_PREV, QUESTION.PAGE_NEXT, ANSWER.ANSWER, ANSWER.CORRECT, ANSWER.ANSWER_FEEDBACK FROM QUESTION " +
                 "INNER JOIN USER_RESPONSE ON USER_RESPONSE.QUESTION_ID = QUESTION.QUESTION_ID " +
                 "INNER JOIN ANSWER ON USER_RESPONSE.QUESTION_ID = ANSWER.QUESTION_ID " +
-                "WHERE BOOK_ID=" + request.form["book_id"]
+                "WHERE BOOK_ID=" + str(book_id)
             )
             label_results_from(cursor)
         except cx_Oracle.Error as e:
