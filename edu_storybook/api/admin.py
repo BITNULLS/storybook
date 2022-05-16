@@ -1079,11 +1079,15 @@ def admin_get_books(offset: int):
     cursor = connection.cursor()
 
     try:
+        # TODO: keep this in the future merge conflict; important
         cursor.execute(
-            "SELECT BOOK.BOOK_ID, BOOK.BOOK_NAME, BOOK.DESCRIPTION, BOOK.PAGE_COUNT, BOOK_STUDY.STUDY_ID FROM BOOK " +
-            "INNER JOIN BOOK_STUDY ON BOOK_STUDY.BOOK_ID = BOOK.BOOK_ID "+
-            "OFFSET "+
-            str(offset) +" ROWS FETCH NEXT 50 ROWS ONLY"
+            "SELECT book.book_id, book.book_name, book.description, " +
+            "LISTAGG(BOOK_STUDY.STUDY_ID, ', ') WITHIN GROUP( " +
+            "ORDER BY BOOK_STUDY.STUDY_ID) AS Studies " +
+            "FROM book " +
+            "INNER JOIN book_study ON book_study.book_id = book.book_id " +
+            "group by book.book_id, book.book_name, book.description " +
+            "OFFSET " + str(offset) + " ROWS FETCH NEXT 50 ROWS ONLY"
         )
         label_results_from(cursor)
     except cx_Oracle.Error as e:

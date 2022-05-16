@@ -1,6 +1,6 @@
 --------------------------------------------------------
 -- 499_schema
--- Updated Schema for May 7, 2022
+-- Updated Schema for May 15, 2022
 --------------------------------------------------------
 
 --------------------------------------------------------
@@ -1488,7 +1488,7 @@ BEGIN
         PRAGMA exception_init( user_read_too_far_ex, -20111 );
     BEGIN
         BEGIN
-            SELECT
+            SELECT 
                 last_page,
                 furthest_read
             INTO
@@ -1540,7 +1540,8 @@ BEGIN
                         last_page = book_page_in,
                         furthest_read = book_page_in
                     WHERE
-                        user_id = user_id_in;
+                        user_id = user_id_in AND
+                        book_id = book_id_in;
                 ELSE
                     -- if the book_page is not past furthest_read, then keep it
                     -- the same.
@@ -1548,7 +1549,9 @@ BEGIN
                     SET
                         last_page = book_page_in
                     WHERE
-                        user_id = user_id_in;
+                        user_id = user_id_in AND
+                        book_id = book_id_in;
+                        
                 END IF;
             END IF;
         END IF;

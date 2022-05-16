@@ -144,6 +144,62 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
             "message": "Could not get image"
         }, 400, {"Content-Type": "application/json"}
 
+
+def get_last_page(book_id_in: int, user_id_in: str):
+    '''
+     Gets the last page_number for a book with a given book_id and user_id
+    '''
+    
+    book_id = str(book_id_in)
+    
+    # connect to database
+    connection = pool.acquire()
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute(
+            "SELECT DISTINCT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
+            "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
+            "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
+            "INNER JOIN LAST_PAGE ON LAST_PAGE.BOOK_ID = BOOK.BOOK_ID "+
+            "WHERE user_study.user_id= '" + user_id_in + "' AND last_page.book_id = " + book_id + " AND last_page.user_id = '" + user_id_in + "'"
+        )
+        label_results_from(cursor)
+    except cx_Oracle.Error as e:
+        a_storyboard_log.warning('Error when acessing database')
+        a_storyboard_log.warning(e)
+        return {
+            "status": "fail",
+            "fail_no": 4,
+            "message": "Error when accessing books.",
+            "database_message": str(e)
+        }
+    
+    result = cursor.fetchone()
+    
+    if result is None:
+        try:
+            cursor.execute(
+                "SELECT DISTINCT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, 2 AS LAST_PAGE FROM BOOK "+
+                "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
+                "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "
+                "WHERE user_study.user_id= '" + user_id_in + "' AND book.book_id = " + book_id
+            )
+            label_results_from(cursor)
+        except cx_Oracle.Error as e:
+            a_storyboard_log.warning('Error when acessing database')
+            a_storyboard_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when accessing books.",
+                "database_message": str(e)
+            }
+            
+        result = cursor.fetchone()
+
+    return result['LAST_PAGE']
+
 def check_quiz_question(book_id: int, page_number: int, user_id: str):
     '''
     This is the logic for checking if there's a quiz question(s) for a book with given book_id and given current

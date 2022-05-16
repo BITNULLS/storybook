@@ -434,6 +434,7 @@ def register():
     send_email(first_name + last_name, email, 'Edu Storybooks', 'edustorybooks@gmail.com',
                 'Welcome to Edu Storybooks', 'Dear ' + first_name + ' ' + last_name + ',' +
                 '\n\nThanks for registering an account with Edu Storybooks! :)')
+
     res = None
     if 'redirect' in request.form:
         user_redirect_url = sanitize_redirects(request.form['redirect'])
@@ -504,11 +505,10 @@ def get_users_books():
 
     try:
         cursor.execute(
-            "SELECT DISTINCT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
+            "SELECT DISTINCT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION FROM BOOK "+
             "INNER JOIN BOOK_STUDY ON BOOK.BOOK_ID = BOOK_STUDY.BOOK_ID "+
             "INNER JOIN USER_STUDY ON BOOK_STUDY.STUDY_ID = USER_STUDY.STUDY_ID "+
-            "INNER JOIN LAST_PAGE ON last_page.book_id = book.book_id "+
-            "WHERE user_study.user_id= '"+ token['sub'] +"'"
+            "WHERE user_study.user_id= '" + token['sub'] + "'"
         )
     except cx_Oracle.Error as e:
         a_index_log.warning('Error when acessing database')
@@ -523,8 +523,8 @@ def get_users_books():
     # assign variable data to cursor.fetchall()
     label_results_from(cursor)
     data = cursor.fetchall()
-
+    
     return {
-       "books": data
+        "books": data
     }
 
