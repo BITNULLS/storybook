@@ -3,6 +3,7 @@
         <input type="hidden" name="redirect" value="¶url">
         <input type="hidden" name="question_id" value="¶question_id">
         <input type="hidden" name="type" value="mc">
+        <input type="hidden" name="book_id" value="¶book_id_val">
 
         ¶options
     </div>
@@ -11,10 +12,19 @@
 <script>
     $(document).ready(() => {
 
-        $.fn.options_handler = function( answer_id_in ){ 
+        $.fn.options_handler = function( answer_id_in ){
+            var book_id = $("input[name = book_id]").val();
             var redirect_in = $("input[name = redirect]").val();
             var question_id_in = $("input[name = question_id]").val();
             var type_in = $("input[name = type]").val();
+
+            if (window.localStorage.getItem('prev_answer_id') == -1)
+                window.localStorage.setItem('prev_answer_id', answer_id_in);
+
+            else if (window.localStorage.getItem('prev_answer_id') != answer_id_in)
+                change_answer_question(book_id);
+
+            user_answered_question(book_id);
 
             $.ajax({
                 type: "POST",
@@ -30,6 +40,7 @@
                      $('div.modal-body').html(data['feedback']);
 
                      if(data['correct'] == 1){
+                         window.localStorage.setItem('prev_answer_id', -1);
                          $('div.modal-footer').html("<a class='btn btn-primary' href='" + redirect_in + "' role='button'> Click To Continue </a>");                    
                      }
                      else{

@@ -136,17 +136,43 @@ function turn_page_backward() {
 }
 
 // Work on adding MC and free response first
-function answered_question() {
-//    trackEvent(lastAction, dateString, 8, '');
+function user_answered_question(book_id) {
+
+    book_id_val = book_id;
+    var actionTime = calculateTime();
+
+    trackEvent(lastAction, actionTime, 8, 'User answered a question.');
+    lastAction = actionTime;
+
 }
-function change_answer_question() {
-//    trackEvent(lastAction, dateString, 9, '');
+
+function change_answer_question(book_id) {
+
+    book_id_val = book_id;
+    var actionTime = calculateTime();
+
+    trackEvent(lastAction, actionTime, 9, 'User changed answer on a question.');
+    lastAction = actionTime;
 }
-function enter_text_response() {
-//    trackEvent(lastAction, dateString, 12, '');
+
+// references quiz_fr.html
+function enter_text_response(book_id) {
+
+    book_id_val = book_id;
+    var actionTime = calculateTime();
+
+    trackEvent(lastAction, actionTime, 12, 'User entered a textbox.');
+    lastAction = actionTime;
 }
-function exit_text_response() {
-//    trackEvent(lastAction, dateString, 13, '');
+
+// references quiz_fr.html
+function exit_text_response(book_id) {
+
+    book_id_val = book_id;
+    var actionTime = calculateTime();
+
+    trackEvent(lastAction, actionTime, 13, 'User exited a textbox.');
+    lastAction = actionTime;
 }
 
 window.onload = function afterWebPageLoad() {
