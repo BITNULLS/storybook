@@ -30,7 +30,7 @@ from flask import Blueprint
 from flask import send_file
 from flask import redirect
 
-import fitz
+#import fitz
 import os
 import csv
 import uuid
@@ -1719,14 +1719,11 @@ def admin_static_page(static_page_name):
         }
 
 
-
-    # Get, delete  done - need to finish post, put 
-
-
     elif request.method == 'POST':
         # check to make sure you have a book_id
         try:
             assert 'static_page_content' in request.form
+            assert 'name' in request.form
             assert 'description' in request.form
         except AssertionError:
             a_admin_log.debug('An admin did not provide all of the form ' +\
@@ -1743,44 +1740,7 @@ def admin_static_page(static_page_name):
         # regex is not very efficient method here for sql injection check
         cursor = connection.cursor()
         try:
-            cursor.execute()
-            # commit changes to db
-            connection.commit()
-        except cx_Oracle.Error as e:
-            a_admin_log.warning('Error when accessing the database')
-            a_admin_log.warning(e)
-            return {
-                "status": "fail",
-                "fail_no": 3,
-                "message": "Error when querying database. line 889",
-                "database_message": str(e)
-            }, 400, {"Content-Type": "application/json"}
-
-        return {
-          "status": "ok"
-        }
-
-    elif request.method == 'PUT':
-        # check to make sure you have a book_id
-        try:
-            assert 'static_page_content' in request.form
-            assert 'description' in request.form
-        except AssertionError:
-            a_admin_log.debug('An admin did not provide all of the form ' +\
-                'fields when creating a static page')
-            return {
-                "status": "fail",
-                "fail_no": 1,
-                "message": "static_page_content not provided"
-            }, 400, {"Content-Type": "application/json"}
-        if re_alphanumeric.match(static_page_name) is None:
-            a_admin_log.warning('User provided an invalid static page name')
-
-        # not sanitizing questions or answers. may have any text since its up to the customer's discretion what the question is
-        # regex is not very efficient method here for sql injection check
-        cursor = connection.cursor()
-        try:
-            cursor.execute()
+            cursor.execute("Insert into static_page ("+request.form["name"]+"," + request.form["description"]+","+request.form["static_page_content"] +")")
             # commit changes to db
             connection.commit()
         except cx_Oracle.Error as e:

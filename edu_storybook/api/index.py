@@ -12,6 +12,7 @@ Routes:
 /api/login
 /api/logout
 /api/register
+/api/consent
 ```
 """
 
@@ -528,3 +529,80 @@ def get_users_books():
        "books": data
     }
 
+@a_index.route("/api/consent", methods=['GET', 'POST'])
+def get_consent():
+    # This function will ask for consent of the user when registering 
+    # the Get function will get the right consent based on study and the post will take the user name and study id and confirm that they have signed form
+    auth = request.cookies.get('Authorization')
+    vl = validate_login(
+        auth,
+        permission=0
+    )
+    if vl != True:
+        return vl
+
+    if 'Bearer' in auth:
+        auth = auth.replace('Bearer ', '', 1)
+
+    token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
+
+    # connect to database
+    connection = pool.acquire()
+    cursor = connection.cursor()
+    if request.method == 'GET':
+        try:
+            assert 'study_id' in request.form
+        except AssertionError:
+            a_index_log.debug(
+                'User did not provide a required field when registering')
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "A field was not provided"
+            }
+
+        try:
+            cursor.execute(
+                "SELECT CONTENT FROM STATIC_PAGE where study_id = " + request.form["study_id"]
+            )
+        except cx_Oracle.Error as e:
+            a_index_log.warning('Error when getting content')
+            a_index_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when getting content.",
+                "database_message": str(e)
+            }
+
+    if request.method == 'POST':
+        try:
+            assert 'email' in request.form
+            assert 'first_name'in request.form
+            assert 'last_name' in request.form
+            assert 'study_id' in request.form
+        except AssertionError:
+            a_index_log.debug(
+                'User did not provide a required field when registering')
+            return {
+                "status": "fail",
+                "fail_no": 1,
+                "message": "A field was not provided"
+            }
+
+
+        try:
+            cursor.execute("Insert into user_consent ("+ request.form['first_name'] +","+ request.form['last_name']+"," + request.form['study_id'] +")")
+        except cx_Oracle.Error as e:
+            a_index_log.warning('Error when getting content')
+            a_index_log.warning(e)
+            return {
+                "status": "fail",
+                "fail_no": 4,
+                "message": "Error when getting content.",
+                "database_message": str(e)
+        }
+
+    return {
+       "status": "okay"
+    }
