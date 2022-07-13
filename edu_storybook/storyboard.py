@@ -33,6 +33,7 @@ log = logging.getLogger('ssg.storyboard')
 if config['production'] == False:
     log.setLevel(logging.DEBUG)
 
+
 @storyboard.route("/storyboard/<int:book_id_in>/<int:page_number_in>")
 def gen_storyboard_page(book_id_in: int, page_number_in: int):
     '''
@@ -97,15 +98,15 @@ def gen_storyboard_page(book_id_in: int, page_number_in: int):
 
             option_labels = list(ascii_uppercase)
             label_index = 0
-                
+
             # Logic to dynamically add buttons on-the-fly
             for answer_choice in question['answers']:
-                curr_label = option_labels[label_index]   
+                curr_label = option_labels[label_index]
                 button_value = answer_choice['answer_id']
                 answer_choice_name = "<b>" + curr_label + ".</b> &nbsp;" + answer_choice['answer']
                 options_buttons = options_buttons + "<button name='answer_id' onclick='$.fn.options_handler(" + str(button_value) + ")' style='min-width:100%' value='" + str(button_value) + "' class='btn btn-info'> " + answer_choice_name + " </button> <br> <br>"
                 label_index = label_index + 1
-            
+
             display_mc_items = Templates.storyboard_quiz_mc_item.substitute(
                 question_id = display_question_id,
                 book_id_val = str(book_id),

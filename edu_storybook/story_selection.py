@@ -32,8 +32,8 @@ if config['production'] == False:
 def gen_books():
     '''
     Generate the story selection (books) page.
-    
-    When registering as a user, the register page redirects to 
+
+    When registering as a user, the register page redirects to
     story Selection with admin navbar (not user).
     an issue with make_navbar(auth) may arise where auth may be incorrectly setup
     '''
@@ -51,7 +51,7 @@ def gen_books():
     if vl != True:
         log.debug('A non-admin user tried to access the /books page.')
         abort(403)
-        
+
     token = jwt.decode(auth.replace('Bearer ', ''), jwt_key, config['jwt_alg'])
 
     all_books = ""
@@ -68,7 +68,7 @@ def gen_books():
     else:
         for b in get_users_books()['books']:
             last_page_val = get_last_page(b['BOOK_ID'], token['sub'])
-            
+
             all_books += Templates.story_selection_book.substitute(
             book_title=b['BOOK_NAME'],
             book_description=b['DESCRIPTION'],
