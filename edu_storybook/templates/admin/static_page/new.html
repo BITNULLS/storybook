@@ -1,0 +1,25 @@
+<!-- this page is used to edit static pages -->
+
+¶navbar
+
+<h1>Make a New Static page</h1>
+
+<div class="container">
+    <div class="card">
+        <div class="card-body">
+            <form action="/api/admin/static_page/new" method="POST">
+                <label for="static-page-title">Title</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="static-page-title" name="static_page_title">
+                </div>
+
+                <label for="static-page-description">Description</label>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="static-page-description" name="static_page_description">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">Create New Static Page</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -175,6 +175,110 @@ def gen_admin_edit_book():
     return edit_book_page
 
 
+@admin.route("/admin/static_page/")
+def gen_admin_static_page_index():
+    """
+    Generate the `/admin/static_page` index page.
+    """
+
+    auth = None
+    if 'Authorization' in request.cookies:
+        auth = request.cookies['Authorization']
+    else:
+        log.debug('An unauthorized, logged out user tried to access the ' +\
+            '/admin/ page.')
+        abort(401, description="You are not logged in.")
+
+    vl = validate_login(
+            auth,
+            permission=1
+        )
+    if vl != True:
+        log.debug('A non-admin user tried to access the /admin/ page.')
+        abort(403)
+
+    # load a list of all static pages
+
+    static_page_index = Templates._base.substitute(
+        title = "Admin: Static Page Overview",
+        description = "All the static pages ",
+        body = Templates.admin_static_page_index.substitute(
+            navbar = make_navbar( auth ),
+            book = all_books
+        )
+    )
+    return static_page_index
+
+
+@admin.route("/admin/static_page/editor/<int:id_in>")
+def gen_admin_static_page_edit(id_in: int):
+    """
+    Generate the `/admin/static_page` index page.
+    """
+
+    auth = None
+    if 'Authorization' in request.cookies:
+        auth = request.cookies['Authorization']
+    else:
+        log.debug('An unauthorized, logged out user tried to access the ' +\
+            '/admin/ page.')
+        abort(401, description="You are not logged in.")
+
+    vl = validate_login(
+            auth,
+            permission=1
+        )
+    if vl != True:
+        log.debug('A non-admin user tried to access the /admin/ page.')
+        abort(403)
+
+    # load static_page content
+
+    static_page_editor = Templates._base.substitute(
+        title = "Admin: Static Page Overview",
+        description = "All the static pages ",
+        body = Templates.admin_static_page_editor.substitute(
+            navbar = make_navbar( auth ),
+            book = all_books
+        )
+    )
+    return static_page_editor
+
+
+@admin.route("/admin/static_page/new")
+def gen_admin_static_page_edit(id_in: int):
+    """
+    Generate the `/admin/static_page/new` index page.
+    """
+
+    auth = None
+    if 'Authorization' in request.cookies:
+        auth = request.cookies['Authorization']
+    else:
+        log.debug('An unauthorized, logged out user tried to access the ' +\
+            '/admin/ page.')
+        abort(401, description="You are not logged in.")
+
+    vl = validate_login(
+            auth,
+            permission=1
+        )
+    if vl != True:
+        log.debug('A non-admin user tried to access the /admin/ page.')
+        abort(403)
+
+    # load static_page content
+
+    static_page_editor = Templates._base.substitute(
+        title = "Admin: New Static Page",
+        description = "Make a new static page",
+        body = Templates.admin_static_page_new.substitute(
+            navbar = make_navbar( auth )
+        )
+    )
+    return static_page_editor
+
+
 @admin.route("/admin/upload_book")
 def gen_admin_upload_book():
     """

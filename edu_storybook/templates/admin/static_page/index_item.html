@@ -1,0 +1,12 @@
+<tr>
+    <th>¶id</th>
+    <td>¶title</td>
+    <td>¶description</td>
+    <td>
+        <a class="btn btn-primary" href="/admin/static_page/editor/¶id" role="button">Edit</a>
+        <form action="/api/admin/static_page/delete/¶id" method="POST">
+            <input type="hidden" name="redirect" value="/admin/static_page/">
+            <button type="submit" class="btn btn-primary">Delete</button>
+        </form>
+    </td>
+</tr>

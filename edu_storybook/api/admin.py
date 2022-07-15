@@ -30,7 +30,6 @@ from flask import Blueprint
 from flask import send_file
 from flask import redirect
 
-import fitz
 import os
 import csv
 import uuid
@@ -414,7 +413,7 @@ def admin_book_study():
         cursor = connection.cursor()
 
         try:
-            
+
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for study_id in study_ids:
                 cursor.execute("INSERT into BOOK_STUDY (book_id, study_id) VALUES ("
@@ -431,7 +430,7 @@ def admin_book_study():
                 "message": "Error when querying database. 1161",
                 "database_message": str(e)
             }
-            
+
     elif request.form['direction'] =='btos':
         # check to make sure you have a 'book_id'
         try:
@@ -452,7 +451,7 @@ def admin_book_study():
         cursor = connection.cursor()
 
         try:
-            
+
             # Iterate through all study ids and insert them one-by-one to a 'book_study' table
             for book_id in book_ids:
                 cursor.execute('INSERT into BOOK_STUDY (book_id, study_id) VALUES ('
@@ -928,7 +927,7 @@ def admin_download_action_data():
         result = cursor.var(cx_Oracle.CURSOR)
         cursor.callproc("GET_USER_PROFILE_DATA_PROC", \
             [result])
-        
+
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)
@@ -1131,7 +1130,7 @@ def admin_study_user():
     cursor = connection.cursor()
 
     if request.method == "GET":
-        
+
 
         try:
             study_id = int(request.args.get('study_id'))
@@ -1284,7 +1283,7 @@ def admin_school():
     # check if post method
     if request.method == 'POST':
         cursor = connection.cursor()
-        
+
         try:
             cursor.callproc("insert_school_proc",\
                 [request.form['school_name']])
@@ -1466,7 +1465,7 @@ def admin_create_study():
         auth = auth.replace('Bearer ', '', 1)
 
     token = jwt.decode(auth, jwt_key, algorithms=Config.jwt_alg)
-    # check to make sure you have a book name and book_description 
+    # check to make sure you have a book name and book_description
     try:
         assert 'school_id' in request.form
         assert 'study_name' in request.form
@@ -1555,7 +1554,7 @@ def admin_download_free_response():
         result = cursor.var(cx_Oracle.CURSOR)
         cursor.callproc("GET_USER_FREE_RESPONSE_DATA_PROC", \
             [result])
-        
+
     except cx_Oracle.Error as e:
         a_admin_log.warning('Error when accessing database')
         a_admin_log.warning(e)

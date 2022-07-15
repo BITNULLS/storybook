@@ -111,7 +111,7 @@ def quiz_submit_answer():
     cursor = connection.cursor()
 
     if request.form['type'] == 'mc': # multiple choice handling
-        
+
         try:
             cursor.execute(
                 "SELECT correct, answer_feedback FROM answer WHERE answer_id= " + str(answer_id) +\
@@ -130,7 +130,7 @@ def quiz_submit_answer():
             }, 400, {"Content-Type": "application/json"}
 
         result = cursor.fetchone()
-        
+
         try:
             cursor.execute(
                 "insert into user_response (user_id, question_id, answer_id, answered_on) values (" + "'" +
@@ -141,21 +141,21 @@ def quiz_submit_answer():
         except cx_Oracle.Error as e:
             a_quiz_log.warning('Error when updating database')
             a_quiz_log.warning(e)
-                
+
             return {
                 "status": "fail",
                 "fail_no": 10,
                 "message": "Error when updating database.",
                 "database_message": str(e)
             }, 400, {"Content-Type": "application/json"}
-            
+
         return {
             "status": "ok",
             "correct": result['CORRECT'],
             "feedback": result['ANSWER_FEEDBACK'],
         }
-        
-    
+
+
     elif request.form['type'] == 'fr': # free response handling
         free_response_answer = request.form['answer']
         try:
@@ -176,7 +176,7 @@ def quiz_submit_answer():
             }, 400, {"Content-Type": "application/json"}
 
         return redirect(request.form['redirect'])
-        
+
     else:
         return {
             "status": "fail",

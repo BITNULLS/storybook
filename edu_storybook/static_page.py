@@ -22,7 +22,7 @@ if config['production'] == False:
 @homepage.route("/static_page/<str:page_name_in>")
 def gen_static_page(page_name_in: str):
     '''
-    Generates the homepage.
+    Generates a static page.
     '''
     auth = None
     if 'Authorization' in request.cookies:

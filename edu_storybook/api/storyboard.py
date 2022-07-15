@@ -105,14 +105,14 @@ def storyboard_get_page(book_id_in: int, page_number_in: int):
     cursor = connection.cursor()
 
     fileInput = get_book_image_path(book_id, page_number)
-        
+
     quiz_questions = check_quiz_question(book_id, page_number, token['sub'])
-    
+
     if(quiz_questions != False):
         # If there's a quiz question(s) for user to answer, then return the data for the first quiz question
         # for user to answer
         return quiz_questions[0]
-    
+
     cursor = connection.cursor()
     try:
         cursor.callproc("track_last_page",\
@@ -149,13 +149,13 @@ def get_last_page(book_id_in: int, user_id_in: str):
     '''
      Gets the last page_number for a book with a given book_id and user_id
     '''
-    
+
     book_id = str(book_id_in)
-    
+
     # connect to database
     connection = pool.acquire()
     cursor = connection.cursor()
-    
+
     try:
         cursor.execute(
             "SELECT DISTINCT BOOK.BOOK_ID, BOOK_NAME, DESCRIPTION, LAST_PAGE.LAST_PAGE FROM BOOK "+
@@ -174,9 +174,9 @@ def get_last_page(book_id_in: int, user_id_in: str):
             "message": "Error when accessing books.",
             "database_message": str(e)
         }
-    
+
     result = cursor.fetchone()
-    
+
     if result is None:
         try:
             cursor.execute(
@@ -195,7 +195,7 @@ def get_last_page(book_id_in: int, user_id_in: str):
                 "message": "Error when accessing books.",
                 "database_message": str(e)
             }
-            
+
         result = cursor.fetchone()
 
     return result['LAST_PAGE']
@@ -204,26 +204,26 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
     '''
     This is the logic for checking if there's a quiz question(s) for a book with given book_id and given current
     page number page_number
-    
+
     Parameters: book_id (int) - ID of the book
                 page_number(int) - Current page number of a book
                 user_id(str) - User ID
-    
+
     Return: list of quiz question(s) OR boolean value False if there's no quiz question OR Oracle Error
             for not accessing quiz questions from DB correctly
     '''
-    
+
     # goes into database and gets the bucket folder.
     # goes into bucket and then says I want this image from this folder.
     connection = pool.acquire()
     cursor = connection.cursor()
-    
+
     try:
         # gets the unanswered quiz questions for a user (checks the user_response and user_free_response tables for which questions are answered)
         result = cursor.var(cx_Oracle.CURSOR)
         cursor.callproc("GET_QUIZ_QUESTIONS", \
             [book_id, page_number, user_id, result])
-        
+
         # label_results_from(result)
     except cx_Oracle.Error as e:
         a_storyboard_log.warning('Error when acessing database')
@@ -233,16 +233,16 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             "fail_no": 5,
             "message": "Error accessing quiz questions and its answers"
         }, 400, {"Content-Type": "application/json"}
-        
+
     quizQuestions = result.getvalue().fetchall() # List of Tuples where each Tuple is one record from database and List would include all the records
-    
+
     answers = []
     curr_question_id = None
     full_question = None
     question_type = None
     correct_answer = None
     quiz_question_list = []
-    
+
     for question in quizQuestions:
         '''
         For each question in a tuple format, following is the mapping of index to column name:
@@ -264,8 +264,8 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             })
             if question[5] == 1:
                 correct_answer = question[4]
-        
-        # This would mean that the question is a MC that has different options coming along        
+
+        # This would mean that the question is a MC that has different options coming along
         elif question[0] == curr_question_id:
             answers.append({
                 "answer": question[4],
@@ -274,7 +274,7 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             })
             if question[5] == 1:
                 correct_answer = question[4]
-        
+
         # This means that new question came along
         # Save the output of previous question into quiz_question_list and free the variables to use for
         # upcoming question
@@ -288,11 +288,11 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
                     "correct_answer": correct_answer
                 }
             )
-            
+
             # Reinitializing possible answers list and correct answer for next question
             answers = []
             correct_answer = None
-            
+
             curr_question_id = question[0]
             full_question = question[1]
             question_type = question[2]
@@ -303,13 +303,13 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             })
             if question[5] == 1:
                 correct_answer = question[4]
-            
-            
+
+
     if(len(quiz_question_list) > 0 or curr_question_id != None):
-        
+
         # Make sure to append the last question from quizQuestions since the loop would stop without adding
         # that last question
-        
+
         quiz_question_list.append(
             {
                 "question_id": curr_question_id,
@@ -320,10 +320,10 @@ def check_quiz_question(book_id: int, page_number: int, user_id: str):
             }
         )
         return quiz_question_list
-    
+
     else:
         return False
-    
+
 @a_storyboard.route("/api/storyboard/pagecount/<int:book_id_in>", methods=['GET'])
 def storyboard_get_pagecount(book_id_in: int):
     '''

@@ -74,6 +74,12 @@ TEMPLATES = {
         "forgot": load_template("templates/password/forgot.html"),
         "reset": load_template("templates/password/reset.html")
     },
+    "static_page": {
+        "editor": load_template("templates/static_page/editor.html"),
+        "index": load_template("templates/static_page/index.html"),
+        "new": load_template("templates/static_page/new.html"),
+        "viewer": load_template("templates/static_page/viewer.html")
+    },
     "story_selection": {
         "book": load_template("templates/story_selection/book.html"),
         "index": load_template("templates/story_selection/index.html")
@@ -158,7 +164,23 @@ class Templates:
     '''
     Admin Upload Book template.
     '''
+
     admin_school_list: Template = TEMPLATES['admin']['school_list']
+
+    admin_static_page_editor: Template = TEMPLATES['static_page']['editor']
+    '''
+    Static Page Editor template.
+    '''
+
+    admin_static_page_index: Template = TEMPLATES['static_page']['index']
+    '''
+    Static Page Index template.
+    '''
+
+    admin_static_page_new: Template = TEMPLATES['static_page']['new']
+    '''
+    Static Page New template.
+    '''
 
     navbar_logged_admin: Template = TEMPLATES['navbar']['logged_admin']
     '''
@@ -183,6 +205,11 @@ class Templates:
     password_reset: Template = TEMPLATES['password']['reset']
     '''
     Password Reset template.
+    '''
+
+    static_page_viewer: Template = TEMPLATES['static_page']['viewer']
+    '''
+    Static Page Viewer template.
     '''
 
     story_selection_book: Template = TEMPLATES['story_selection']['book']
@@ -212,12 +239,12 @@ class Templates:
     '''
     Storyboard Quiz Multiple Choice (MC) template.
     '''
-    
+
     storyboard_viewer: Template = TEMPLATES['storyboard']['viewer']
     '''
     Storyboard Viewer template.
     '''
-    
+
     _base: Template = TEMPLATES['_base']
     '''
     The base template that every other template should be baked into.

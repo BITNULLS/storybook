@@ -119,7 +119,7 @@ def get_schools(offset: int):
     '''
 
     # validate that user has rights to access books
-    
+
     # connect to database
     connection = pool.acquire()
     cursor = connection.cursor()
@@ -413,7 +413,7 @@ def register():
             "message": "Error when querying database.",
             "database_message": str(e)
         }
-    
+
     try:
         cursor.execute(
             "select * from USER_PROFILE where email='" + email + "'"
@@ -446,7 +446,7 @@ def register():
 
     iat = int(time.time())
     user_id = result['USER_ID']
-    session_id = str(uuid.uuid4())  # generate a unique token for a user    
+    session_id = str(uuid.uuid4())  # generate a unique token for a user
     token = jwt.encode({
         "iat": iat,
         "session": session_id,
@@ -523,7 +523,7 @@ def get_users_books():
     # assign variable data to cursor.fetchall()
     label_results_from(cursor)
     data = cursor.fetchall()
-    
+
     return {
         "books": data
     }

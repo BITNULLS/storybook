@@ -8,3 +8,4 @@ flask_cors      # CORS access policy for Flask (to allow requests from anywhere)
 PyMuPDF         # For converting PDFs to PNGs
 pdoc            # For generating documentation for the project
 autopep8        # For formatting Python scripts automatically
+markdown2       # For generating static_pages
