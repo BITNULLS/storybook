@@ -149,16 +149,34 @@ class Templates:
     '''
 
     admin_study_list: Template = TEMPLATES['admin']['study_list']
+    '''
+    ...
+    '''
 
     admin_add_study: Template = TEMPLATES['admin']['add_study']
+    '''
+    ...
+    '''
 
     admin_add_book: Template = TEMPLATES['admin']['add_book']
+    '''
+    ...
+    '''
 
     admin_add_user: Template = TEMPLATES['admin']['add_user']
+    '''
+    ...
+    '''
 
     admin_user_list: Template = TEMPLATES['admin']['user_list']
+    '''
+    ...
+    '''
 
     admin_school_list: Template = TEMPLATES['admin']['school_options']
+    '''
+    ...
+    '''
 
     admin_upload_book: Template = TEMPLATES['admin']['upload_book']
     '''
@@ -266,4 +284,7 @@ class Templates:
     '''
 
     school_card: Template = TEMPLATES['register']['school_option']
+    '''
+    ...
+    '''
 

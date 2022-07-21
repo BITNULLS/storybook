@@ -36,7 +36,7 @@ if Config.production == False:
 @a_study.route("/api/static_page/<int:id>", methods=['GET'])
 def get_static_page(id: int):
     '''
-    Grab a static page and render it into HTML
+    Grab a static page and render it into HTML.
     '''
     # validate that user has rights to access
     connection = pool.acquire()
